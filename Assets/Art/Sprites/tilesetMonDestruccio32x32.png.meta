@@ -1,0 +1,730 @@
+fileFormatVersion: 2
+guid: b9a12ce753bf10645876b9c0b33ba2cd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5643278370929600981
+    second: tilesetMonDestruccio32x32_0
+  - first:
+      213: -5353250995074697019
+    second: tilesetMonDestruccio32x32_1
+  - first:
+      213: 2367478616299610508
+    second: tilesetMonDestruccio32x32_2
+  - first:
+      213: 458889568624113538
+    second: tilesetMonDestruccio32x32_3
+  - first:
+      213: 1070300638376977618
+    second: tilesetMonDestruccio32x32_4
+  - first:
+      213: -513412813670265984
+    second: tilesetMonDestruccio32x32_5
+  - first:
+      213: 8326009116288033216
+    second: tilesetMonDestruccio32x32_6
+  - first:
+      213: 386100961753001655
+    second: tilesetMonDestruccio32x32_7
+  - first:
+      213: 1048241246203899184
+    second: tilesetMonDestruccio32x32_8
+  - first:
+      213: -7792024632648665829
+    second: tilesetMonDestruccio32x32_9
+  - first:
+      213: 4110028070866026255
+    second: tilesetMonDestruccio32x32_10
+  - first:
+      213: 2324970192922342172
+    second: tilesetMonDestruccio32x32_11
+  - first:
+      213: -1802394093287737228
+    second: tilesetMonDestruccio32x32_12
+  - first:
+      213: -3334627622664603192
+    second: tilesetMonDestruccio32x32_13
+  - first:
+      213: 8026316717605097486
+    second: tilesetMonDestruccio32x32_14
+  - first:
+      213: -439057397840199488
+    second: tilesetMonDestruccio32x32_15
+  - first:
+      213: 8164796779447332003
+    second: tilesetMonDestruccio32x32_16
+  - first:
+      213: 5075871082485023551
+    second: tilesetMonDestruccio32x32_17
+  - first:
+      213: -4524342809202611844
+    second: tilesetMonDestruccio32x32_18
+  - first:
+      213: 3842261279793477790
+    second: tilesetMonDestruccio32x32_19
+  - first:
+      213: -8646593694934583418
+    second: tilesetMonDestruccio32x32_20
+  - first:
+      213: 7266570536942430026
+    second: tilesetMonDestruccio32x32_21
+  - first:
+      213: 2583904900384743348
+    second: tilesetMonDestruccio32x32_22
+  - first:
+      213: -5597101951368787538
+    second: tilesetMonDestruccio32x32_23
+  - first:
+      213: -5269909570057936930
+    second: tilesetMonDestruccio32x32_24
+  - first:
+      213: -5682884605010410743
+    second: tilesetMonDestruccio32x32_25
+  - first:
+      213: 8299329398318042050
+    second: tilesetMonDestruccio32x32_26
+  - first:
+      213: -9011129515946682134
+    second: tilesetMonDestruccio32x32_27
+  - first:
+      213: -2653552891566394489
+    second: tilesetMonDestruccio32x32_28
+  - first:
+      213: 6851267506629960835
+    second: tilesetMonDestruccio32x32_29
+  - first:
+      213: 2394345493311194476
+    second: tilesetMonDestruccio32x32_30
+  - first:
+      213: -4564473478519346293
+    second: tilesetMonDestruccio32x32_31
+  - first:
+      213: 8161475975615009936
+    second: tilesetMonDestruccio32x32_32
+  - first:
+      213: 5256743487174072291
+    second: tilesetMonDestruccio32x32_33
+  - first:
+      213: -7049083057437611965
+    second: tilesetMonDestruccio32x32_34
+  - first:
+      213: -1550591308161824853
+    second: tilesetMonDestruccio32x32_35
+  - first:
+      213: -6382451432412821939
+    second: tilesetMonDestruccio32x32_36
+  - first:
+      213: 7168465902630649220
+    second: tilesetMonDestruccio32x32_37
+  - first:
+      213: -1301987244514203862
+    second: tilesetMonDestruccio32x32_38
+  - first:
+      213: -7238799652581359182
+    second: tilesetMonDestruccio32x32_39
+  - first:
+      213: 2557315129170814804
+    second: tilesetMonDestruccio32x32_40
+  - first:
+      213: 7602453517725208080
+    second: tilesetMonDestruccio32x32_41
+  - first:
+      213: -1855775809344302006
+    second: tilesetMonDestruccio32x32_42
+  - first:
+      213: -2481405045362977684
+    second: tilesetMonDestruccio32x32_43
+  - first:
+      213: 486436309231438651
+    second: tilesetMonDestruccio32x32_44
+  - first:
+      213: 6340951981796215664
+    second: tilesetMonDestruccio32x32_45
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d967eb67c3f05e40800000000000000
+      internalID: 5643278370929600981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c8f01d259e65b5b0800000000000000
+      internalID: -5353250995074697019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c812fd11249fad020800000000000000
+      internalID: 2367478616299610508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 287f8f0a1ad4e5600800000000000000
+      internalID: 458889568624113538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_4
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d4655982c87ade00800000000000000
+      internalID: 1070300638376977618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_5
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08bcc0224cdffd8f0800000000000000
+      internalID: -513412813670265984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c1230d9d2deb8370800000000000000
+      internalID: 8326009116288033216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_7
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7be69b077c4bb5500800000000000000
+      internalID: 386100961753001655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03d65ee0cd91c8e00800000000000000
+      internalID: 1048241246203899184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_9
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b15f1e961ea2dd390800000000000000
+      internalID: -7792024632648665829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_10
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0f7adc21c0c90930800000000000000
+      internalID: 4110028070866026255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_11
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c13f18e7214f34020800000000000000
+      internalID: 2324970192922342172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_12
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47872542f1c9cf6e0800000000000000
+      internalID: -1802394093287737228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_13
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c9fed448d509b1d0800000000000000
+      internalID: -3334627622664603192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_14
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0091a78784336f60800000000000000
+      internalID: 8026316717605097486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_15
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c04ab57f9728e9f0800000000000000
+      internalID: -439057397840199488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ac2636796f2f4170800000000000000
+      internalID: 8164796779447332003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_17
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f33823d3bdd117640800000000000000
+      internalID: 5075871082485023551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_18
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c79a26f9f2e4631c0800000000000000
+      internalID: -4524342809202611844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tilesetMonDestruccio32x32_19
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e98f35cd644725530800000000000000
+      internalID: 3842261279793477790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 74fc78d6f9dfb9446842f496e130906c
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      tilesetMonDestruccio32x32_0: 5643278370929600981
+      tilesetMonDestruccio32x32_1: -5353250995074697019
+      tilesetMonDestruccio32x32_10: 4110028070866026255
+      tilesetMonDestruccio32x32_11: 2324970192922342172
+      tilesetMonDestruccio32x32_12: -1802394093287737228
+      tilesetMonDestruccio32x32_13: -3334627622664603192
+      tilesetMonDestruccio32x32_14: 8026316717605097486
+      tilesetMonDestruccio32x32_15: -439057397840199488
+      tilesetMonDestruccio32x32_16: 8164796779447332003
+      tilesetMonDestruccio32x32_17: 5075871082485023551
+      tilesetMonDestruccio32x32_18: -4524342809202611844
+      tilesetMonDestruccio32x32_19: 3842261279793477790
+      tilesetMonDestruccio32x32_2: 2367478616299610508
+      tilesetMonDestruccio32x32_3: 458889568624113538
+      tilesetMonDestruccio32x32_4: 1070300638376977618
+      tilesetMonDestruccio32x32_5: -513412813670265984
+      tilesetMonDestruccio32x32_6: 8326009116288033216
+      tilesetMonDestruccio32x32_7: 386100961753001655
+      tilesetMonDestruccio32x32_8: 1048241246203899184
+      tilesetMonDestruccio32x32_9: -7792024632648665829
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
