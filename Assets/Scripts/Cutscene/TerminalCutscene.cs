@@ -10,21 +10,21 @@ public class TerminalCutscene : MonoBehaviour
     [System.Serializable]
     public class TerminalLine
     {
-        [TextArea(2, 6)] public string text;
-        public bool response;
-        public Color color = Color.white;
+        [TextArea(2, 6)] public string text; // El text que s'escriurà al terminal.
+        public bool response;               // Si és una resposta del sistema o entrada d'usuari.
+        public Color color = Color.white;   // El color del text d'aquesta línia.
     }
 
     [Header("UI")]
     [SerializeField] private TMP_Text terminalText;
 
     [Header("Splash (abans del terminal)")]
-    [SerializeField] private Image splashImage;
-    [SerializeField] private Sprite splashSprite;
-    [SerializeField] private float splashFadeIn = 0.6f;
-    [SerializeField] private float splashHold = 1.2f;
-    [SerializeField] private float splashFadeOut = 0.6f;
-    [SerializeField] private Color splashTint = Color.white;
+    [SerializeField] private Image splashImage;      // Referència a la imatge de splash.
+    [SerializeField] private Sprite splashSprite;    // L'sprite que es mostrarà.
+    [SerializeField] private float splashFadeIn = 0.6f; // Temps d'aparició.
+    [SerializeField] private float splashHold = 1.2f;   // Temps que es manté la imatge.
+    [SerializeField] private float splashFadeOut = 0.6f; // Temps de desaparició.
+    [SerializeField] private Color splashTint = Color.white; // Tint de la imatge.
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
@@ -120,6 +120,7 @@ public class TerminalCutscene : MonoBehaviour
             splashImage.color = new Color(splashTint.r, splashTint.g, splashTint.b, 0f);
         }
 
+        // Iniciem la seqüència principal de la cutscene
         StartCoroutine(RunSequence());
     }
 
@@ -149,7 +150,9 @@ public class TerminalCutscene : MonoBehaviour
         }
 
         // 2) Terminal
-        StartCoroutine(BlinkCursor());
+        StartCoroutine(BlinkCursor()); // Iniciem el parpelleig del cursor
+
+        // Iniciem la impressió de les línies del terminal
         yield return PlayCutscene();
     }
 

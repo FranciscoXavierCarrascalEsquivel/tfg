@@ -3,15 +3,15 @@ using UnityEngine;
 public class CameraBoundedFollow : MonoBehaviour
 {
     [Header("Target")]
-    public Transform target;
-    public float smoothSpeed = 5f;
-    public Vector3 offset = new Vector3(0, 0, -10);
+    public Transform target;          // L'objecte que la càmera seguirà (normalment el jugador).
+    public float smoothSpeed = 5f;    // Velocitat de suavitzat del seguiment.
+    public Vector3 offset = new Vector3(0, 0, -10); // Desplaçament de la càmera respecte l'objectiu.
 
     [Header("Limits (Empty GameObjects)")]
-    public Transform topLimit;
-    public Transform bottomLimit;
-    public Transform leftLimit;
-    public Transform rightLimit;
+    public Transform topLimit;    // Punt que defineix el límit superior.
+    public Transform bottomLimit; // Punt que defineix el límit inferior.
+    public Transform leftLimit;   // Punt que defineix el límit esquerre.
+    public Transform rightLimit;  // Punt que defineix el límit dret.
 
     private Camera cam;
 
@@ -25,10 +25,10 @@ public class CameraBoundedFollow : MonoBehaviour
     {
         if (target == null) return;
 
-        // Posició desitjada sense límits
+        // Posició desitjada sense tenir en compte els límits
         Vector3 desiredPosition = target.position + offset;
         
-        // Apliquem límits
+        // Apliquem el clamp si tenim la referència de la càmera
         if (cam != null)
         {
             desiredPosition = GetClampedPosition(desiredPosition);

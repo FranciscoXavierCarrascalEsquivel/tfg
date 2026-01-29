@@ -5,12 +5,12 @@ using UnityEngine;
 public class PlayerController2D : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float walkSpeed = 5f;
-    [SerializeField] private float runSpeed = 8f;
-    [SerializeField] private KeyCode runKey = KeyCode.LeftShift;
+    [SerializeField] private float walkSpeed = 5f;       // Velocitat quan el jugador camina.
+    [SerializeField] private float runSpeed = 8f;        // Velocitat quan el jugador corre.
+    [SerializeField] private KeyCode runKey = KeyCode.LeftShift; // Tecla per córrer.
 
-    private Rigidbody2D rb;
-    private Animator anim;
+    private Rigidbody2D rb; // Referència al component Rigidbody2D per a les físiques.
+    private Animator anim;  // Referència a l'Animator per gestionar les animacions.
 
     private Vector2 moveDir;
     private Vector2 lastDir = Vector2.down;
@@ -44,8 +44,8 @@ public class PlayerController2D : MonoBehaviour
     {
         movementLocked = true;
         moveDir = Vector2.zero;
-        rb.linearVelocity = Vector2.zero;   // Unity 6
-        anim.SetBool(IsMovingHash, false);
+        rb.linearVelocity = Vector2.zero;   // Unity 6: Aturem el moviment físic.
+        anim.SetBool(IsMovingHash, false);   // Aturem l'animació de caminar.
         anim.SetFloat(SpeedMulHash, 1f);
     }
 
@@ -75,7 +75,7 @@ public class PlayerController2D : MonoBehaviour
 
         bool isMovingInput = input.sqrMagnitude > 0.01f;
 
-        // ✅ Running només si et mous i mantens Shift
+        // Correm si hi ha input i mantenim premuda la tecla de correr
         isRunning = isMovingInput && Input.GetKey(runKey);
 
         moveDir = input.normalized;

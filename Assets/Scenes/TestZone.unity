@@ -1696,9 +1696,7 @@ MonoBehaviour:
   soundEveryNChars: 1
   audioSource: {fileID: 592884855}
   typingClips:
-  - {fileID: 8300000, guid: 38a33438c8f9eb84da9584d27251cc5d, type: 3}
-  - {fileID: 8300000, guid: b2e3b24418d65444ab2bedfe68750646, type: 3}
-  - {fileID: 8300000, guid: 026390886d896674987eeb01a93b1295, type: 3}
+  - {fileID: 8300000, guid: 0b3bcaa9144214e49a2fe180f9c80809, type: 3}
   pitchRandom: 0.05
   volume: 0.8
 --- !u!114 &592884851
@@ -6429,11 +6427,11 @@ MonoBehaviour:
   - text: Quin cercle tan bonic!
     portrait: {fileID: 6542110693660499982, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
     portraitAnimator: {fileID: 0}
-  - text: 'Es tan perfecte... '
+  - text: 'Em recorda a una pilota de ping pong... '
     portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
     portraitAnimator: {fileID: 0}
-  - text: "Per\xF2 ara que ho penso no crec que s'apreci del tot..."
-    portrait: {fileID: 953547476905589608, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+  - text: Pero d'un tamany bastant mes gran, la veritat!
+    portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
     portraitAnimator: {fileID: 0}
   description: 
   portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
@@ -6473,7 +6471,7 @@ MonoBehaviour:
   - text: Es un triangle blanc.
     portrait: {fileID: -1804691888328831285, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
     portraitAnimator: {fileID: 0}
-  - text: Va una mica tort.
+  - text: "Perque est\xE0 inclinat?"
     portrait: {fileID: 4730343818599828477, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
     portraitAnimator: {fileID: 0}
   description: 

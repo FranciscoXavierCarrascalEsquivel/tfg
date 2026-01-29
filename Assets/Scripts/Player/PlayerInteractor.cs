@@ -2,21 +2,18 @@ using UnityEngine;
 
 public class PlayerInteractor : MonoBehaviour
 {
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
-    [SerializeField] private float radius = 0.6f;
-    [SerializeField] private LayerMask interactableLayer;
-    [SerializeField] private DialogueUI dialogueUI;
-
-    // ✅ Referència al controlador del jugador per bloquejar moviment
-    [SerializeField] private PlayerController2D playerController;
+    [SerializeField] private KeyCode interactKey = KeyCode.E; // Tecla d'interacció
+    [SerializeField] private float radius = 0.6f; // Distancia màxima entre el jugador i l'objecte interactuable.
+    [SerializeField] private LayerMask interactableLayer; // Capa d'in
+    [SerializeField] private DialogueUI dialogueUI; // 
+    [SerializeField] private PlayerController2D playerController; // Objecte que te programat el controlador del jugador (així podem bloquejar i desbloquejar el moviment).
 
     private void Awake()
     {
-        // Auto-assign si t'ho deixes buit (opcional però útil)
         if (playerController == null)
             playerController = GetComponent<PlayerController2D>();
 
-        // Quan es tanqui el diàleg, desbloqueja moviment
+        // Quan es tanqui el diàleg, es desbloqueja el moviment
         if (dialogueUI != null)
             dialogueUI.OnDialogueClosed += HandleDialogueClosed;
     }
@@ -37,7 +34,8 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (!Input.GetKeyDown(interactKey)) return;
 
-        // Si hi ha diàleg obert, la E serveix per skip/avançar línia/tancar quan toca
+        // Si hi ha diàleg obert, la E serveix per avançar línia o tancar quan toca.
+        
         if (dialogueUI != null && dialogueUI.IsOpen)
         {
             dialogueUI.AdvanceOrSkip();
@@ -51,7 +49,7 @@ public class PlayerInteractor : MonoBehaviour
         Interactable i = col.GetComponent<Interactable>();
         if (!i) return;
 
-        // ✅ Bloqueja moviment i inicia seqüència (tantes línies com tingui l'objecte)
+        // Bloqueja moviment i inicia seqüència (tantes línies com tingui l'objecte)
         if (dialogueUI != null)
         {
             if (playerController != null)

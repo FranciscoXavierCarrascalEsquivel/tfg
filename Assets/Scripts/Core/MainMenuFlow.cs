@@ -6,11 +6,11 @@ using UnityEngine.UI;
 public class MainMenuFlow : MonoBehaviour
 {
     [Header("UI Refs")]
-    [SerializeField] private Image blackOverlay;      // Image negra fullscreen
-    [SerializeField] private Image logoImage;         // logo (Image)
-    [SerializeField] private CanvasGroup menuGroup;   // CanvasGroup del MenuRoot
-    [SerializeField] private Button playButton;
-    [SerializeField] private Button quitButton;
+    [SerializeField] private Image blackOverlay;      // Imatge negra per fer fundits a negre.
+    [SerializeField] private Image logoImage;         // Imatge del logo que apareix al principi.
+    [SerializeField] private CanvasGroup menuGroup;   // Grup del menú per controlar la transparència i interacció.
+    [SerializeField] private Button playButton;      // Botó per començar a jugar.
+    [SerializeField] private Button quitButton;      // Botó per sortir del joc.
 
     [Header("Timings")]
     [SerializeField] private float waitBeforeLogo = 0.8f;     // X
@@ -29,7 +29,7 @@ public class MainMenuFlow : MonoBehaviour
     [SerializeField] private bool fadeOutMenuToo = false;
 
     [Header("Play")]
-    [SerializeField] private string playSceneName = "FirstTimeSequence";
+    [SerializeField] private string playSceneName = "FirstTimeSequence"; // Nom de l'escena que es carregarà en polsar jugar.
 
     [Header("Menu Music")]
     [SerializeField] private AudioSource musicSource;
@@ -129,6 +129,7 @@ public class MainMenuFlow : MonoBehaviour
 
         if (menuGroup != null)
         {
+            // Activem la interacció amb el menú un cop visible
             menuGroup.interactable = true;
             menuGroup.blocksRaycasts = true;
         }

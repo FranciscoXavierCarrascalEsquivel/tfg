@@ -17,7 +17,7 @@ public class Interactable : MonoBehaviour
     }
 
     [Header("Dialogue Lines (1 o més)")]
-    [SerializeField] private DialogueLine[] lines;
+    [SerializeField] private DialogueLine[] lines; // Línies de diàleg de l'objecte.
 
     // Compatibilitat amb el que ja tens (si tens escenes velles amb només description/portrait)
     [Header("Legacy (si no omples 'lines')")]
@@ -27,7 +27,7 @@ public class Interactable : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController portraitAnimator;
 
     /// <summary>
-    /// Retorna les línies. Si no n'hi ha, crea una línia legacy.
+    /// Retorna les línies de diàleg. Si no n'hi ha, fa servir les dades legacy.
     /// </summary>
     public DialogueLine[] Lines
     {

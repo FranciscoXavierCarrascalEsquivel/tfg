@@ -4,8 +4,8 @@ using UnityEngine.UI;
 
 public class ScreenFader : MonoBehaviour
 {
-    [SerializeField] private Image fadeImage;
-    [SerializeField] private float fadeDuration = 0.25f;
+    [SerializeField] private Image fadeImage;      // Referència a la imatge per fer el fons negre.
+    [SerializeField] private float fadeDuration = 0.25f; // Durada de la transició.
 
     private void Awake()
     {
@@ -21,6 +21,7 @@ public class ScreenFader : MonoBehaviour
     public IEnumerator FadeOutToBlack()
     {
         var player = FindObjectOfType<PlayerController2D>();
+        // Bloquegem el moviment del jugador mentre fem el mosc a negre
         if (player != null) player.LockMovement();
         yield return Fade(0f, 1f);
     }

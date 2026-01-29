@@ -6,17 +6,17 @@ using UnityEngine.UI;
 public class DialogueUI : MonoBehaviour
 {
     [Header("UI Refs")]
-    [SerializeField] private GameObject panel;          // DialoguePanel (la targeta)
-    [SerializeField] private TMP_Text dialogueText;     // TextMeshProUGUI del text
-    [SerializeField] private Image portraitImage;       // retrat (Image)
-    [SerializeField] private Animator portraitAnimator; // ✅ opcional: Animator per retrat animat
+    [SerializeField] private GameObject panel;          // El panell que conté tot el diàleg.
+    [SerializeField] private TMP_Text dialogueText;     // El component de text on s'escriu el contingut.
+    [SerializeField] private Image portraitImage;       // La imatge on es mostra el retrat del personatge.
+    [SerializeField] private Animator portraitAnimator; // Animator opcional si el retrat té animacions.
 
     [Header("Panel Animation")]
-    [SerializeField] private RectTransform panelRect;   // RectTransform del DialoguePanel
-    [SerializeField] private CanvasGroup panelGroup;    // CanvasGroup del DialoguePanel
-    [SerializeField] private float animDuration = 0.15f;
-    [SerializeField] private float slidePixels = 40f;
-    [SerializeField] private bool animateOnShow = true;
+    [SerializeField] private RectTransform panelRect;   // Referència al RectTransform per moure el panell.
+    [SerializeField] private CanvasGroup panelGroup;    // Per controlar l'opacitat del panell.
+    [SerializeField] private float animDuration = 0.15f; // Durada de l'animació d'entrada/sortida.
+    [SerializeField] private float slidePixels = 40f;    // Distància que es desplça el panell en l'animació.
+    [SerializeField] private bool animateOnShow = true;  // Si s'ha d'animar en aparèixer.
 
     [Header("Typewriter")]
     [SerializeField] private float charsPerSecond = 40f;
@@ -80,7 +80,7 @@ public class DialogueUI : MonoBehaviour
         seqIndex = 0;
         inSequence = true;
 
-        // mostra el panell només una vegada (animació d'entrada)
+        // Mostrem el panell i iniciem la primera línia amb animació d'entrada
         ShowInternal(sequence[0], playInAnim: true);
     }
 
@@ -161,6 +161,7 @@ public class DialogueUI : MonoBehaviour
 
         if (isTyping)
         {
+            // Si estem escrivint, tallem la rutina i mostrem tot el text de cop
             if (typingRoutine != null) StopCoroutine(typingRoutine);
             typingRoutine = null;
 

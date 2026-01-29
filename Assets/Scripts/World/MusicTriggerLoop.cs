@@ -4,7 +4,7 @@ using UnityEngine;
 public class TriggerMusicLoopSection2D : MonoBehaviour
 {
     [Header("Music")]
-    [SerializeField] private AudioClip clip;
+    [SerializeField] private AudioClip clip; // Clip d'audio que sonarà.
 
     [Tooltip("Segons on comença el bucle (reubicació)")]
     [SerializeField] private float loopStartTime = 12.0f;
@@ -16,13 +16,13 @@ public class TriggerMusicLoopSection2D : MonoBehaviour
     [SerializeField] private float overlapTime = 0.0f;
 
     [Header("Options")]
-    [SerializeField] private bool startFromBeginning = true; // si false, comença directament al loopStart
-    [SerializeField] private bool triggerOnlyOnce = true;
+    [SerializeField] private bool startFromBeginning = true; // Si és fals, comença directament al punt de loop.
+    [SerializeField] private bool triggerOnlyOnce = true;    // Si només s'ha de disparar un cop.
 
-    private AudioSource srcA;   // actiu
-    private AudioSource srcB;   // secundari per solapar
-    private AudioSource active; // referència a quin és l'actiu ara
-    private AudioSource next;   // el que s'encendrà abans d'acabar el cicle
+    private AudioSource srcA;   // Font d'audio activa.
+    private AudioSource srcB;   // Font d'audio secundària per fer el solapament.
+    private AudioSource active; // Referència a la font que sona actualment.
+    private AudioSource next;   // Referència a la font que sonarà després.
 
     private bool activeFlag;
     private bool used;
@@ -105,10 +105,10 @@ public class TriggerMusicLoopSection2D : MonoBehaviour
             }
         }
 
-        // 2) Quan l'actiu arriba a loopEnd, l'aturem i fem swap
+        // 2) Quan l'actiu arriba al final del loop, l'aturem i fem el canvi
         if (t >= loopEndSamples)
         {
-            // parem el cicle actual (ja hi ha el següent sonant si overlapSamples>0)
+            // Aturem el cicle actual (el següent ja sonarà si hi ha overlap)
             active.Stop();
 
             // si NO hi havia overlap, iniciem el següent aquí mateix

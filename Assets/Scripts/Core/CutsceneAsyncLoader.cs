@@ -9,6 +9,7 @@ public class CutsceneAsyncLoader : MonoBehaviour
 
     void Start()
     {
+        // Iniciem la precàrrega de la següent escena
         StartCoroutine(Preload());
     }
 
@@ -22,6 +23,7 @@ public class CutsceneAsyncLoader : MonoBehaviour
     // Llama a esto al terminar la cinemática
     public void FinishCutscene()
     {
-        op.allowSceneActivation = true; // ahora sí cambia de escena
+        // Activem l'escena que hem estat precarregant
+        op.allowSceneActivation = true; 
     }
 }

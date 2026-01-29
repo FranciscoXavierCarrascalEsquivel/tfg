@@ -7,12 +7,12 @@ using TMPro;
 public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Refs")]
-    [SerializeField] private Image buttonImage;   // opcional
-    [SerializeField] private TMP_Text buttonText; // recomanat
+    [SerializeField] private Image buttonImage;   // Referència opcional a la imatge del botó.
+    [SerializeField] private TMP_Text buttonText; // Referència al text del botó (recomanat per fer l'efecte de glow).
 
     [Header("Scale")]
-    [SerializeField] private float hoverScale = 1.03f;
-    [SerializeField] private float smoothTime = 0.12f;
+    [SerializeField] private float hoverScale = 1.03f; // Escala que tindrà el botó quan hi passem per sobre.
+    [SerializeField] private float smoothTime = 0.12f; // Temps que triga en fer la transició d'escala.
 
     [Header("Glow (real) - Outline TMP")]
     [SerializeField] private bool glowText = true;
@@ -101,7 +101,7 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
             SetGlowColor(glowColor);
         }
 
-        // Pulse suau del glow mentre estàs a sobre
+        // Pulse suau del glow mentre l'usuari té el ratolí a sobre
         if (toHover && pulse && buttonText != null)
         {
             while (hovering)

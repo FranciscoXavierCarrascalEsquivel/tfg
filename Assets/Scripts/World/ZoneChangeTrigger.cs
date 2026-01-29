@@ -3,17 +3,17 @@ using UnityEngine;
 
 public class ZoneChangeTrigger : MonoBehaviour
 {
-    [SerializeField] private Transform targetSpawn;     // on va el jugador
-    [SerializeField] private Transform cameraTarget;    // on va la càmera (referència antiga, potser ja no cal si usem limits)
+    [SerializeField] private Transform targetSpawn;     // Punt on apareix el jugador a la nova zona.
+    [SerializeField] private Transform cameraTarget;    // Referència antiga per la càmera (fallback).
     
     [Header("New Zone Limits")]
-    [SerializeField] private Transform targetLimitTop;
-    [SerializeField] private Transform targetLimitBottom;
-    [SerializeField] private Transform targetLimitLeft;
-    [SerializeField] private Transform targetLimitRight;
+    [SerializeField] private Transform targetLimitTop;    // Limit superior de la càmera.
+    [SerializeField] private Transform targetLimitBottom; // Limit inferior de la càmera.
+    [SerializeField] private Transform targetLimitLeft;   // Limit esquerre de la càmera.
+    [SerializeField] private Transform targetLimitRight;  // Limit dret de la càmera.
 
-    [SerializeField] private Camera cam;                // si no l’assignes, agafa Camera.main
-    [SerializeField] private ScreenFader fader;
+    [SerializeField] private Camera cam;                // Càmera que s'actualitzarà (per defecte Camera.main).
+    [SerializeField] private ScreenFader fader;         // Script per fer l'efecte de fos a negre.
 
     private bool busy;
 
@@ -27,6 +27,7 @@ public class ZoneChangeTrigger : MonoBehaviour
         if (busy) return;
         if (!other.CompareTag("Player")) return;
 
+        // Si el jugador entra, iniciem la transició de zona
         StartCoroutine(DoTransition(other.transform));
     }
 
@@ -36,10 +37,10 @@ public class ZoneChangeTrigger : MonoBehaviour
 
         if (fader != null) yield return fader.FadeOutToBlack();
 
-        // Mou jugador
+        // Movem el jugador a la nova posició
         player.position = targetSpawn.position;
 
-        // Actualitza límits càmera
+        // Actualitzem els límits de la càmera per a la nova zona
         var camFollow = cam.GetComponent<CameraBoundedFollow>();
         if (camFollow != null)
         {

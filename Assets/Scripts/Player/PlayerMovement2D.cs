@@ -18,8 +18,11 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void Update() // Update es crida cada frame
     {
-        input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));  // Obtenim la entrada del jugador
-        if (input.sqrMagnitude > 1f) input = input.normalized; // Normalitzem la entrada
+        // Llegim l'input de l'usuari (eixos horitzontal i vertical)
+        input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")); 
+        
+        // Normalitzem el vector per evitar que es mogui més ràpid en diagonal
+        if (input.sqrMagnitude > 1f) input = input.normalized; 
     }
 
     private void FixedUpdate() // FixedUpdate es crida cada fixedDeltaTime
