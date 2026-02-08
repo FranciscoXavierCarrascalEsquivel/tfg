@@ -14,6 +14,10 @@ public class ZoneChangeTrigger : MonoBehaviour
 
     [SerializeField] private Camera cam;                // Càmera que s'actualitzarà (per defecte Camera.main).
     [SerializeField] private ScreenFader fader;         // Script per fer l'efecte de fos a negre.
+    
+    [Header("Music")]
+    [Tooltip("Música de l'escena que es pararà quan s'entri al trigger (opcional)")]
+    [SerializeField] private SceneMusic sceneMusic;     // Referència a la música de l'escena.
 
     private bool busy;
 
@@ -34,6 +38,12 @@ public class ZoneChangeTrigger : MonoBehaviour
     private IEnumerator DoTransition(Transform player)
     {
         busy = true;
+
+        // Parem la música de l'escena si hi ha una referència
+        if (sceneMusic != null)
+        {
+            sceneMusic.StopMusic();
+        }
 
         if (fader != null) yield return fader.FadeOutToBlack();
 
