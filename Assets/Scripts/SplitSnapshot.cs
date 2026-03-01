@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,12 +10,18 @@ public class SplitSnapshot : MonoBehaviour
     [SerializeField] private RawImage right;
 
     [Header("Animation")]
-    [SerializeField] private float offscreen = 2500f; // prou gran per qualsevol resolució
+    [SerializeField] private float offscreen = 2500f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip shatterSound;
 
     private Texture2D snapshot;
+    private Texture2D leftTex;
+    private Texture2D rightTex;
 
-    // Guardem amplada de cada meitat per fer clamp (evitar buits)
     private float halfWidthPx;
+
+    private Vector2 splitNormal; 
 
     // =========================
     // PUBLIC API
@@ -24,94 +31,215 @@ public class SplitSnapshot : MonoBehaviour
     {
         snapshot = tex;
 
-        left.texture = snapshot;
-        right.texture = snapshot;
+        int width = tex.width;
+        int height = tex.height;
 
-        // Cada meitat mostra mitja textura
-        left.uvRect  = new Rect(0f, 0f, 0.5f, 1f);
-        right.uvRect = new Rect(0.5f, 0f, 0.5f, 1f);
+        leftTex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        rightTex = new Texture2D(width, height, TextureFormat.RGBA32, false);
 
-        // Posició inicial
+        Color32[] pixels = tex.GetPixels32();
+        Color32[] leftPixels = new Color32[pixels.Length];
+        Color32[] rightPixels = new Color32[pixels.Length];
+        Color32 clear = new Color32(0, 0, 0, 0);
+        Color32 blackBorder = new Color32(0, 0, 0, 255);
+
+        // --- Generació de la Línia Fragmentada Diagonal ---
+        float bottomX = width * 0.2f;
+        float topX = width * 0.8f;
+        
+        Vector2 dir = new Vector2(topX - bottomX, height).normalized;
+        splitNormal = new Vector2(-dir.y, dir.x); // Perpendicular
+
+        List<Vector2> crackPoints = new List<Vector2>();
+        crackPoints.Add(new Vector2(bottomX, 0)); 
+
+        float currentY = 0;
+        while (currentY < height)
+        {
+            float stepY = Random.Range(height * 0.02f, height * 0.12f);
+            currentY += stepY;
+
+            if (currentY >= height)
+            {
+                crackPoints.Add(new Vector2(topX, height)); 
+                break;
+            }
+
+            float lerpT = currentY / (float)height;
+            float baseX = Mathf.Lerp(bottomX, topX, lerpT);
+
+            float xOffset = Random.Range(-width * 0.15f, width * 0.15f);
+            
+            crackPoints.Add(new Vector2(baseX + xOffset, currentY));
+        }
+
+        // --- Tallar els píxels ---
+        int currentSegment = 0;
+        int borderThickness = (int)(Screen.width * 0.005f); // gruix base per la dispersió
+        if (borderThickness < 2) borderThickness = 2;
+        
+        // Defineix el tamany del pixel simulat (ex. 6x6 píxels reals per cada "píxel gros")
+        int retroPixelSize = 6; 
+
+        for (int y = 0; y < height; y++)
+        {
+            while (currentSegment < crackPoints.Count - 2 && crackPoints[currentSegment + 1].y < y)
+            {
+                currentSegment++;
+            }
+
+            Vector2 p1 = crackPoints[currentSegment];
+            Vector2 p2 = crackPoints[currentSegment + 1];
+
+            float t = (y - p1.y) / (p2.y - p1.y);
+            int splitX = (int)Mathf.Lerp(p1.x, p2.x, t);
+
+            int startRow = y * width;
+            for (int x = 0; x < width; x++)
+            {
+                int index = startRow + x;
+                
+                float dist = Mathf.Abs(x - splitX);
+                bool isBorder = false;
+                
+                // Línia central sòlida
+                if (dist < 1) 
+                {
+                    isBorder = true;
+                }
+                else if (dist <= borderThickness * 3.5f)
+                {
+                    // Agrupem per "blocs" perquè els píxels espargits es vegin molts grans
+                    // Fem servir soroll Perlin fixe basat en els blocs
+                    float blockX = Mathf.Floor(x / (float)retroPixelSize);
+                    float blockY = Mathf.Floor(y / (float)retroPixelSize);
+                    
+                    // Valors de gradient ràpids per simular 'Random' però lligats al bloc
+                    float noiseVal = Mathf.PerlinNoise(blockX * 0.6f, blockY * 0.6f);
+
+                    // Probabilitat segons distància
+                    float chance = 1f - (dist / (borderThickness * 3.5f));
+                    chance *= 0.65f; 
+                    
+                    if (noiseVal < chance)
+                    {
+                        isBorder = true;
+                    }
+                }
+
+                if (x <= splitX)
+                {
+                    leftPixels[index] = isBorder ? blackBorder : pixels[index];
+                    rightPixels[index] = clear;
+                }
+                else
+                {
+                    leftPixels[index] = clear;
+                    rightPixels[index] = isBorder ? blackBorder : pixels[index];
+                }
+            }
+        }
+
+        leftTex.SetPixels32(leftPixels);
+        leftTex.Apply(false);
+        rightTex.SetPixels32(rightPixels);
+        rightTex.Apply(false);
+
+        left.texture = leftTex;
+        right.texture = rightTex;
+
+        left.uvRect = new Rect(0f, 0f, 1f, 1f);
+        right.uvRect = new Rect(0f, 0f, 1f, 1f);
+
         var lrt = (RectTransform)left.transform;
         var rrt = (RectTransform)right.transform;
+
+        lrt.anchorMin = Vector2.zero;
+        lrt.anchorMax = Vector2.one;
+        lrt.offsetMin = Vector2.zero;
+        lrt.offsetMax = Vector2.zero;
+
+        rrt.anchorMin = Vector2.zero;
+        rrt.anchorMax = Vector2.one;
+        rrt.offsetMin = Vector2.zero;
+        rrt.offsetMax = Vector2.zero;
+
         lrt.anchoredPosition = Vector2.zero;
         rrt.anchoredPosition = Vector2.zero;
 
-        // Amplada en píxels de cada meitat a pantalla (per clamp)
-        halfWidthPx = lrt.rect.width; // hauria de ser Screen.width/2 si anchors estan bé
-        if (halfWidthPx <= 0f) halfWidthPx = Screen.width * 0.5f; // fallback
+        halfWidthPx = lrt.rect.width / 2f; 
+        if (halfWidthPx <= 0f) halfWidthPx = Screen.width * 0.5f;
     }
 
     public IEnumerator PlayOpen()
     {
+        if (shatterSound != null)
+        {
+            var audioGo = new GameObject("ShatterSound");
+            var src = audioGo.AddComponent<AudioSource>();
+            src.clip = shatterSound;
+            src.spatialBlend = 0f;
+            src.Play();
+            Destroy(audioGo, shatterSound.length + 0.1f);
+        }
+
         var lrt = (RectTransform)left.transform;
         var rrt = (RectTransform)right.transform;
 
-        // Posicions base
         Vector2 lBase = Vector2.zero;
         Vector2 rBase = Vector2.zero;
 
-        // ===== CONFIG =====
-        float preOpenDistance = 120f;  // obertura inicial forta
-        float preOpenTime = 0.36f;     // velocitat del primer cop
-        float holdTime = 0.75f;        // temps de resistència
-        float snapTime = 0.8f;         // obertura final
+        // ANIM CONFIG
+        float preOpenDistance = 25f;   
+        float preOpenTime = 0.15f;     
+        float holdTime = 0.6f;         
+        float snapTime = 0.8f;         
 
-        float shakeStrength = 10f;     // força del tembleque
-        float shakeSpeed = 20f;        // velocitat del tembleque
+        float shakeStrength = 15f;     
+        float shakeSpeed = 30f;        
 
-        // Destins
-        Vector2 lPre   = new Vector2(-preOpenDistance, 0);
-        Vector2 rPre   = new Vector2( preOpenDistance, 0);
+        Vector2 splitHorizontal = new Vector2(1f, 0f);
 
-        Vector2 lFinal = new Vector2(-offscreen, 0);
-        Vector2 rFinal = new Vector2( offscreen, 0);
+        Vector2 lPre   = -splitHorizontal * preOpenDistance;
+        Vector2 rPre   = splitHorizontal * preOpenDistance;
 
-        // Límit de shake per no crear “gaps”:
-        // - A la fase pre/hold, la pantalla ja està oberta "preOpenDistance".
-        // - Si shakeX supera aquesta obertura, al centre pot aparèixer un buit.
-        // → clamp a una fracció segura de preOpenDistance.
-        float maxSafeShakeX = Mathf.Max(0f, preOpenDistance * 0.45f); // 45% és segur
-        // També evitem que el shake sigui tan gran que arrossegui mitja textura fora.
-        maxSafeShakeX = Mathf.Min(maxSafeShakeX, halfWidthPx * 0.25f); // extra seguretat
+        Vector2 lFinal = -splitHorizontal * offscreen;
+        Vector2 rFinal = splitHorizontal * offscreen;
 
-        // =========================
-        // 1) COP INICIAL (ANTICIPATION)
-        // =========================
+        float maxSafeShakeX = Mathf.Max(0f, preOpenDistance * 1.5f); 
+        maxSafeShakeX = Mathf.Min(maxSafeShakeX, halfWidthPx * 0.35f); 
+
+        // 1) COP INICIAL
         float t = 0f;
         while (t < preOpenTime)
         {
             float a = EaseOutCubic(t / preOpenTime);
 
-            float shakeX = GetShakeX(Time.unscaledTime, shakeStrength, shakeSpeed, maxSafeShakeX);
-            Vector2 shake = new Vector2(shakeX, 0f);
+            float shakeM = GetShakeX(Time.unscaledTime, shakeStrength, shakeSpeed, maxSafeShakeX);
+            Vector2 shake = splitHorizontal * shakeM;
 
             lrt.anchoredPosition = Vector2.LerpUnclamped(lBase, lPre, a) + shake;
-            rrt.anchoredPosition = Vector2.LerpUnclamped(rBase, rPre, a) + shake;
+            rrt.anchoredPosition = Vector2.LerpUnclamped(rBase, rPre, a) - shake;
 
             t += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // =========================
-        // 2) HOLD + TEMBLEQUE (FORÇA)
-        // =========================
+        // 2) TENSİÓ
         float holdT = 0f;
         while (holdT < holdTime)
         {
-            float shakeX = GetShakeX(Time.unscaledTime, shakeStrength * 1.25f, shakeSpeed, maxSafeShakeX);
-            Vector2 shake = new Vector2(shakeX, 0f);
+            float shakeM = GetShakeX(Time.unscaledTime, shakeStrength * 1.5f, shakeSpeed, maxSafeShakeX);
+            Vector2 shake = splitHorizontal * shakeM;
 
             lrt.anchoredPosition = lPre + shake;
-            rrt.anchoredPosition = rPre + shake;
+            rrt.anchoredPosition = rPre - shake;
 
             holdT += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // =========================
-        // 3) SNAP OPEN (EXPLOSIÓ)
-        // =========================
+        // 3) SNAP
         t = 0f;
         while (t < snapTime)
         {
@@ -131,10 +259,6 @@ public class SplitSnapshot : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // =========================
-    // HELPERS
-    // =========================
-
     private static float EaseOutCubic(float x)
     {
         x = Mathf.Clamp01(x);
@@ -148,7 +272,6 @@ public class SplitSnapshot : MonoBehaviour
         return x * x * x;
     }
 
-    // Tremolor NOMÉS en X i amb clamp per evitar buits
     private static float GetShakeX(float time, float strength, float speed, float maxAbs)
     {
         float sx = (Mathf.PerlinNoise(time * speed, 0.123f) - 0.5f) * 2f;
@@ -163,6 +286,16 @@ public class SplitSnapshot : MonoBehaviour
         {
             Destroy(snapshot);
             snapshot = null;
+        }
+        if (leftTex != null)
+        {
+            Destroy(leftTex);
+            leftTex = null;
+        }
+        if (rightTex != null)
+        {
+            Destroy(rightTex);
+            rightTex = null;
         }
     }
 }

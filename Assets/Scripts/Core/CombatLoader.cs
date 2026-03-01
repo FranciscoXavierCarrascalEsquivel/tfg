@@ -17,13 +17,30 @@ public class CombatLoader : MonoBehaviour
         StartCoroutine(StartCombatRoutine(encounter));
     }
 
+    private void LockPlayer(bool isLocked)
+    {
+        var player = FindFirstObjectByType<PlayerController2D>();
+        if (player != null)
+        {
+            if (isLocked) player.LockMovement();
+            else player.UnlockMovement();
+        }
+    }
+
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
         // 1) Captura el frame actual (món) al final del frame
         yield return new WaitForEndOfFrame();
 
-        // Captura manual (fiable)
-        var snapshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+        // Lock player physically and logically so they do not move behind scenes
+        LockPlayer(true);
+
+        // Fade TestZone music if present
+        var music = FindFirstObjectByType<SceneMusic>();
+        if (music != null) StartCoroutine(music.FadeOutAndPause(0.5f));
+
+        // Captura manual (fiable). Format RGBA32 permetrà retallar en zigzag amb Alpha
+        var snapshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGBA32, false);
         snapshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
         snapshot.Apply();
 
@@ -74,6 +91,12 @@ public class CombatLoader : MonoBehaviour
         while (!op.isDone) yield return null;
 
         foreach (var s in worldScriptsToDisable) if (s) s.enabled = true;
+        
+        LockPlayer(false);
+
+        // Resume TestZone music
+        var music = FindFirstObjectByType<SceneMusic>();
+        if (music != null) StartCoroutine(music.FadeInAndResume(1f));
     }
 }
 

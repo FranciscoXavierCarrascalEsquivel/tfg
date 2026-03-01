@@ -118,8 +118,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplitSnapshot
   left: {fileID: 2866530530452348800}
   right: {fileID: 4820181503854533016}
-  duration: 0.45
   offscreen: 2500
+  shatterSound: {fileID: 8300000, guid: 3d93922608a36204d83d1d22430474fd, type: 3}
 --- !u!1 &1979483723815186546
 GameObject:
   m_ObjectHideFlags: 0

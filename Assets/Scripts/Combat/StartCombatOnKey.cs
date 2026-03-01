@@ -8,7 +8,7 @@ public class StartCombatOnKey : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.P))
         {
             loader.StartCombat(new CombatEncounter
             {

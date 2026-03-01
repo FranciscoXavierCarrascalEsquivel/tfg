@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -66,6 +67,37 @@ public class SceneMusic : MonoBehaviour
     public void SetVolume(float newVolume)
     {
         volume = Mathf.Clamp01(newVolume);
+        audioSource.volume = volume;
+    }
+
+    public IEnumerator FadeOutAndPause(float duration)
+    {
+        float startVol = audioSource.volume;
+        float time = 0;
+        
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(startVol, 0f, time / duration);
+            yield return null;
+        }
+
+        audioSource.volume = 0f;
+        audioSource.Pause();
+    }
+
+    public IEnumerator FadeInAndResume(float duration)
+    {
+        audioSource.UnPause();
+        float time = 0;
+        
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(0f, volume, time / duration);
+            yield return null;
+        }
+
         audioSource.volume = volume;
     }
 
