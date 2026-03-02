@@ -25,6 +25,7 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private Button reasonButton;
     [SerializeField] private Button defendButton;
     [SerializeField] private Button itemButton;
+    [SerializeField] private DiceRollUI dicePrefab;
 
     private Button[] mainButtons;
     private int selectedIndex = 0;
@@ -37,7 +38,7 @@ public class CombatManager : MonoBehaviour
     
     [Header("Stats")]
     public int playerMaxHP = 100;
-    public int enemyMaxHP = 100;
+    public int enemyMaxHP = 15;
     private int playerCurrentHP;
     private int enemyCurrentHP;
 
@@ -45,7 +46,57 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text playerHPText;
     [SerializeField] private TMPro.TMP_Text enemyHPText;
 
+    [Header("Audio Feedback")]
+    [SerializeField] private AudioClip moveMenuSound;
+    [SerializeField] private AudioClip takeDamageSound;
+    [SerializeField] private AudioClip parrySound;
+    [SerializeField] private AudioClip playerMoveSound;
+    private AudioSource audioSource;
+    private AudioSource loopAudioSource;
+
+    [Header("VFX & Limits")]
+    [SerializeField] private GameObject parryParticlePrefab;
+    [SerializeField] private RectTransform projectileDestroyLimit;
+
     private HandController[] handControllers;
+
+    // Default positions used for Entrance Animations
+    private Vector2 turnMenuOriginalPos;
+    private Vector2 playerHPOriginalPos;
+    private Vector2 enemyHPOriginalPos;
+
+    private void Awake()
+    {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+
+        loopAudioSource = gameObject.AddComponent<AudioSource>();
+        loopAudioSource.playOnAwake = false;
+        loopAudioSource.loop = true;
+        loopAudioSource.spatialBlend = 0f;
+
+        if (turnMenu != null) 
+        {
+            var rt = turnMenu.GetComponent<RectTransform>();
+            turnMenuOriginalPos = rt.anchoredPosition;
+            rt.anchoredPosition = turnMenuOriginalPos + new Vector2(0, -500f);
+        }
+        
+        if (playerHPText != null) 
+        {
+            var rt = playerHPText.GetComponent<RectTransform>();
+            playerHPOriginalPos = rt.anchoredPosition;
+            rt.anchoredPosition = playerHPOriginalPos + new Vector2(0, 300f);
+        }
+        
+        if (enemyHPText != null) 
+        {
+            var rt = enemyHPText.GetComponent<RectTransform>();
+            enemyHPOriginalPos = rt.anchoredPosition;
+            rt.anchoredPosition = enemyHPOriginalPos + new Vector2(0, 300f);
+        }
+    }
 
     public void Begin(CombatEncounter encounter, CombatLoader loader)
     {
@@ -64,10 +115,7 @@ public class CombatManager : MonoBehaviour
             if (string.IsNullOrEmpty(originalFightText)) originalFightText = "FIGHT";
         }
 
-        foreach (var btn in mainButtons)
-        {
-            if (btn != null) DisableMouseInteraction(btn);
-        }
+        SetupButtonInteractions();
 
         // Find and disable hands initially
         handControllers = FindObjectsByType<HandController>(FindObjectsSortMode.None);
@@ -76,10 +124,67 @@ public class CombatManager : MonoBehaviour
         state = State.PlayerTurn;
         SetMenuPhase(MenuPhase.Main);
         ShowTurnMenu(true);
+
+        // Dispara les animacions d'entrada tipus Slide UI
+        if (turnMenu != null) StartCoroutine(SlideInRect(turnMenu.GetComponent<RectTransform>(), turnMenuOriginalPos, new Vector2(0, -500f), 0.7f));
+        if (playerHPText != null) StartCoroutine(SlideInRect(playerHPText.GetComponent<RectTransform>(), playerHPOriginalPos, new Vector2(0, 300f), 0.7f));
+        if (enemyHPText != null) StartCoroutine(SlideInRect(enemyHPText.GetComponent<RectTransform>(), enemyHPOriginalPos, new Vector2(0, 300f), 0.7f));
+    }
+
+    private IEnumerator SlideInRect(RectTransform rect, Vector2 targetPos, Vector2 startOffset, float duration)
+    {
+        if (rect == null) yield break;
+        
+        Vector2 startPos = targetPos + startOffset;
+        rect.anchoredPosition = startPos;
+        
+        float time = 0;
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float t = time / duration;
+            // Cubic Ease Out per un moviment suau i polit cap al final
+            float easeT = 1f - Mathf.Pow(1f - t, 3f);
+            rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, easeT);
+            yield return null;
+        }
+        
+        rect.anchoredPosition = targetPos;
     }
 
     private void Update()
     {
+        // --- Handle Player Movement Sound looping centrally ---
+        bool anyHandMoving = false;
+        if (handControllers != null)
+        {
+            foreach (var h in handControllers)
+            {
+                if (h != null && h.IsMoving)
+                {
+                    anyHandMoving = true;
+                    break;
+                }
+            }
+        }
+
+        if (anyHandMoving && playerMoveSound)
+        {
+            if (!loopAudioSource.isPlaying)
+            {
+                loopAudioSource.clip = playerMoveSound;
+                loopAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (loopAudioSource != null && loopAudioSource.isPlaying)
+            {
+                loopAudioSource.Stop();
+            }
+        }
+
+        // --- Handle UI Input ---
         if (state != State.PlayerTurn) return;
 
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
@@ -115,6 +220,7 @@ public class CombatManager : MonoBehaviour
         if (selectedIndex < 0) selectedIndex = maxOptions - 1;
         if (selectedIndex >= maxOptions) selectedIndex = 0;
         
+        if (moveMenuSound) audioSource.PlayOneShot(moveMenuSound);
         UpdateSelectionVisuals();
     }
 
@@ -136,17 +242,16 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private void DisableMouseInteraction(Button btn)
+    private void SetupButtonInteractions()
     {
-        btn.onClick.RemoveAllListeners();
-        Navigation nav = btn.navigation;
-        nav.mode = Navigation.Mode.None;
-        btn.navigation = nav;
-
-        Graphic[] graphics = btn.GetComponentsInChildren<Graphic>();
-        foreach (var g in graphics)
+        for (int i = 0; i < mainButtons.Length; i++)
         {
-            g.raycastTarget = false;
+            Button btn = mainButtons[i];
+            if (btn != null)
+            {
+                // Disable all mouse interaction
+                btn.interactable = false;
+            }
         }
     }
 
@@ -232,12 +337,40 @@ public class CombatManager : MonoBehaviour
         if (playerCurrentHP < 0) playerCurrentHP = 0;
         UpdateStatsUI();
 
+        if (takeDamageSound) audioSource.PlayOneShot(takeDamageSound);
+
         if (playerCurrentHP == 0)
         {
             state = State.End;
             Debug.Log("PLAYER DIED");
             loader.EndCombat();
         }
+    }
+
+    public void PlayParrySound()
+    {
+        if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
+    }
+
+    public void SpawnParryEffect(Vector3 position, Sprite projectileSprite = null)
+    {
+        if (parryParticlePrefab)
+        {
+            var effect = Instantiate(parryParticlePrefab, position, Quaternion.identity, transform);
+            
+            if (projectileSprite != null)
+            {
+                var img = effect.GetComponent<UnityEngine.UI.Image>();
+                if (img) img.sprite = projectileSprite;
+            }
+
+            Destroy(effect, 2f); // Auto-cleanup fallback
+        }
+    }
+
+    public float GetDestroyLimitY()
+    {
+        return projectileDestroyLimit != null ? projectileDestroyLimit.anchoredPosition.y : -1200f;
     }
 
     // =========================
@@ -248,9 +381,29 @@ public class CombatManager : MonoBehaviour
     {
         state = State.Resolve; 
         
-        int dmg = Random.Range(1, 11); // 1 to 10
-        Debug.Log($"FIGHT! Dealt {dmg} damage.");
+        int dmg = Random.Range(1, 7); // 1 to 6
         
+        if (fightButton != null) SetButtonText(fightButton, "Rolling...");
+
+        // If defined, run the visual 2D juice simulation
+        if (dicePrefab != null && turnMenu != null)
+        {
+            DiceRollUI dice = Instantiate(dicePrefab, turnMenu.transform.parent);
+            dice.gameObject.SetActive(true); // Assegurem que el Prefab estigui encés
+            dice.transform.SetAsLastSibling(); // El posem per davant de tot al Canvas
+            
+            RectTransform rt = dice.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                rt.anchoredPosition = new Vector2(0, 150); // Més amunt dels botons
+                rt.localScale = Vector3.one;
+            }
+
+            yield return dice.RollRoutine(dmg);
+            Destroy(dice.gameObject, 1.5f); // Cleanup dice after user sees the final number
+        }
+
+        Debug.Log($"FIGHT! Dealt {dmg} damage.");
         if (fightButton != null) SetButtonText(fightButton, $"Dealt {dmg} damage!");
 
         enemyCurrentHP -= dmg;
@@ -329,7 +482,20 @@ public class CombatManager : MonoBehaviour
         var spawner = FindFirstObjectByType<EnemyAttackSpawner>();
         if (spawner != null)
         {
-             yield return spawner.Run(dur);
+            EnemyAttackPattern chosenPattern = EnemyAttackPattern.RandomDrop;
+            
+            if (encounter != null && encounter.attackPatterns != null && encounter.attackPatterns.Length > 0)
+            {
+                int r = Random.Range(0, encounter.attackPatterns.Length);
+                chosenPattern = encounter.attackPatterns[r];
+            }
+
+            // We assume EnemyAttackSpawner Configure signature is: Configure(GameObject prefab, EnemyAttackPattern pattern)
+            spawner.Configure(encounter != null ? encounter.projectilePrefab : null, chosenPattern);
+            yield return spawner.Run(dur);
+
+            // Wait until all projectiles have finished traveling and are destroyed
+            yield return new WaitUntil(() => ProjectileUI.activeProjectiles <= 0);
         }
         else
         {

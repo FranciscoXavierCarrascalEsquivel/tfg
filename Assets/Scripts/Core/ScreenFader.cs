@@ -20,7 +20,7 @@ public class ScreenFader : MonoBehaviour
 
     public IEnumerator FadeOutToBlack()
     {
-        var player = FindObjectOfType<PlayerController2D>();
+        var player = FindFirstObjectByType<PlayerController2D>();
         // Bloquegem el moviment del jugador mentre fem el mosc a negre
         if (player != null) player.LockMovement();
         yield return Fade(0f, 1f);
@@ -28,7 +28,7 @@ public class ScreenFader : MonoBehaviour
 
     public IEnumerator FadeInFromBlack()
     {
-        var player = FindObjectOfType<PlayerController2D>();
+        var player = FindFirstObjectByType<PlayerController2D>();
         if (player != null) player.UnlockMovement();
         yield return Fade(1f, 0f);
     }

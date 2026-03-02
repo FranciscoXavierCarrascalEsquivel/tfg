@@ -24,6 +24,8 @@ public class HandController : MonoBehaviour
     // Controlled by CombatManager
     public bool canMove = false; 
 
+    public bool IsMoving { get; private set; }
+
     private RectTransform rt;
 
     private void Awake()
@@ -33,7 +35,11 @@ public class HandController : MonoBehaviour
 
     private void Update()
     {
-        if (!canMove) return;
+        if (!canMove) 
+        {
+            IsMoving = false;
+            return;
+        }
 
         float h = 0f;
         float v = 0f;
@@ -55,6 +61,8 @@ public class HandController : MonoBehaviour
         
         Vector2 input = new Vector2(h, v).normalized;
         transform.position += (Vector3)(input * speed * Time.deltaTime);
+
+        IsMoving = input.sqrMagnitude > 0.01f;
 
         Vector3 pos = transform.position;
 
