@@ -171,6 +171,8 @@ public class SplitSnapshot : MonoBehaviour
         if (halfWidthPx <= 0f) halfWidthPx = Screen.width * 0.5f;
     }
 
+    public bool keepAlive = false;
+
     public IEnumerator PlayOpen()
     {
         if (shatterSound != null)
@@ -255,6 +257,54 @@ public class SplitSnapshot : MonoBehaviour
         lrt.anchoredPosition = lFinal;
         rrt.anchoredPosition = rFinal;
 
+        if (!keepAlive)
+        {
+            Cleanup();
+            Destroy(gameObject);
+        }
+    }
+
+    public IEnumerator PlayClose()
+    {
+        var lrt = (RectTransform)left.transform;
+        var rrt = (RectTransform)right.transform;
+
+        Vector2 splitHorizontal = new Vector2(1f, 0f);
+        Vector2 lFinal = -splitHorizontal * offscreen;
+        Vector2 rFinal = splitHorizontal * offscreen;
+        Vector2 lTarget = Vector2.zero;
+        Vector2 rTarget = Vector2.zero;
+
+        // ANIM CONFIG TANCAMENT: Ara és bastant més lent (1.5 segons en comptes de 0.5)
+        float snapTime = 1.5f;
+
+        // Fes sonar el vidre JUST al començar l'animació de tornar a unir-se
+        if (shatterSound != null)
+        {
+            var audioGo = new GameObject("ShatterSound");
+            var src = audioGo.AddComponent<AudioSource>();
+            src.clip = shatterSound;
+            src.pitch = 0.6f; // Un so més greu per tancar
+            src.spatialBlend = 0f;
+            src.Play();
+            Destroy(audioGo, shatterSound.length + 0.1f);
+        }
+
+        float t = 0f;
+        while (t < snapTime)
+        {
+            // Entra a poc a poc i s'agafa al mig amb suavitat
+            float a = EaseOutCubic(t / snapTime);
+            lrt.anchoredPosition = Vector2.LerpUnclamped(lFinal, lTarget, a);
+            rrt.anchoredPosition = Vector2.LerpUnclamped(rFinal, rTarget, a);
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        lrt.anchoredPosition = lTarget;
+        rrt.anchoredPosition = rTarget;
+
+        yield return new WaitForSecondsRealtime(0.5f); // Pausa més llarga abans de desactivar-se per donar temps a veure's sencer
+        
         Cleanup();
         Destroy(gameObject);
     }

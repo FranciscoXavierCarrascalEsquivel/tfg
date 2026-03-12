@@ -40,6 +40,8 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
+    private SplitSnapshot activeOverlay;
+
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
         // 1) Captura el frame actual (món) al final del frame
@@ -68,6 +70,8 @@ public class CombatLoader : MonoBehaviour
         // 2) Instancia l'overlay i posa el snapshot
         var overlay = Instantiate(splitOverlayPrefab);
         overlay.SetSnapshot(snapshot);
+        overlay.keepAlive = true; // IMPORTANT perquè no s'autodestrueixi al final de PlayOpen!
+        activeOverlay = overlay;
 
         // Assegura que el canvas va davant
         var c = overlay.GetComponent<Canvas>();
@@ -121,6 +125,14 @@ public class CombatLoader : MonoBehaviour
         if (combatAudioSource != null && combatAudioSource.isPlaying)
         {
             StartCoroutine(FadeCombatMusic(false, 1f));
+        }
+
+        // REVERSE OVERLAY: fa que els trossos de la pantalla del món tornin a ajuntarse 
+        // tapant de nou tot el combat actual.
+        if (activeOverlay != null)
+        {
+            yield return activeOverlay.PlayClose();
+            activeOverlay = null;
         }
 
         var op = SceneManager.UnloadSceneAsync(combatSceneName);
