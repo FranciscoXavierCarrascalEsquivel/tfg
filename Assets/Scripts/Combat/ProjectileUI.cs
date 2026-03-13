@@ -31,14 +31,17 @@ public class ProjectileUI : MonoBehaviour
         if (!rt) return;
         rt.anchoredPosition += dir * speed * Time.deltaTime;
 
-        // Si el projectil surt de la pantalla, vol dir que no s'ha fet parry.
-        // Resta vida i es destrueix. El límit baixador (Y) ve marcat per un objecte Buit al Canvas.
+        // Si el projectil passa la línia per sota (killY), vol dir que ha impactat el jugador = RETALL DE VIDA
         float killY = cm ? cm.GetDestroyLimitY() : -1200f;
 
-        if (rt.anchoredPosition.y < killY || rt.anchoredPosition.y > 1200 || 
-            rt.anchoredPosition.x < -2000 || rt.anchoredPosition.x > 2000)
+        if (rt.anchoredPosition.y < killY)
         {
             if (cm) cm.PlayerTakeDamage(10);
+            Destroy(gameObject);
+        }
+        // Si el projectil marxa fora de la pantalla per dalt o pels costats, NO fa mal, simplement es destrueix (neteja)
+        else if (rt.anchoredPosition.y > 1200 || rt.anchoredPosition.x < -2000 || rt.anchoredPosition.x > 2000)
+        {
             Destroy(gameObject);
         }
     }

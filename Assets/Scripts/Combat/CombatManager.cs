@@ -53,6 +53,7 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text enemyNameText;
     [SerializeField] private TMPro.TMP_Text enemyHPText;
     [SerializeField] private Image enemyHPFill;
+    [SerializeField] private Image enemyPortraitImage; // <- NOU CAMP PER LA FOTO
 
     [Header("Audio Feedback")]
     [SerializeField] private AudioClip moveMenuSound;
@@ -75,6 +76,8 @@ public class CombatManager : MonoBehaviour
 
     private void Awake()
     {
+        if (enemyPortraitImage != null) enemyPortraitImage.enabled = false;
+
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
@@ -116,14 +119,59 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    public void PreSetup(CombatEncounter encounter)
+    {
+        Sprite finalEnemySprite = encounter != null ? encounter.enemyPortrait : null;
+        if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.enemyPortrait != null)
+        {
+            finalEnemySprite = encounter.enemyProfile.enemyPortrait;
+        }
+
+        if (enemyPortraitImage != null)
+        {
+            if (finalEnemySprite != null)
+            {
+                enemyPortraitImage.sprite = finalEnemySprite;
+                enemyPortraitImage.enabled = true;
+            }
+            else
+            {
+                enemyPortraitImage.enabled = false;
+            }
+        }
+    }
+
     public void Begin(CombatEncounter encounter, CombatLoader loader)
     {
         this.encounter = encounter;
         this.loader = loader;
 
         playerCurrentHP = playerMaxHP;
+        
+        // Sobreescriu valors base d'enemic si heu fet algun perfil (ScriptableObject) personalitzat
+        string finalEnemyName = "MONSTER";
+        Sprite finalEnemySprite = encounter != null ? encounter.enemyPortrait : null;
+        
+        if (encounter != null && encounter.enemyProfile != null)
+        {
+            enemyMaxHP = encounter.enemyProfile.maxHP;
+            finalEnemyName = encounter.enemyProfile.enemyName.ToUpper();
+            if (encounter.enemyProfile.enemyPortrait != null) finalEnemySprite = encounter.enemyProfile.enemyPortrait;
+        }
+
         enemyCurrentHP = enemyMaxHP;
         UpdateStatsUI(true); // Posa les barres completes de cop a l'inci
+
+        // Aplica l'sprite visual
+        if (enemyPortraitImage != null && finalEnemySprite != null)
+        {
+            enemyPortraitImage.sprite = finalEnemySprite;
+            enemyPortraitImage.enabled = true;
+        }
+        else if (enemyPortraitImage != null)
+        {
+            enemyPortraitImage.enabled = false;
+        }
 
         mainButtons = new Button[] { fightButton, reasonButton, defendButton, itemButton };
         
@@ -140,12 +188,11 @@ public class CombatManager : MonoBehaviour
         SetHandsActive(false);
 
         state = State.PlayerTurn;
-        // ShowTurnMenu actua ara cridant ell mateix el SetMenuPhase i animant-ho automàticament
         ShowTurnMenu(true);
 
-        // Configura noms si escau
+        // Configura noms
         if (playerNameText != null) playerNameText.text = "FRANC";
-        if (enemyNameText != null) enemyNameText.text = "MONSTER";
+        if (enemyNameText != null) enemyNameText.text = finalEnemyName;
 
         // Dispara les animacions d'entrada tipus Slide UI per tota la resta de text/panells
         if (playerUIPanel != null) StartCoroutine(SlideInRect(playerUIPanel, playerUIOriginalPos, new Vector2(0, 300f), 0.7f));
@@ -344,9 +391,11 @@ public class CombatManager : MonoBehaviour
             if (outline == null)
             {
                 outline = btn.gameObject.AddComponent<Outline>();
-                outline.effectColor = new Color(1f, 0.8f, 0f, 1f); // Yellowish outline
-                outline.effectDistance = new Vector2(3, -3);
             }
+            
+            // Re-evalua l'estil constantment per si volem canvis agressius de color cridaner
+            outline.effectColor = new Color(1f, 0.95f, 0f, 1f); // Groc gairebé pur i brillant
+            outline.effectDistance = new Vector2(8, -8); // Molt més gruixut i visible
 
             outline.enabled = (i == selectedIndex);
         }
@@ -531,9 +580,17 @@ public class CombatManager : MonoBehaviour
         txt.alignment = TMPro.TextAlignmentOptions.Center;
         txt.color = Color.yellow;
         
-        // Simulant Objectes Aleatoris per l'exercici actual temporal
+        // Càlcul de premis segons el perfil
         int gold = Random.Range(30, 80);
-        txt.text = $"YOU WON!\n\nObtained: {gold} G\nObject: 'Potion'\n\n[Press E or Enter to continue]";
+        string itemName = "Potion";
+        
+        if (encounter != null && encounter.enemyProfile != null)
+        {
+            gold = Random.Range(encounter.enemyProfile.goldRewardMin, encounter.enemyProfile.goldRewardMax + 1);
+            itemName = encounter.enemyProfile.dropItemName;
+        }
+
+        txt.text = $"YOU WON!\n\nObtained: {gold} G\nObject: '{itemName}'\n\n[Press E or Enter to continue]";
         
         RectTransform rt = txt.GetComponent<RectTransform>();
         rt.anchoredPosition = new Vector2(0, 100);
@@ -643,21 +700,32 @@ public class CombatManager : MonoBehaviour
 
         SetHandsActive(true);
 
-        float dur = (encounter != null) ? encounter.enemyAttackDuration : 2f;
+        float dur = 2f;
+        if (encounter != null) dur = encounter.enemyProfile != null ? encounter.enemyProfile.attackDuration : encounter.enemyAttackDuration;
 
         var spawner = FindFirstObjectByType<EnemyAttackSpawner>();
         if (spawner != null)
         {
             EnemyAttackPattern chosenPattern = EnemyAttackPattern.RandomDrop;
-            
-            if (encounter != null && encounter.attackPatterns != null && encounter.attackPatterns.Length > 0)
+            GameObject prefab = encounter != null ? encounter.projectilePrefab : null;
+
+            if (encounter != null)
             {
-                int r = Random.Range(0, encounter.attackPatterns.Length);
-                chosenPattern = encounter.attackPatterns[r];
+                if (encounter.enemyProfile != null)
+                {
+                    prefab = encounter.enemyProfile.projectilePrefab;
+                    if (encounter.enemyProfile.attackPatterns != null && encounter.enemyProfile.attackPatterns.Length > 0)
+                    {
+                        chosenPattern = encounter.enemyProfile.attackPatterns[Random.Range(0, encounter.enemyProfile.attackPatterns.Length)];
+                    }
+                }
+                else if (encounter.attackPatterns != null && encounter.attackPatterns.Length > 0)
+                {
+                    chosenPattern = encounter.attackPatterns[Random.Range(0, encounter.attackPatterns.Length)];
+                }
             }
 
-            // We assume EnemyAttackSpawner Configure signature is: Configure(GameObject prefab, EnemyAttackPattern pattern)
-            spawner.Configure(encounter != null ? encounter.projectilePrefab : null, chosenPattern);
+            spawner.Configure(prefab, chosenPattern);
             yield return spawner.Run(dur);
 
             // Wait until all projectiles have finished traveling and are destroyed

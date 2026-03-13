@@ -9,6 +9,13 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float runSpeed = 8f;        // Velocitat quan el jugador corre.
     [SerializeField] private KeyCode runKey = KeyCode.LeftShift; // Tecla per córrer.
 
+    [Header("Random Encounters")]
+    [SerializeField] private CombatLoader combatLoader;
+    [SerializeField] private float encounterChancePerSecond = 0.02f; // Probabilitat molt baixa per segon per no ser molest
+    [SerializeField] private float minEncounterCooldown = 5f; // Segons mínims abans de poder trobar un enemic caminant
+    [Tooltip("Llista d'enemics que et poden sortir aleatòriament per l'Overworld")]
+    [SerializeField] private EnemyProfile[] wildEnemies;
+
     private Rigidbody2D rb; // Referència al component Rigidbody2D per a les físiques.
     private Animator anim;  // Referència a l'Animator per gestionar les animacions.
 
@@ -21,6 +28,8 @@ public class PlayerController2D : MonoBehaviour
     private Vector2 lastPos;
     private float timeSinceLastMove;
     private const float MOVEMENT_TIMEOUT = 0.05f; // Temps sense moviment real abans de considerar que estem parats
+    
+    private float encounterCooldownTimer = 2f; // Gràcia inicial en començar l'escena
 
     // Animator params (per evitar typos)
     private static readonly int IsMovingHash = Animator.StringToHash("isMoving");
@@ -62,6 +71,8 @@ public class PlayerController2D : MonoBehaviour
 
     private void Update()
     {
+        if (encounterCooldownTimer > 0f) encounterCooldownTimer -= Time.deltaTime;
+
         if (movementLocked)
         {
             anim.SetBool(IsMovingHash, false);
@@ -135,6 +146,37 @@ public class PlayerController2D : MonoBehaviour
         // si camines = 1, si corres = runSpeed/walkSpeed
         float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
         anim.SetFloat(SpeedMulHash, isRunning ? ratio : 1f);
+
+        // --- TICK DE COMBAT ALEATORI ---
+        if (showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterCooldownTimer <= 0f)
+        {
+            // Tira els daus base per segon
+            if (Random.value < encounterChancePerSecond * Time.deltaTime)
+            {
+                TriggerRandomEncounter();
+                encounterCooldownTimer = minEncounterCooldown; // Reinicia el rellotge fred
+            }
+        }
+    }
+
+    private void TriggerRandomEncounter()
+    {
+        Debug.Log("WILD ENCOUNTER TRIGGERED!");
+        LockMovement(); // Parem el jugador instantàniament
+        
+        // Aturem animacions per seguretat
+        anim.SetBool(IsMovingHash, false);
+        anim.SetFloat(MoveXHash, 0);
+        anim.SetFloat(MoveYHash, 0);
+        anim.SetFloat(SpeedMulHash, 1f);
+
+        // Escollim un enemic a l'atzar
+        EnemyProfile chosenEnemy = wildEnemies[Random.Range(0, wildEnemies.Length)];
+        
+        CombatEncounter enc = new CombatEncounter();
+        enc.enemyProfile = chosenEnemy;
+        
+        combatLoader.StartCombat(enc);
     }
 
     private void FixedUpdate()

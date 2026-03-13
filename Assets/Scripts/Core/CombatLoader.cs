@@ -85,16 +85,17 @@ public class CombatLoader : MonoBehaviour
         yield return null;
         yield return null;
 
-        // 3) Comença l'animació d'obrir-se (split cap als costats)
-        // i al mateix temps carreguem combat per sota
+        // 3) Carreguem combat per sota i esperem primer que el món estigui instanciat
         var loadOp = SceneManager.LoadSceneAsync(combatSceneName, LoadSceneMode.Additive);
-
-        // mentre carrega, deixem que l'animació avanci
-        // (encara no desactivem el món fins que ja estigui carregat)
-        yield return StartCoroutine(overlay.PlayOpen());
-
-        // 4) Espera que el combat estigui carregat
         while (!loadOp.isDone) yield return null;
+
+        // Ara que la UI existeix d'esquenes però ningú la veu per l'Overlay,
+        // cridem l'Setup abans de l'animació per tapar possibles "errors d'un frame vaci"
+        var cm = FindFirstObjectByType<CombatManager>();
+        if (cm != null) cm.PreSetup(encounter);
+
+        // 4) Llavors, mentre ja estan les imatges precarregades, obrim l'animació de transició
+        yield return StartCoroutine(overlay.PlayOpen());
 
         // Ara sí que l'animació d'entrada ha acabat, posem la música de combat
         if (combatMusic != null && combatAudioSource != null)
@@ -108,8 +109,7 @@ public class CombatLoader : MonoBehaviour
         // 5) Ara sí, desactiva scripts del món
         foreach (var s in worldScriptsToDisable) if (s) s.enabled = false;
 
-        // 6) Inicia combat
-        var cm = FindFirstObjectByType<CombatManager>();
+        // 6) Inicia combat de debò on els menús llisquen
         if (cm != null) cm.Begin(encounter, this);
         else Debug.LogError("CombatManager no trobat a CombatScene");
     }
@@ -196,15 +196,21 @@ public enum EnemyAttackPattern
     RandomDrop,
     HorizontalWaves,
     TargetedHoming,
-    CircleBurst
+    CircleBurst,
+    DiagonalCross,
+    FastMeteors,
+    SnakeWaves
 }
 
 [System.Serializable]
 public class CombatEncounter
 {
+    [Tooltip("Si poses un perfil aquí, ignora la resta i utilitza les dades completes del monstre.")]
+    public EnemyProfile enemyProfile;
+
+    [Header("Overrides Temporals (Ignorats si hi ha Perfil)")]
     public Sprite enemyPortrait;
     public GameObject projectilePrefab;
     public float enemyAttackDuration = 6f;
-    [Tooltip("Llista d'atacs que pot fer aquest enemic. S'escollirà un a l'atzar cada torn.")]
     public EnemyAttackPattern[] attackPatterns = new EnemyAttackPattern[] { EnemyAttackPattern.RandomDrop };
 }
