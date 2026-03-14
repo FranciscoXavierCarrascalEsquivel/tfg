@@ -88,6 +88,7 @@ public class SkillCheckUI : MonoBehaviour
     private float maxWaitTime = 5f;
     private bool isChecking = false;
     private System.Action<int> onDamageCalculated;
+    private Coroutine blinkCoroutine;
 
     /// <summary>
     /// Iniciem el minijoc cridant-lo des del CombatManager
@@ -116,17 +117,16 @@ public class SkillCheckUI : MonoBehaviour
             if (textRt != null)
             {
                 textRt.sizeDelta = new Vector2(500, 200);
-                textRt.anchoredPosition = new Vector2(0, -260); // Desplaçat cap baix del mig
+                textRt.anchoredPosition = new Vector2(0, -380); // Més avall: -380 en lloc de -260
                 textRt.localScale = Vector3.one;
             }
 
-            // Posem-li una mica d'ombra també a aquest menú
-            if (damageText.GetComponent<Outline>() == null)
-            {
-                Outline outline = damageText.gameObject.AddComponent<Outline>();
-                outline.effectColor = Color.black;
-                outline.effectDistance = new Vector2(2, -2);
-            }
+            // El contorn pur a TextMeshPro (Material instanciat en lloc del genèric Outline)
+            if (damageText.GetComponent<Outline>() != null) Destroy(damageText.GetComponent<Outline>());
+            
+            damageText.fontSharedMaterial = Instantiate(damageText.fontSharedMaterial);
+            damageText.fontSharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
+            damageText.fontSharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0.04f, 0.04f, 0.04f, 1f));
         }
         
         if (arrowPivot != null) arrowPivot.localRotation = Quaternion.Euler(0, 0, currentAngle);
@@ -159,6 +159,28 @@ public class SkillCheckUI : MonoBehaviour
         else if (skillCheckTransform != null) skillCheckTransform.localScale = Vector3.one; // Fallback
         
         isChecking = true;
+        
+        // Iniciem el parpelleig del text
+        if (damageText != null)
+        {
+            if (blinkCoroutine != null) StopCoroutine(blinkCoroutine);
+            blinkCoroutine = StartCoroutine(BlinkTextRoutine());
+        }
+    }
+
+    private IEnumerator BlinkTextRoutine()
+    {
+        while (isChecking)
+        {
+            float alpha = Mathf.PingPong(Time.time * 2f, 1f);
+            if (damageText != null) 
+            {
+                Color c = damageText.color;
+                c.a = alpha;
+                damageText.color = c;
+            }
+            yield return null;
+        }
     }
 
     private void Update()
@@ -202,6 +224,16 @@ public class SkillCheckUI : MonoBehaviour
     private void FinishCheck()
     {
         isChecking = false;
+        
+        // Aturem el parpelleig i restaurem totalment l'opacitat del text
+        if (blinkCoroutine != null) StopCoroutine(blinkCoroutine);
+        if (damageText != null)
+        {
+            Color c = damageText.color;
+            c.a = 1f;
+            damageText.color = c;
+        }
+
         StartCoroutine(ResolveResultRoutine());
     }
 
@@ -284,7 +316,7 @@ public class SkillCheckUI : MonoBehaviour
             
             // Força la destrucció de qualsevol limitador heretat
             damageText.enableAutoSizing = false;
-            damageText.enableWordWrapping = false;
+            damageText.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
             damageText.overflowMode = TMPro.TextOverflowModes.Overflow;
             
             damageText.alignment = TMPro.TextAlignmentOptions.Center;

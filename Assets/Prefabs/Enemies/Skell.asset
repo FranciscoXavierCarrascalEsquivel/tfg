@@ -10,14 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
-  m_Name: Enemic2
+  m_Name: Skell
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
-  enemyName: Monster
-  maxHP: 70
-  enemyPortrait: {fileID: 21300000, guid: 2bfba5460ca064c47a67f77144cb4999, type: 3}
-  projectilePrefab: {fileID: 5410871294214501288, guid: d4ca0fb52723e8c44b986f4cc76ff8da, type: 3}
+  enemyName: Skell
+  minHP: 20
+  maxHP: 20
+  enemyPortrait: {fileID: 4925935257197340580, guid: 33033aee1b96c92438b92cb74b284935, type: 3}
+  projectilePrefab: {fileID: 5410871294214501288, guid: cb105ea0833faa740abdebdb0ae41c81, type: 3}
   attackDuration: 6
   attackPatterns: 03000000
   goldRewardMin: 10
   goldRewardMax: 30
-  dropItemName: Potion
+  drops:
+  - itemName: Aigueta
+    probability: 100
+  - itemName: Energy
+    probability: 100

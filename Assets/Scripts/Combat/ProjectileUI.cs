@@ -11,8 +11,13 @@ public class ProjectileUI : MonoBehaviour
 
     private CombatManager cm;
 
+    private bool isParried = false;
+
     private void Start() => activeProjectiles++;
-    private void OnDestroy() => activeProjectiles--;
+    private void OnDestroy() 
+    {
+        if (!isParried) activeProjectiles--;
+    }
 
     private void Awake() 
     {
@@ -56,11 +61,18 @@ public class ProjectileUI : MonoBehaviour
             {
                 cm.PlayParrySound();
                 var img = GetComponent<UnityEngine.UI.Image>();
-                cm.SpawnParryEffect(transform.position, img ? img.sprite : null);
+                
+                // Efecte de destruccio en pixels enlloc del parry particle prefab
+                EnemyDestroyFX.Play(img, () => Destroy(gameObject));
             }
 
-            // PARRY EXITÓS (El projectil desapareix i no resta vida al sortir de pantalla)
-            Destroy(gameObject);
+            // PARRY EXITÓS
+            isParried = true;
+            activeProjectiles--; // ho restem ara per no allargar el torn enemic 2 segons
+            
+            enabled = false; // perque deixi de fer Update i no faci mal
+            var collider = GetComponent<Collider2D>();
+            if (collider) collider.enabled = false; // perque no torni a col·lisionar
         }
     }
 }

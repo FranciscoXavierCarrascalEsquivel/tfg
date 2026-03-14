@@ -11,6 +11,9 @@ public class ParryHitbox : MonoBehaviour
         if (proj == null) return;
 
         OnParry?.Invoke(powerGain);
-        Destroy(proj.gameObject);
+        
+        // ELIMINAT: Destroy(proj.gameObject);
+        // Ara ProjectileUI.cs s'encarrega d'executar l'animació de desintegració
+        // i es destrueix a si mateix en acabar via callback de EnemyDestroyFX.
     }
 }

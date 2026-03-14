@@ -41,12 +41,17 @@ public class CombatManager : MonoBehaviour
     public int enemyMaxHP = 15;
     private int playerCurrentHP;
     private int enemyCurrentHP;
+    
+    // Variables per controlar el buff de velocitat
+    private int speedBuffRoundsLeft = 0;
+    private float currentSpeedBuffValue = 0f;
 
     [Header("UI Stats")]
     [SerializeField] private RectTransform playerUIPanel;
     [SerializeField] private TMPro.TMP_Text playerNameText;
     [SerializeField] private TMPro.TMP_Text playerHPText;
     [SerializeField] private Image playerHPFill;
+    [SerializeField] private Image playerPortraitImage; // NOU CAMP: Aquí poses la imatge a la que aniran les partícules
     
     [Space]
     [SerializeField] private RectTransform enemyUIPanel;
@@ -146,7 +151,16 @@ public class CombatManager : MonoBehaviour
         this.encounter = encounter;
         this.loader = loader;
 
-        playerCurrentHP = playerMaxHP;
+        // Llegeix HP de l'inventari persistent (si existeix i té vida > 0)
+        if (PlayerInventory.Instance != null && PlayerInventory.Instance.CurrentHP > 0)
+        {
+            playerMaxHP = PlayerInventory.Instance.MaxHP;
+            playerCurrentHP = PlayerInventory.Instance.CurrentHP;
+        }
+        else
+        {
+            playerCurrentHP = playerMaxHP;
+        }
         
         // Sobreescriu valors base d'enemic si heu fet algun perfil (ScriptableObject) personalitzat
         string finalEnemyName = "MONSTER";
@@ -154,7 +168,7 @@ public class CombatManager : MonoBehaviour
         
         if (encounter != null && encounter.enemyProfile != null)
         {
-            enemyMaxHP = encounter.enemyProfile.maxHP;
+            enemyMaxHP = Random.Range(encounter.enemyProfile.minHP, encounter.enemyProfile.maxHP + 1);
             finalEnemyName = encounter.enemyProfile.enemyName.ToUpper();
             if (encounter.enemyProfile.enemyPortrait != null) finalEnemySprite = encounter.enemyProfile.enemyPortrait;
         }
@@ -257,6 +271,9 @@ public class CombatManager : MonoBehaviour
 
         // --- Handle UI Input ---
         if (state != State.PlayerTurn) return;
+
+        // Bloquejar input del combat mentre l'inventari és obert
+        if (InventoryMenuUI.IsOpen) return;
 
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
@@ -370,6 +387,8 @@ public class CombatManager : MonoBehaviour
         UpdateSelectionVisuals();
     }
 
+    private RectTransform selectionCursorFrame;
+
     private void UpdateSelectionVisuals()
     {
         for (int i = 0; i < mainButtons.Length; i++)
@@ -387,18 +406,127 @@ public class CombatManager : MonoBehaviour
                 btn.gameObject.SetActive(true);
             }
 
-            Outline outline = btn.GetComponent<Outline>();
-            if (outline == null)
+            // L'antic codi destruïa el contorn (outline) descontrolant l'ombra/disseny fosc del botó en la UI predeterminada.
+            // Ara ho evitem absolutament per mantenir els botons vius i idèntics a la scene.
+        }
+
+        if (mainButtons.Length == 0 || selectedIndex < 0 || selectedIndex >= mainButtons.Length) return;
+
+        Button selBtn = mainButtons[selectedIndex];
+        if (selBtn == null || !selBtn.gameObject.activeInHierarchy) return;
+
+        if (selectionCursorFrame == null)
+        {
+            GameObject go = new GameObject("SelectionFX_Frame");
+            selectionCursorFrame = go.AddComponent<RectTransform>();
+            
+            // Afegim 4 sub-imatges per fer les línies de contorn (vores extremadament fines de 2px segons pauta)
+            CreateBorder(selectionCursorFrame, "Top", new Vector2(0, 1), new Vector2(1, 1), new Vector2(-2, 0), new Vector2(2, 2));
+            CreateBorder(selectionCursorFrame, "Bot", new Vector2(0, 0), new Vector2(1, 0), new Vector2(-2, -2), new Vector2(2, 0));
+            CreateBorder(selectionCursorFrame, "Left", new Vector2(0, 0), new Vector2(0, 1), new Vector2(-2, 0), new Vector2(0, 0));
+            CreateBorder(selectionCursorFrame, "Right", new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 0), new Vector2(2, 0));
+
+            StartCoroutine(CursorGlowRoutine(selectionCursorFrame));
+        }
+
+        selectionCursorFrame.SetParent(selBtn.transform, false);
+        selectionCursorFrame.SetAsLastSibling(); // Sempre per sobre per fer d'il·luminador
+        
+        selectionCursorFrame.anchorMin = Vector2.zero;
+        selectionCursorFrame.anchorMax = Vector2.one;
+        selectionCursorFrame.offsetMin = Vector2.zero;
+        selectionCursorFrame.offsetMax = Vector2.zero;
+    }
+
+    private void CreateBorder(Transform parent, string name, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = aMin; rt.anchorMax = aMax;
+        rt.offsetMin = oMin; rt.offsetMax = oMax;
+        
+        Image img = go.AddComponent<Image>();
+        img.color = new Color(1f, 0.9f, 0.1f, 1f); // Groc
+        img.raycastTarget = false;
+    }
+
+    private IEnumerator CursorGlowRoutine(RectTransform rt)
+    {
+        Image[] borders = rt.GetComponentsInChildren<Image>();
+        
+        while (true)
+        {
+            if (rt == null) yield break;
+
+            float t = (Mathf.Sin(Time.unscaledTime * 4f) + 1f) / 2f; // Animació més lenta
+            rt.localScale = Vector3.Lerp(new Vector3(1f, 1f, 1f), new Vector3(1.02f, 1.05f, 1f), t); // Rebot menys agressiu
+            
+            Color glowCore = new Color(1f, 0.9f, 0.1f, Mathf.Lerp(0.5f, 1f, t));
+            foreach(var img in borders)
             {
-                outline = btn.gameObject.AddComponent<Outline>();
+                if (img != null) img.color = glowCore;
             }
             
-            // Re-evalua l'estil constantment per si volem canvis agressius de color cridaner
-            outline.effectColor = new Color(1f, 0.95f, 0f, 1f); // Groc gairebé pur i brillant
-            outline.effectDistance = new Vector2(8, -8); // Molt més gruixut i visible
-
-            outline.enabled = (i == selectedIndex);
+            // Spawn random partícules menys freqüents
+            if (rt.gameObject.activeInHierarchy && Random.value < 0.05f)
+            {
+                SpawnCursorParticle(rt);
+            }
+            
+            yield return null;
         }
+    }
+
+    private void SpawnCursorParticle(RectTransform parent)
+    {
+        GameObject p = new GameObject("C_Part");
+        p.transform.SetParent(parent, false);
+        p.transform.SetAsLastSibling(); // Per sobre del contorn directament
+        
+        RectTransform partRT = p.AddComponent<RectTransform>();
+        
+        // Col·loquem la partícula en algun punt dels voltants dels marges del botó
+        float anchorX = Random.value < 0.5f ? (Random.value < 0.5f ? 0f : 1f) : Random.value;
+        float anchorY = (anchorX > 0f && anchorX < 1f) ? (Random.value < 0.5f ? 0f : 1f) : Random.value;
+        
+        partRT.anchorMin = new Vector2(anchorX, anchorY);
+        partRT.anchorMax = new Vector2(anchorX, anchorY);
+        partRT.anchoredPosition = Vector2.zero;
+
+        float size = Random.Range(3f, 6f); // Molt més petits i subtils
+        partRT.sizeDelta = new Vector2(size, size);
+        
+        Image img = p.AddComponent<Image>();
+        img.raycastTarget = false;
+        img.color = new Color(1f, 0.95f, 0.4f, 1f);
+        
+        StartCoroutine(AnimateCursorParticle(partRT, img));
+    }
+
+    private IEnumerator AnimateCursorParticle(RectTransform rt, Image img)
+    {
+        Vector2 vel = new Vector2(Random.Range(-15f, 15f), Random.Range(20f, 60f)); // Moviment més suau cap a dalt
+        float life = Random.Range(0.4f, 1.0f);
+        float elapsed = 0f;
+        
+        while(elapsed < life)
+        {
+            if (rt == null || img == null) yield break;
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / life;
+            
+            rt.anchoredPosition += vel * Time.unscaledDeltaTime;
+            
+            Color c = img.color;
+            c.a = 1f - t;
+            img.color = c;
+            rt.localScale = Vector3.one * (1f - t);
+            
+            yield return null;
+        }
+        
+        if (rt != null) Destroy(rt.gameObject);
     }
 
     private Coroutine playerHPAnim;
@@ -464,6 +592,10 @@ public class CombatManager : MonoBehaviour
         UpdateStatsUI();
 
         if (takeDamageSound) audioSource.PlayOneShot(takeDamageSound);
+
+        // Guarda HP actualitzat a l'inventari persistent
+        if (PlayerInventory.Instance != null)
+            PlayerInventory.Instance.SetHP(playerCurrentHP);
 
         if (playerCurrentHP == 0)
         {
@@ -559,11 +691,29 @@ public class CombatManager : MonoBehaviour
         {
             state = State.End;
             Debug.Log("ENEMY DEFEATED");
-            StartCoroutine(VictoryRoutine());
+            StartCoroutine(DefeatAndVictoryRoutine());
             yield break;
         }
 
         EndPlayerTurn();
+    }
+
+    /// Quan l'enemic mor: primer l'escapcem en pixels, despres la pantalla de victoria.
+    private IEnumerator DefeatAndVictoryRoutine()
+    {
+        ShowTurnMenu(false);
+
+        if (enemyPortraitImage != null && enemyPortraitImage.enabled)
+        {
+            bool fxDone = false;
+            // Determina el canvas pare (el mateix que el panell de victoria usara)
+            Transform canvasParent = enemyPortraitImage.transform.parent;
+            EnemyDestroyFX.Play(enemyPortraitImage, () => fxDone = true);
+            yield return new WaitUntil(() => fxDone);
+            yield return new WaitForSeconds(0.25f); // petit respir
+        }
+
+        StartCoroutine(VictoryRoutine());
     }
 
     private IEnumerator VictoryRoutine()
@@ -571,39 +721,53 @@ public class CombatManager : MonoBehaviour
         ShowTurnMenu(false);
         if (enemyHPText) enemyHPText.text = "";
         if (playerHPText) playerHPText.text = "";
-        
-        // Creem un Text de Victoria improvisat a la pantalla per donar el resum
-        GameObject go = new GameObject("VictoryPanel");
-        go.transform.SetParent(turnMenu.transform.parent, false);
-        var txt = go.AddComponent<TMPro.TextMeshProUGUI>();
-        txt.fontSize = 28;
-        txt.alignment = TMPro.TextAlignmentOptions.Center;
-        txt.color = Color.yellow;
-        
+
         // Càlcul de premis segons el perfil
         int gold = Random.Range(30, 80);
-        string itemName = "Potion";
-        
+        System.Collections.Generic.List<string> earnedItems = new System.Collections.Generic.List<string>();
+
         if (encounter != null && encounter.enemyProfile != null)
         {
             gold = Random.Range(encounter.enemyProfile.goldRewardMin, encounter.enemyProfile.goldRewardMax + 1);
-            itemName = encounter.enemyProfile.dropItemName;
+            
+            if (encounter.enemyProfile.drops != null)
+            {
+                foreach (var drop in encounter.enemyProfile.drops)
+                {
+                    int prob = drop.probability;
+                    while (prob >= 100)
+                    {
+                        earnedItems.Add(drop.itemName);
+                        prob -= 100;
+                    }
+                    if (prob > 0 && Random.Range(0, 100) < prob)
+                    {
+                        earnedItems.Add(drop.itemName);
+                    }
+                }
+            }
         }
 
-        txt.text = $"YOU WON!\n\nObtained: {gold} G\nObject: '{itemName}'\n\n[Press E or Enter to continue]";
-        
-        RectTransform rt = txt.GetComponent<RectTransform>();
-        rt.anchoredPosition = new Vector2(0, 100);
-        rt.sizeDelta = new Vector2(800, 400);
-
-        // Bloquegem un petit instant per previndre tancar al instant i donar temps a llegir
-        yield return new WaitForSeconds(0.5f); 
-        
-        // Esperem confirmació de l'usuari amb la 'E'
-        while (!Input.GetKeyDown(KeyCode.E) && !Input.GetKeyDown(KeyCode.Space) && !Input.GetKeyDown(KeyCode.Return))
+        // Guarda HP restant del jugador i recompenses a l'inventari persistent
+        if (PlayerInventory.Instance != null)
         {
-            yield return null;
+            PlayerInventory.Instance.SetHP(playerCurrentHP);
+            PlayerInventory.Instance.AddGold(gold);
+            foreach (var item in earnedItems)
+            {
+                if (!string.IsNullOrEmpty(item) && item != "none" && item != "—")
+                    PlayerInventory.Instance.AddItem(item);
+            }
         }
+
+        int totalGold = PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : gold;
+
+        // Mostra el panell animat de victòria
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        bool done = false;
+        VictoryPanelUI.Create(canvasParent, gold, earnedItems, totalGold, () => done = true);
+
+        yield return new WaitUntil(() => done);
 
         loader.EndCombat();
     }
@@ -622,8 +786,63 @@ public class CombatManager : MonoBehaviour
 
     private void OnItem()
     {
-        Debug.Log("ITEM!");
-        EndPlayerTurn();
+        InventoryMenuUI.Show(isCombat: true, onItemSelected: (profile) =>
+        {
+            ApplyItemEffect(profile);
+            
+            if (enemyCurrentHP <= 0)
+            {
+                state = State.End;
+                StartCoroutine(DefeatAndVictoryRoutine());
+            }
+            else
+            {
+                EndPlayerTurn();
+            }
+        });
+    }
+
+    private void ApplyItemEffect(ItemProfile profile)
+    {
+        Debug.Log($"Utilitzant objecte en combat: {profile.itemName}");
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+
+        if (profile.effectType == ItemEffectType.HealPlayer)
+        {
+            playerCurrentHP += profile.effectValue;
+            if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
+
+            // Text verd + partícules verdes ancorats sobre la imatge configurada o la barra
+            Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
+            HealFXUI.ShowAboveBar(canvasParent, targetImg, $"+{profile.effectValue} HP",
+                                  new Color(0.25f, 1f, 0.35f));
+        }
+        else if (profile.effectType == ItemEffectType.DamageEnemy)
+        {
+            enemyCurrentHP -= profile.effectValue;
+            if (enemyCurrentHP < 0) enemyCurrentHP = 0;
+
+            // Taronja sobre la barra de l'enemic
+            HealFXUI.ShowAboveBar(canvasParent, enemyHPFill, $"-{profile.effectValue} HP",
+                                  new Color(1f, 0.45f, 0.1f));
+        }
+        else if (profile.effectType == ItemEffectType.SpeedUpHands)
+        {
+            var hands = FindObjectsByType<HandController>(FindObjectsSortMode.None);
+            
+            // L'efecte no és acumulatiu; només apliquem la velocitat extra si no està ja en marxa
+            if (speedBuffRoundsLeft <= 0)
+            {
+                currentSpeedBuffValue = (profile.effectValue / 100f);
+                foreach (var h in hands) h.speedMultiplier += currentSpeedBuffValue;
+            }
+            
+            // Renova els torns de durada totals o els inicialitza
+            speedBuffRoundsLeft = profile.buffDurationRounds;
+
+            HealFXUI.Show(canvasParent, $"VELOC +{profile.effectValue}% ({speedBuffRoundsLeft} TORNS)", new Color(1f, 0.9f, 0.15f));
+        }
+        UpdateStatsUI();
     }
 
     private void EndPlayerTurn()
@@ -739,6 +958,20 @@ public class CombatManager : MonoBehaviour
         Debug.Log("ENEMY TURN ended");
 
         SetHandsActive(false);
+
+        // Disminuïm i revisem l'estat del buff de velocitat en tornar al torn del jugador
+        if (speedBuffRoundsLeft > 0)
+        {
+            speedBuffRoundsLeft--;
+            if (speedBuffRoundsLeft == 0)
+            {
+                // El buff s'ha esgotat, el traiem!
+                var hands = FindObjectsByType<HandController>(FindObjectsSortMode.None);
+                foreach (var h in hands) h.speedMultiplier -= currentSpeedBuffValue;
+                currentSpeedBuffValue = 0f;
+                Debug.Log("Buff de velocitat de mans exhaurit!");
+            }
+        }
 
         state = State.PlayerTurn;
         ShowTurnMenu(true);

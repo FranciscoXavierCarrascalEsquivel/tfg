@@ -10,6 +10,8 @@ public class HandController : MonoBehaviour
 
     [SerializeField] private InputMode inputMode = InputMode.WASD;
     [SerializeField] private float speed = 500f;
+    public float speedMultiplier = 1f;
+
     
     [Header("Manual Boundaries (Transform Limits)")]
     [Tooltip("Empty Object placed at the Left Limit")]
@@ -60,7 +62,7 @@ public class HandController : MonoBehaviour
         }
         
         Vector2 input = new Vector2(h, v).normalized;
-        transform.position += (Vector3)(input * speed * Time.deltaTime);
+        transform.position += (Vector3)(input * (speed * speedMultiplier) * Time.deltaTime);
 
         IsMoving = input.sqrMagnitude > 0.01f;
 
