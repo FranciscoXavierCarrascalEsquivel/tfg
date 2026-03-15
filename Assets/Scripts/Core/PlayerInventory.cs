@@ -18,6 +18,10 @@ public class PlayerInventory : MonoBehaviour
     [Tooltip("Posa aquí els Item Profiles per relacionar-los.")]
     public List<ItemProfile> itemDatabase = new List<ItemProfile>();
 
+    [Header("UI Audio")]
+    public AudioClip navSound;
+    public AudioClip selectSound;
+
     // ── HP ──────────────────────────────────────────────────────────
     public int MaxHP   { get; private set; }
     public int CurrentHP { get; private set; }

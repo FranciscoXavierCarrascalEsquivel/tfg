@@ -16,8 +16,9 @@ MonoBehaviour:
   itemDescription: "Una beguda amb 35mg de cafe\xEDna... per cada 10ml! Augmenta
     la velocitat de les mans del jugador durant 3 rondes. No acumulatiu. No es fan
     responsables de la possible taquicardia."
-  itemIcon: {fileID: -3162109736466156438, guid: b0f1c8e7d72aa7b48a880108ce29fb77, type: 3}
+  itemIcon: {fileID: 21300000, guid: b0f1c8e7d72aa7b48a880108ce29fb77, type: 3}
   effectType: 2
   effectValue: 50
   buffDurationRounds: 3
+  useSound: {fileID: 8300000, guid: 1bc7cbbc838a65e48b20f35dbbd8bf1a, type: 3}
   isStackable: 1

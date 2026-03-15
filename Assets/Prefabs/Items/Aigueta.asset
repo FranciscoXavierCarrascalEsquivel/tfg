@@ -17,4 +17,6 @@ MonoBehaviour:
   itemIcon: {fileID: -7644904310294725508, guid: e4a0866dfb0b13742af2ec16dad2195b, type: 3}
   effectType: 0
   effectValue: 40
+  buffDurationRounds: 3
+  useSound: {fileID: 8300000, guid: d5f628ed95359524a92651c87eac565b, type: 3}
   isStackable: 1

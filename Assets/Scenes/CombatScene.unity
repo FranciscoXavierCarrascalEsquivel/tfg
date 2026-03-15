@@ -2838,10 +2838,13 @@ MonoBehaviour:
   enemyHPText: {fileID: 729487827}
   enemyHPFill: {fileID: 1149104273}
   enemyPortraitImage: {fileID: 675021077}
-  moveMenuSound: {fileID: 8300000, guid: 29786cb1f73e18940a28542e682651d6, type: 3}
+  moveMenuSound: {fileID: 8300000, guid: 10c16daae2e390d45af513716f258439, type: 3}
+  attackSound: {fileID: 8300000, guid: e6236821248025549a5d8a1cc5e17b98, type: 3}
+  enemyHitSound: {fileID: 8300000, guid: 8e71c77a31a3720469bf587ec9cc52e7, type: 3}
   takeDamageSound: {fileID: 8300000, guid: bc627646782ef714584a47e9d550f3a1, type: 3}
   parrySound: {fileID: 8300000, guid: 94ce606e736a373418ad826dda38b8d4, type: 3}
   playerMoveSound: {fileID: 8300000, guid: 41797510c5d8d9f4fa395630abbce744, type: 3}
+  victorySound: {fileID: 8300000, guid: 94ef0849a9bccae4199e4336cfbf80fc, type: 3}
   parryParticlePrefab: {fileID: 0}
   projectileDestroyLimit: {fileID: 22431405}
 --- !u!1 &1640991652
@@ -3469,7 +3472,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1131232211920064820, guid: 2f6cde760ae348f49a8c009c713f206a, type: 3}
+  m_Sprite: {fileID: -7443756053782179069, guid: 21b832389f009b04bb6fe149b5812e4d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

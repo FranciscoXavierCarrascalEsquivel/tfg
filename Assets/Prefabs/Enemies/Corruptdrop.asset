@@ -22,3 +22,4 @@ MonoBehaviour:
   goldRewardMin: 10
   goldRewardMax: 30
   drops: []
+  deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}

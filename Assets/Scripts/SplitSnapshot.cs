@@ -304,9 +304,6 @@ public class SplitSnapshot : MonoBehaviour
         rrt.anchoredPosition = rTarget;
 
         yield return new WaitForSecondsRealtime(0.5f); // Pausa més llarga abans de desactivar-se per donar temps a veure's sencer
-        
-        Cleanup();
-        Destroy(gameObject);
     }
 
     private static float EaseOutCubic(float x)
@@ -330,7 +327,7 @@ public class SplitSnapshot : MonoBehaviour
         return v;
     }
 
-    private void Cleanup()
+    public void Cleanup()
     {
         if (snapshot != null)
         {

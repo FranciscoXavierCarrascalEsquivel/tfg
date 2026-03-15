@@ -44,6 +44,10 @@ public class CombatLoader : MonoBehaviour
 
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
+        // Snap camera to target immediately so the snapshot is perfectly centered/clamped
+        var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
+        foreach (var camFollow in cams) camFollow.SnapToTarget();
+
         // 1) Captura el frame actual (món) al final del frame
         yield return new WaitForEndOfFrame();
 
@@ -129,17 +133,30 @@ public class CombatLoader : MonoBehaviour
 
         // REVERSE OVERLAY: fa que els trossos de la pantalla del món tornin a ajuntarse 
         // tapant de nou tot el combat actual.
+        SplitSnapshot overlayToDestroy = null;
         if (activeOverlay != null)
         {
+            overlayToDestroy = activeOverlay;
             yield return activeOverlay.PlayClose();
-            activeOverlay = null;
+            activeOverlay = null; // Ja no és l'actiu, però encara existeix el GameObject
         }
 
         var op = SceneManager.UnloadSceneAsync(combatSceneName);
         while (!op.isDone) yield return null;
 
+        // ARA que l'escena ja no existeix, podem destruir l'overlay sense por a veure un frame buit
+        if (overlayToDestroy != null)
+        {
+            overlayToDestroy.Cleanup();
+            Destroy(overlayToDestroy.gameObject);
+        }
+
         foreach (var s in worldScriptsToDisable) if (s) s.enabled = true;
         
+        // Assegurem que la càmera estigui exactament on toca abans d'alliberar el jugador
+        var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
+        foreach (var camFollow in cams) camFollow.SnapToTarget();
+
         LockPlayer(false);
 
         // Resume ALL previously paused AudioSources securely

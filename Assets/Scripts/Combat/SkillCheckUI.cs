@@ -34,6 +34,7 @@ public class SkillCheckUI : MonoBehaviour
     [SerializeField] private TMPro.TMP_FontAsset customFont;
 
     [Header("Audio (Optional)")]
+    [SerializeField] private AudioClip attackSound;  // So al prémer E/Intro al minijoc
     [SerializeField] private AudioClip tickSound;
     [SerializeField] private AudioClip critSound;
     [SerializeField] private AudioClip hitSound;
@@ -91,6 +92,11 @@ public class SkillCheckUI : MonoBehaviour
     private Coroutine blinkCoroutine;
 
     /// <summary>
+    /// Permet al CombatManager passar el so d'atac configurat a la Scene.
+    /// </summary>
+    public void SetAttackSound(AudioClip clip) => attackSound = clip;
+
+    /// <summary>
     /// Iniciem el minijoc cridant-lo des del CombatManager
     /// </summary>
     public void StartSkillCheck(System.Action<int> callback)
@@ -109,14 +115,15 @@ public class SkillCheckUI : MonoBehaviour
             damageText.text = "PRESS E\nOR INTRO";
             if (customFont != null) damageText.font = customFont;
             damageText.alignment = TMPro.TextAlignmentOptions.Center;
-            damageText.fontSize = 50; // Mida més raonable pel recordatori
+            damageText.fontSize = 80; // Molt més gran i cridaner
+            damageText.fontStyle = TMPro.FontStyles.Bold; // En negreta
             damageText.color = Color.white;
             
             // Fiquem la caixa gran per evitar que faci clipping i el posicionem a SOTA de la rodella
             RectTransform textRt = damageText.GetComponent<RectTransform>();
             if (textRt != null)
             {
-                textRt.sizeDelta = new Vector2(500, 200);
+                textRt.sizeDelta = new Vector2(800, 300);
                 textRt.anchoredPosition = new Vector2(0, -380); // Més avall: -380 en lloc de -260
                 textRt.localScale = Vector3.one;
             }
@@ -125,8 +132,8 @@ public class SkillCheckUI : MonoBehaviour
             if (damageText.GetComponent<Outline>() != null) Destroy(damageText.GetComponent<Outline>());
             
             damageText.fontSharedMaterial = Instantiate(damageText.fontSharedMaterial);
-            damageText.fontSharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
-            damageText.fontSharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0.04f, 0.04f, 0.04f, 1f));
+            damageText.fontSharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.35f); // Contorn més gruixut
+            damageText.fontSharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 1f));
         }
         
         if (arrowPivot != null) arrowPivot.localRotation = Quaternion.Euler(0, 0, currentAngle);
@@ -224,6 +231,10 @@ public class SkillCheckUI : MonoBehaviour
     private void FinishCheck()
     {
         isChecking = false;
+
+        // So d'atac al moment exacte de polsar E/Intro
+        if (attackSound != null && audioSource != null)
+            audioSource.PlayOneShot(attackSound);
         
         // Aturem el parpelleig i restaurem totalment l'opacitat del text
         if (blinkCoroutine != null) StopCoroutine(blinkCoroutine);

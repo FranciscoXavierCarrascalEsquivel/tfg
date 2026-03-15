@@ -18,6 +18,10 @@ public class EnemyProfile : ScriptableObject
     
     [Tooltip("Llista d'objectes i la probabilitat seqüencial d'obtenir-los (ex: 250 = 2 segurs + 50% pel 3è)")]
     public DropItemProbability[] drops;
+
+    [Header("Audio")]
+    [Tooltip("So que es reprodueix quan l'enemic mor.")]
+    public AudioClip deathSound;
 }
 
 [System.Serializable]

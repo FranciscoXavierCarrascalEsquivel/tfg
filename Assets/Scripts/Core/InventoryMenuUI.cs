@@ -348,7 +348,12 @@ public class InventoryMenuUI : MonoBehaviour
         bool use   = Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return);
         bool close = Input.GetKeyDown(KeyCode.Escape);
 
-        if (close || (use && selIdx == EXIT_IDX)) { CloseMenu(); return; }
+        if (close || (use && selIdx == EXIT_IDX)) 
+        { 
+            if (use && PlayerInventory.Instance != null) ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
+            CloseMenu(); 
+            return; 
+        }
 
         if (entries.Count == 0) { if (use) CloseMenu(); return; }
 
@@ -383,7 +388,13 @@ public class InventoryMenuUI : MonoBehaviour
             if (selIdx >= entries.Count) selIdx = entries.Count - 1;
         }
 
-        if (moved) { RefreshDetail(); RefreshHighlights(); }
+        if (moved) 
+        { 
+            RefreshDetail(); 
+            RefreshHighlights(); 
+            if (PlayerInventory.Instance != null && PlayerInventory.Instance.navSound != null)
+                ItemSoundPlayer.Play(PlayerInventory.Instance.navSound);
+        }
 
         if (use && selIdx != EXIT_IDX && selIdx < entries.Count)
         {
@@ -394,16 +405,17 @@ public class InventoryMenuUI : MonoBehaviour
             }
             else
             {
+                if (PlayerInventory.Instance != null) ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
                 UseItem(entries[selIdx]);
             }
         }
     }
 
     private Coroutine errorAnim;
-    private IEnumerator ShowErrorAnim()
+    private IEnumerator ShowErrorAnim(string msg = "AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT.")
     {
         detDescTxt.color = new Color(1f, 0.3f, 0.3f);
-        detDescTxt.text = "AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT.";
+        detDescTxt.text = msg;
         
         Vector3 startPos = detDescTxt.rectTransform.anchoredPosition;
         float elapsed = 0f;
@@ -430,7 +442,24 @@ public class InventoryMenuUI : MonoBehaviour
     private void UseItem(InventoryEntry entry)
     {
         var inv = PlayerInventory.Instance;
+
+        // Comprovació: si és un objecte curatiu i tenim la vida plena, no deixis usar-lo
+        if (entry.profile != null && entry.profile.effectType == ItemEffectType.HealPlayer)
+        {
+            if (inv.CurrentHP >= inv.MaxHP)
+            {
+                if (errorAnim != null) StopCoroutine(errorAnim);
+                errorAnim = StartCoroutine(ShowErrorAnim("JA TENS LA VIDA PLENA."));
+                return;
+            }
+        }
+
         if (!inv.RemoveItem(entry.name)) return;
+
+        // Reproduir el so d'ús de l'objecte
+        if (entry.profile != null)
+            ItemSoundPlayer.Play(entry.profile.useSound);
+
         onItemSelected?.Invoke(entry.profile);
 
         if (inCombat) { CloseMenu(); return; }

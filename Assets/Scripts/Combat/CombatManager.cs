@@ -62,9 +62,12 @@ public class CombatManager : MonoBehaviour
 
     [Header("Audio Feedback")]
     [SerializeField] private AudioClip moveMenuSound;
+    [SerializeField] private AudioClip attackSound;      // So al iniciar l'atac (premem E al minijoc)
+    [SerializeField] private AudioClip enemyHitSound;    // So quan l'enemic rep dany
     [SerializeField] private AudioClip takeDamageSound;
     [SerializeField] private AudioClip parrySound;
     [SerializeField] private AudioClip playerMoveSound;
+    [SerializeField] private AudioClip victorySound;    // So de victòria al final del combat
     private AudioSource audioSource;
     private AudioSource loopAudioSource;
 
@@ -75,9 +78,13 @@ public class CombatManager : MonoBehaviour
     private HandController[] handControllers;
 
     // Default positions used for Entrance Animations
-    private Vector2 turnMenuOriginalPos;
     private Vector2 playerUIOriginalPos;
     private Vector2 enemyUIOriginalPos;
+    private Vector2 playerNameOriginalPos;
+    private Vector2 playerHPTextOriginalPos;
+    private Vector2 enemyNameOriginalPos;
+    private Vector2 enemyHPTextOriginalPos;
+    private Vector2 turnMenuOriginalPos;
 
     private void Awake()
     {
@@ -116,12 +123,18 @@ public class CombatManager : MonoBehaviour
             enemyUIOriginalPos = enemyUIPanel.anchoredPosition;
             enemyUIPanel.anchoredPosition = enemyUIOriginalPos + new Vector2(0, 300f);
         }
-        else if (enemyHPText != null) // Fallback
-        {
-            var rt = enemyHPText.GetComponent<RectTransform>();
-            enemyUIOriginalPos = rt.anchoredPosition;
-            rt.anchoredPosition = enemyUIOriginalPos + new Vector2(0, 300f);
-        }
+
+        // Emmagatzemem les posicions originals de tots els textos per fer slide in/out
+        if (playerNameText != null) playerNameOriginalPos = playerNameText.rectTransform.anchoredPosition;
+        if (playerHPText != null) playerHPTextOriginalPos = playerHPText.rectTransform.anchoredPosition;
+        if (enemyNameText != null) enemyNameOriginalPos = enemyNameText.rectTransform.anchoredPosition;
+        if (enemyHPText != null) enemyHPTextOriginalPos = enemyHPText.rectTransform.anchoredPosition;
+        
+        // Inicialment els desplacem fora (cap amunt)
+        if (playerNameText != null) playerNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
+        if (playerHPText != null) playerHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
+        if (enemyNameText != null) enemyNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
+        if (enemyHPText != null) enemyHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
     }
 
     public void PreSetup(CombatEncounter encounter)
@@ -210,10 +223,13 @@ public class CombatManager : MonoBehaviour
 
         // Dispara les animacions d'entrada tipus Slide UI per tota la resta de text/panells
         if (playerUIPanel != null) StartCoroutine(SlideInRect(playerUIPanel, playerUIOriginalPos, new Vector2(0, 300f), 0.7f));
-        else if (playerHPText != null) StartCoroutine(SlideInRect(playerHPText.GetComponent<RectTransform>(), playerUIOriginalPos, new Vector2(0, 300f), 0.7f));
-        
         if (enemyUIPanel != null) StartCoroutine(SlideInRect(enemyUIPanel, enemyUIOriginalPos, new Vector2(0, 300f), 0.7f));
-        else if (enemyHPText != null) StartCoroutine(SlideInRect(enemyHPText.GetComponent<RectTransform>(), enemyUIOriginalPos, new Vector2(0, 300f), 0.7f));
+        
+        // També els textos individuals si existeixen
+        if (playerNameText != null) StartCoroutine(SlideInRect(playerNameText.rectTransform, playerNameOriginalPos, new Vector2(0, 300f), 0.7f));
+        if (playerHPText != null) StartCoroutine(SlideInRect(playerHPText.rectTransform, playerHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
+        if (enemyNameText != null) StartCoroutine(SlideInRect(enemyNameText.rectTransform, enemyNameOriginalPos, new Vector2(0, 300f), 0.7f));
+        if (enemyHPText != null) StartCoroutine(SlideInRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
     }
 
     private IEnumerator SlideInRect(RectTransform rect, Vector2 targetPos, Vector2 startOffset, float duration)
@@ -234,6 +250,24 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
         
+        rect.anchoredPosition = targetPos;
+    }
+
+    private IEnumerator SlideOutRect(RectTransform rect, Vector2 originalPos, Vector2 exitOffset, float duration)
+    {
+        if (rect == null) yield break;
+        
+        Vector2 targetPos = originalPos + exitOffset;
+        float time = 0;
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float t = time / duration;
+            // Cubic Ease In per una sortida que s'accelera
+            float easeT = t * t * t;
+            rect.anchoredPosition = Vector2.Lerp(originalPos, targetPos, easeT);
+            yield return null;
+        }
         rect.anchoredPosition = targetPos;
     }
 
@@ -638,7 +672,7 @@ public class CombatManager : MonoBehaviour
     private IEnumerator PerformAttackRoutine()
     {
         // Changing state to something else avoids PlayerTurn triggering ConfirmSelection via Space again.
-        state = State.Resolve; 
+        state = State.Resolve;
         
         // Amaguem el menú amb la seva animació de sortida instantàniament en decidir atacar perque el centre d'atenció sigui la ruleta
         ShowTurnMenu(false);
@@ -649,6 +683,7 @@ public class CombatManager : MonoBehaviour
         if (skillCheckPrefab != null && turnMenu != null)
         {
             SkillCheckUI skillCheck = Instantiate(skillCheckPrefab, turnMenu.transform.parent);
+            skillCheck.SetAttackSound(attackSound);
             skillCheck.gameObject.SetActive(true); 
             skillCheck.transform.SetAsLastSibling(); 
             
@@ -684,6 +719,10 @@ public class CombatManager : MonoBehaviour
         if (enemyCurrentHP < 0) enemyCurrentHP = 0;
         UpdateStatsUI();
 
+        // So i tremolor de l'enemic en rebre dany
+        if (enemyHitSound) audioSource.PlayOneShot(enemyHitSound);
+        if (enemyPortraitImage != null) StartCoroutine(ShakeEnemySprite(enemyPortraitImage.rectTransform, 0.35f, 14f));
+
         // Esperem un petit instant curt fins passar al torn enemic un cop ha donat l'espasada
         yield return new WaitForSeconds(0.6f);
 
@@ -698,10 +737,42 @@ public class CombatManager : MonoBehaviour
         EndPlayerTurn();
     }
 
+    // Tremolor de l'sprite de l'enemic en rebre dany
+    private IEnumerator ShakeEnemySprite(RectTransform rt, float duration, float magnitude)
+    {
+        if (rt == null) yield break;
+        Vector2 originalPos = rt.anchoredPosition;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float damping = 1f - Mathf.Clamp01(elapsed / duration); // Va decreixent
+            float x = Random.Range(-1f, 1f) * magnitude * damping;
+            float y = Random.Range(-1f, 1f) * magnitude * damping;
+            rt.anchoredPosition = originalPos + new Vector2(x, y);
+            yield return null;
+        }
+        rt.anchoredPosition = originalPos;
+    }
+
     /// Quan l'enemic mor: primer l'escapcem en pixels, despres la pantalla de victoria.
     private IEnumerator DefeatAndVictoryRoutine()
     {
         ShowTurnMenu(false);
+
+        // Slide Out de tota la UI de combat cap amunt
+        float outDur = 0.5f;
+        Vector2 outOff = new Vector2(0, 400f);
+        if (playerUIPanel != null) StartCoroutine(SlideOutRect(playerUIPanel, playerUIOriginalPos, outOff, outDur));
+        if (enemyUIPanel != null) StartCoroutine(SlideOutRect(enemyUIPanel, enemyUIOriginalPos, outOff, outDur));
+        if (playerNameText != null) StartCoroutine(SlideOutRect(playerNameText.rectTransform, playerNameOriginalPos, outOff, outDur));
+        if (playerHPText != null) StartCoroutine(SlideOutRect(playerHPText.rectTransform, playerHPTextOriginalPos, outOff, outDur));
+        if (enemyNameText != null) StartCoroutine(SlideOutRect(enemyNameText.rectTransform, enemyNameOriginalPos, outOff, outDur));
+        if (enemyHPText != null) StartCoroutine(SlideOutRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, outOff, outDur));
+
+        // So de mort de l'enemic (des del seu perfil)
+        AudioClip deathClip = encounter?.enemyProfile?.deathSound;
+        if (deathClip) audioSource.PlayOneShot(deathClip);
 
         if (enemyPortraitImage != null && enemyPortraitImage.enabled)
         {
@@ -719,6 +790,9 @@ public class CombatManager : MonoBehaviour
     private IEnumerator VictoryRoutine()
     {
         ShowTurnMenu(false);
+        // So de victòria
+        if (victorySound) audioSource.PlayOneShot(victorySound);
+
         if (enemyHPText) enemyHPText.text = "";
         if (playerHPText) playerHPText.text = "";
 

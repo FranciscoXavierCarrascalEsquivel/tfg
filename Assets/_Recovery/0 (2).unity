@@ -2553,8 +2553,6 @@ MonoBehaviour:
   itemDatabase:
   - {fileID: 11400000, guid: 925c5f9f34ae77046b4989dd253a2dcd, type: 2}
   - {fileID: 11400000, guid: 17141470ec60d6f4dace2fc64a3ed097, type: 2}
-  navSound: {fileID: 8300000, guid: 10c16daae2e390d45af513716f258439, type: 3}
-  selectSound: {fileID: 8300000, guid: 3f485a00d0faf8d4289d7a7084607e45, type: 3}
 --- !u!4 &662989803
 Transform:
   m_ObjectHideFlags: 0
@@ -3279,7 +3277,7 @@ MonoBehaviour:
   combatSceneName: CombatScene
   worldScriptsToDisable: []
   splitOverlayPrefab: {fileID: 261557214480758311, guid: f1227ea6f4667ba4291fabbcbe06f0d1, type: 3}
-  combatMusic: {fileID: 8300000, guid: 94f14acd5c4db20419b3cfd32c915af4, type: 3}
+  combatMusic: {fileID: 8300000, guid: c1ad63b2eeb24fb49ba692e0b989277e, type: 3}
 --- !u!1 &788047486
 GameObject:
   m_ObjectHideFlags: 0
