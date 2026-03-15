@@ -100,9 +100,14 @@ public class CombatManager : MonoBehaviour
     private Vector2 enemyNameOriginalPos;
     private Vector2 enemyHPTextOriginalPos;
     private Vector2 turnMenuOriginalPos;
+    
+    private Sprite softCircleSprite; // Procedural
+    private Image selectionGlowImage; // The mirror glow
 
     private void Awake()
     {
+        CreateSoftCircle(); // Generem la textura de la cervesa circular difuminada
+
         if (enemyPortraitImage != null) enemyPortraitImage.enabled = false;
 
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -150,6 +155,26 @@ public class CombatManager : MonoBehaviour
         if (playerHPText != null) playerHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyNameText != null) enemyNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyHPText != null) enemyHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
+    }
+
+    private void CreateSoftCircle()
+    {
+        int size = 64;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = (x - size / 2f) / (size / 2f);
+                float dy = (y - size / 2f) / (size / 2f);
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                // Falloff tipus Gaussià per un difuminat de "Premium" real
+                float alpha = Mathf.Exp(-4f * d * d) * Mathf.Clamp01(1f - d);
+                tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
+            }
+        }
+        tex.Apply();
+        softCircleSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
     }
 
     public void PreSetup(CombatEncounter encounter)
@@ -456,9 +481,6 @@ public class CombatManager : MonoBehaviour
             {
                 btn.gameObject.SetActive(true);
             }
-
-            // L'antic codi destruïa el contorn (outline) descontrolant l'ombra/disseny fosc del botó en la UI predeterminada.
-            // Ara ho evitem absolutament per mantenir els botons vius i idèntics a la scene.
         }
 
         if (mainButtons.Length == 0 || selectedIndex < 0 || selectedIndex >= mainButtons.Length) return;
@@ -468,98 +490,112 @@ public class CombatManager : MonoBehaviour
 
         if (selectionCursorFrame == null)
         {
-            GameObject go = new GameObject("SelectionFX_Frame");
+            GameObject go = new GameObject("SelectionFX_VibrantYellowHighlight");
             selectionCursorFrame = go.AddComponent<RectTransform>();
+            selectionGlowImage = go.AddComponent<Image>();
+            selectionGlowImage.raycastTarget = false;
             
-            // Afegim 4 sub-imatges per fer les línies de contorn (vores extremadament fines de 2px segons pauta)
-            CreateBorder(selectionCursorFrame, "Top", new Vector2(0, 1), new Vector2(1, 1), new Vector2(-2, 0), new Vector2(2, 2));
-            CreateBorder(selectionCursorFrame, "Bot", new Vector2(0, 0), new Vector2(1, 0), new Vector2(-2, -2), new Vector2(2, 0));
-            CreateBorder(selectionCursorFrame, "Left", new Vector2(0, 0), new Vector2(0, 1), new Vector2(-2, 0), new Vector2(0, 0));
-            CreateBorder(selectionCursorFrame, "Right", new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 0), new Vector2(2, 0));
-
-            StartCoroutine(CursorGlowRoutine(selectionCursorFrame));
+            StartCoroutine(PremiumGlowRoutine(selectionCursorFrame, selectionGlowImage));
         }
 
+        selectionCursorFrame.gameObject.SetActive(true);
+
+        // El posem com a primer fill del botó (perquè quedi darrere del text i la icona)
         selectionCursorFrame.SetParent(selBtn.transform, false);
-        selectionCursorFrame.SetAsLastSibling(); // Sempre per sobre per fer d'il·luminador
+        selectionCursorFrame.SetAsFirstSibling();
         
         selectionCursorFrame.anchorMin = Vector2.zero;
         selectionCursorFrame.anchorMax = Vector2.one;
-        selectionCursorFrame.offsetMin = Vector2.zero;
-        selectionCursorFrame.offsetMax = Vector2.zero;
+        selectionCursorFrame.pivot = new Vector2(0.5f, 0.5f);
+        selectionCursorFrame.anchoredPosition = Vector2.zero;
+        
+        // El fem créixer un pèl per fora del botó per fer l'efecte de "contorn" (només 4-5px)
+        selectionCursorFrame.offsetMin = new Vector2(-5, -5);
+        selectionCursorFrame.offsetMax = new Vector2(5, 5);
+        selectionCursorFrame.localScale = Vector3.one;
+
+        Image btnImg = selBtn.GetComponent<Image>();
+        if (btnImg != null && selectionGlowImage != null)
+        {
+            selectionGlowImage.sprite = btnImg.sprite;
+            selectionGlowImage.type = btnImg.type;
+            selectionGlowImage.preserveAspect = btnImg.preserveAspect;
+            
+            // Assignem el color segons el botó
+            Color selectionColor = Color.yellow;
+            switch(selectedIndex)
+            {
+                case 0: selectionColor = new Color(1f, 0.2f, 0.2f, 0.9f); break; // Vermell (Atacar)
+                case 1: selectionColor = new Color(1f, 0.9f, 0f, 0.9f);   break; // Groc (Raonar)
+                case 2: selectionColor = new Color(0.2f, 0.6f, 1f, 0.9f); break; // Blau (Defensar)
+                case 3: selectionColor = new Color(0.7f, 0.3f, 1f, 0.9f); break; // Lila (Objectes)
+            }
+            selectionGlowImage.color = selectionColor;
+        }
     }
 
-    private void CreateBorder(Transform parent, string name, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        RectTransform rt = go.AddComponent<RectTransform>();
-        rt.anchorMin = aMin; rt.anchorMax = aMax;
-        rt.offsetMin = oMin; rt.offsetMax = oMax;
-        
-        Image img = go.AddComponent<Image>();
-        img.color = new Color(1f, 0.9f, 0.1f, 1f); // Groc
-        img.raycastTarget = false;
-    }
+    private Color currentHighlightColor = Color.yellow;
 
-    private IEnumerator CursorGlowRoutine(RectTransform rt)
+    private IEnumerator PremiumGlowRoutine(RectTransform rt, Image glowImg)
     {
-        Image[] borders = rt.GetComponentsInChildren<Image>();
-        
         while (true)
         {
-            if (rt == null) yield break;
+            if (rt == null || glowImg == null) yield break;
 
-            float t = (Mathf.Sin(Time.unscaledTime * 4f) + 1f) / 2f; // Animació més lenta
-            rt.localScale = Vector3.Lerp(new Vector3(1f, 1f, 1f), new Vector3(1.02f, 1.05f, 1f), t); // Rebot menys agressiu
-            
-            Color glowCore = new Color(1f, 0.9f, 0.1f, Mathf.Lerp(0.5f, 1f, t));
-            foreach(var img in borders)
+            // Llegim el color actual del glow per passar-lo a les partícules
+            currentHighlightColor = glowImg.color;
+
+            // Un detall fix però amb un alpha que "respira" molt subtilment per donar vida
+            float t = (Mathf.Sin(Time.unscaledTime * 3f) + 1f) / 2f;
+            Color c = glowImg.color;
+            c.a = Mathf.Lerp(0.5f, 0.9f, t);
+            glowImg.color = c;
+
+            rt.localScale = Vector3.one;
+
+            // Més quantitat de partícules (frequència augmentada)
+            if (rt.gameObject.activeInHierarchy && Random.value < 0.25f)
             {
-                if (img != null) img.color = glowCore;
-            }
-            
-            // Spawn random partícules menys freqüents
-            if (rt.gameObject.activeInHierarchy && Random.value < 0.05f)
-            {
-                SpawnCursorParticle(rt);
+                SpawnPremiumCircleParticle(rt);
             }
             
             yield return null;
         }
     }
 
-    private void SpawnCursorParticle(RectTransform parent)
+    private void SpawnPremiumCircleParticle(RectTransform parent)
     {
-        GameObject p = new GameObject("C_Part");
-        p.transform.SetParent(parent, false);
-        p.transform.SetAsLastSibling(); // Per sobre del contorn directament
+        GameObject p = new GameObject("P_Sparkle");
+        p.transform.SetParent(parent, false); 
+        p.transform.position = parent.position; 
         
         RectTransform partRT = p.AddComponent<RectTransform>();
         
-        // Col·loquem la partícula en algun punt dels voltants dels marges del botó
-        float anchorX = Random.value < 0.5f ? (Random.value < 0.5f ? 0f : 1f) : Random.value;
-        float anchorY = (anchorX > 0f && anchorX < 1f) ? (Random.value < 0.5f ? 0f : 1f) : Random.value;
-        
-        partRT.anchorMin = new Vector2(anchorX, anchorY);
-        partRT.anchorMax = new Vector2(anchorX, anchorY);
-        partRT.anchoredPosition = Vector2.zero;
+        // Ara neixen de la bora superior del botó
+        float randX = Random.Range(-parent.rect.width / 2.2f, parent.rect.width / 2.2f);
+        float topEdgeY = parent.rect.height / 2f; 
+        partRT.anchoredPosition = new Vector2(randX, topEdgeY);
 
-        float size = Random.Range(3f, 6f); // Molt més petits i subtils
+        // Més petites, com una ebullició de llum
+        float size = Random.Range(1.5f, 4f); 
         partRT.sizeDelta = new Vector2(size, size);
         
         Image img = p.AddComponent<Image>();
+        img.sprite = softCircleSprite;
         img.raycastTarget = false;
-        img.color = new Color(1f, 0.95f, 0.4f, 1f);
+        img.color = currentHighlightColor;
         
-        StartCoroutine(AnimateCursorParticle(partRT, img));
+        StartCoroutine(AnimatePremiumParticle(partRT, img));
     }
 
-    private IEnumerator AnimateCursorParticle(RectTransform rt, Image img)
+    private IEnumerator AnimatePremiumParticle(RectTransform rt, Image img)
     {
-        Vector2 vel = new Vector2(Random.Range(-15f, 15f), Random.Range(20f, 60f)); // Moviment més suau cap a dalt
-        float life = Random.Range(0.4f, 1.0f);
+        // Velocitat gairebé nul·la (com si suressin pràcticament quietes)
+        Vector2 vel = new Vector2(Random.Range(-1f, 1f), Random.Range(1f, 5f)); 
+        float life = Random.Range(1.8f, 2.8f);
         float elapsed = 0f;
+        float waveFreq = Random.Range(3f, 6f);
+        float waveAmp = Random.Range(2f, 6f);
         
         while(elapsed < life)
         {
@@ -567,12 +603,20 @@ public class CombatManager : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / life;
             
-            rt.anchoredPosition += vel * Time.unscaledDeltaTime;
+            // Moviment molt més controlat i arran de la vora
+            Vector2 pos = rt.anchoredPosition;
+            pos += vel * Time.unscaledDeltaTime;
+            pos.x += Mathf.Sin(elapsed * waveFreq) * waveAmp * Time.unscaledDeltaTime;
+            rt.anchoredPosition = pos;
             
+            // "Twinkle" effect ràpid
+            float twinkle = Mathf.Sin(elapsed * 15f) * 0.3f + 0.7f;
             Color c = img.color;
-            c.a = 1f - t;
+            c.a = (1f - t) * 0.7f * twinkle;
             img.color = c;
-            rt.localScale = Vector3.one * (1f - t);
+            
+            // Escalat eteri molt petit
+            rt.localScale = Vector3.one * (0.9f + Mathf.PingPong(elapsed * 1.5f, 0.3f));
             
             yield return null;
         }

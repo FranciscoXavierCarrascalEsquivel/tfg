@@ -10,12 +10,19 @@ public class StartCombatOnKey : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
-            loader.StartCombat(new CombatEncounter
+            if (loader != null)
             {
-                enemyPortrait = enemyPortrait,
-                projectilePrefab = projectilePrefab,
-                enemyAttackDuration = 6f
-            });
+                loader.StartCombat(new CombatEncounter
+                {
+                    enemyPortrait = enemyPortrait,
+                    projectilePrefab = projectilePrefab,
+                    enemyAttackDuration = 6f
+                });
+            }
+            else
+            {
+                Debug.LogWarning("StartCombatOnKey: No has assignat el 'loader' (CombatLoader) a l'inspector!");
+            }
         }
     }
 }
