@@ -110,13 +110,15 @@ public class VictoryPanelUI : MonoBehaviour
         // gameObject.AddComponent<Image>().color = new Color(0.03f, 0.02f, 0.06f, 0.88f);
 
         // ── Targeta principal (pixel-art RPG window) ──────────────────
-        int extraRows = 1;
+        // Altura mes compacta si no hi ha objectes
+        int extraRows = 0;
         if (items.Count > 0)
         {
             var distinctItems = new System.Collections.Generic.HashSet<string>(items);
-            extraRows = distinctItems.Count;
+            extraRows = (distinctItems.Count + 1) / 2; // Arrodoniment cap amunt per columnes
         }
-        float cardH   = 560f + extraRows * 100f; // Alçada base proporcionada a les noves reduccions
+        float cardBaseH = (items.Count == 0) ? 420f : 500f;
+        float cardH     = cardBaseH + extraRows * 100f;
 
         var card = NewChild("Card", transform);
         cardRect = card.GetComponent<RectTransform>();
@@ -162,8 +164,8 @@ public class VictoryPanelUI : MonoBehaviour
         AddCornerSquares(card, new Color(0.95f, 0.80f, 0.15f, 1f), 16f);
 
         // ── Files de dades ────────────────────────────────────────────
-        // Partim de sota la capçalera
-        float currentY = cardH / 2f - headerH - 80f; // Menys separació abismal
+        // Partim de sota la capçalera amb espaiat més compacte
+        float currentY = cardH / 2f - headerH - 70f;
 
         goldValueText = MakeIconRow(card, coinSprite, "Or", $"+0 G ({totalGold - goldEarned} G)",
                                     new Color(1f, 0.90f, 0.15f), currentY);
@@ -208,7 +210,7 @@ public class VictoryPanelUI : MonoBehaviour
         // Transparència inicial a 0 perquè no es vegi d'entrada, el Blink ho animarà a 1
         SetFont(promptText, 52f, new Color(1f, 1f, 1f, 0f), 
                 FontStyles.Normal, TextAlignmentOptions.Center);
-        promptText.text = "[ PRESS E OR INTRO TO CONTINUE ]";
+        promptText.text = "[ PREM E O INTRO PER CONTINUAR ]";
         
         // Contorn perfecte Natiu al TextMeshPro creant una nova instància del material per no enguarrar l'asset principal
         promptText.fontSharedMaterial = Instantiate(promptText.fontSharedMaterial);
@@ -317,16 +319,17 @@ public class VictoryPanelUI : MonoBehaviour
         var lblGo = NewChild("Label", row.transform);
         var lblRt = lblGo.GetComponent<RectTransform>();
         lblRt.anchorMin = new Vector2(0f, 0f);
-        lblRt.anchorMax = string.IsNullOrEmpty(value) ? new Vector2(1f, 1f) : new Vector2(0.5f, 1f);
+        // Donem un 70% de l'espai al label per evitar que "aconseguits" baixi de fila
+        lblRt.anchorMax = (string.IsNullOrEmpty(value) || value == "-") ? new Vector2(1f, 1f) : new Vector2(0.7f, 1f);
         lblRt.offsetMin = new Vector2(140f, 0f);
         lblRt.offsetMax = Vector2.zero;
         var lblTxt = lblGo.AddComponent<TextMeshProUGUI>();
-        // Tamany exactament idèntic (64) per la descripció i el valor numèric
         SetFont(lblTxt, 64f, new Color(0.65f, 0.65f, 0.65f),
                 FontStyles.Normal, TextAlignmentOptions.MidlineLeft);
         lblTxt.enableAutoSizing = true;
         lblTxt.fontSizeMin = 30f;
         lblTxt.fontSizeMax = 64f;
+        lblTxt.enableWordWrapping = false;
         lblTxt.text = label;
 
         // Valor NUMÈRIC / NOM OBJECTE
@@ -342,6 +345,7 @@ public class VictoryPanelUI : MonoBehaviour
         valTxt.enableAutoSizing = true;
         valTxt.fontSizeMin = 30f;
         valTxt.fontSizeMax = 64f;
+        valTxt.enableWordWrapping = false;
         valTxt.text = value;
         return valTxt;
     }

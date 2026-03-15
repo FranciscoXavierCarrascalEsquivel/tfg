@@ -2553,6 +2553,7 @@ MonoBehaviour:
   itemDatabase:
   - {fileID: 11400000, guid: 925c5f9f34ae77046b4989dd253a2dcd, type: 2}
   - {fileID: 11400000, guid: 17141470ec60d6f4dace2fc64a3ed097, type: 2}
+  - {fileID: 11400000, guid: 66d5b9f83791c5740b872c2a3f7a0137, type: 2}
   navSound: {fileID: 8300000, guid: 10c16daae2e390d45af513716f258439, type: 3}
   selectSound: {fileID: 8300000, guid: 3f485a00d0faf8d4289d7a7084607e45, type: 3}
 --- !u!4 &662989803
@@ -3209,10 +3210,11 @@ MonoBehaviour:
   runSpeed: 5
   runKey: 304
   combatLoader: {fileID: 751296609}
-  encounterChancePerSecond: 0.5
-  minEncounterCooldown: 15
+  encounterChancePerStep: 0.5
+  minDistanceBetweenEncounters: 100
   wildEnemies:
   - {fileID: 11400000, guid: fa3b7825ff8d5b749923730369b0d41d, type: 2}
+  - {fileID: 11400000, guid: c48389b8c76ddb84888caa242858a5c9, type: 2}
 --- !u!114 &712280467
 MonoBehaviour:
   m_ObjectHideFlags: 0

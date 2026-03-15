@@ -11,8 +11,8 @@ public class PlayerController2D : MonoBehaviour
 
     [Header("Random Encounters")]
     [SerializeField] private CombatLoader combatLoader;
-    [SerializeField] private float encounterChancePerSecond = 0.02f; // Probabilitat molt baixa per segon per no ser molest
-    [SerializeField] private float minEncounterCooldown = 5f; // Segons mínims abans de poder trobar un enemic caminant
+    [SerializeField] private float encounterChancePerStep = 0.05f; // Probabilitat de trobar enemic cada metre recorregut
+    [SerializeField] private float minDistanceBetweenEncounters = 8f; // Distància mínima (metres) abans de la següent batalla
     [Tooltip("Llista d'enemics que et poden sortir aleatòriament per l'Overworld")]
     [SerializeField] private EnemyProfile[] wildEnemies;
 
@@ -29,7 +29,8 @@ public class PlayerController2D : MonoBehaviour
     private float timeSinceLastMove;
     private const float MOVEMENT_TIMEOUT = 0.05f; // Temps sense moviment real abans de considerar que estem parats
     
-    private float encounterCooldownTimer = 2f; // Gràcia inicial en començar l'escena
+    private float distanceWalkedSinceEncounter = 3f; // Gràcia inicial en començar l'escena (3 metres)
+    private float encounterSuppressionTimer = 0f;    // Temps de gràcia forçat per factors externs
 
     // Animator params (per evitar typos)
     private static readonly int IsMovingHash = Animator.StringToHash("isMoving");
@@ -37,7 +38,7 @@ public class PlayerController2D : MonoBehaviour
     private static readonly int MoveYHash = Animator.StringToHash("moveY");
     private static readonly int LastMoveXHash = Animator.StringToHash("lastMoveX");
     private static readonly int LastMoveYHash = Animator.StringToHash("lastMoveY");
-    private static readonly int SpeedMulHash = Animator.StringToHash("moveSpeedMultiplier"); // ✅ nou
+    private static readonly int SpeedMulHash = Animator.StringToHash("moveSpeedMultiplier");
 
     private void Awake()
     {
@@ -48,13 +49,13 @@ public class PlayerController2D : MonoBehaviour
         rb.freezeRotation = true;
     }
 
-    // ✅ Bloqueig/desbloqueig
+    // Bloqueig/desbloqueig
     public void LockMovement()
     {
         movementLocked = true;
         moveDir = Vector2.zero;
-        rb.linearVelocity = Vector2.zero;   // Unity 6: Aturem el moviment físic.
-        anim.SetBool(IsMovingHash, false);   // Aturem l'animació de caminar.
+        rb.linearVelocity = Vector2.zero;
+        anim.SetBool(IsMovingHash, false);
         anim.SetFloat(SpeedMulHash, 1f);
     }
 
@@ -63,6 +64,15 @@ public class PlayerController2D : MonoBehaviour
         movementLocked = false;
     }
 
+    /// <summary>
+    /// Evita que surtin monstres durant X segons (per exemple després d'un fade out)
+    /// </summary>
+    public void SuppressEncounters(float duration)
+    {
+        encounterSuppressionTimer = duration;
+        // Reiniciem la posició de referencia per evitar salts de distància si el jugador és teletransportat
+        lastPos = rb != null ? rb.position : (Vector2)transform.position;
+    }
 
     private void Start()
     {
@@ -71,12 +81,15 @@ public class PlayerController2D : MonoBehaviour
 
     private void Update()
     {
-        if (encounterCooldownTimer > 0f) encounterCooldownTimer -= Time.deltaTime;
+        if (encounterSuppressionTimer > 0f) encounterSuppressionTimer -= Time.deltaTime;
 
         if (movementLocked)
         {
             anim.SetBool(IsMovingHash, false);
             anim.SetFloat(SpeedMulHash, 1f);
+            
+            // Actualitzem lastPos encara que estiguem bloquejats per evitar salts de distància al desbloquejar
+            lastPos = rb.position; 
             return;
         }
 
@@ -100,9 +113,7 @@ public class PlayerController2D : MonoBehaviour
                 lastDir = new Vector2(Mathf.Sign(input.x), 0);
         }
 
-        // --- FIX 2: Buffer de moviment ---
-        // Si Update va més ràpid que FixedUpdate, hi haurà frames on distanceMoved sigui 0 encara que ens moguem.
-        // Usem un timer per filtrar-ho.
+        // Càlcul de distància moguda real
         float distanceMoved = Vector2.Distance(rb.position, lastPos);
         
         if (distanceMoved > 0.001f)
@@ -123,6 +134,23 @@ public class PlayerController2D : MonoBehaviour
         // Animació ON si: hi ha input I no estem bloquejats
         bool showMovingAnim = isMovingInput && !isStuck;
 
+        // --- SISTEMA DE COMBAT ALEATORI PER DISTÀNCIA ---
+        if (showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)
+        {
+            distanceWalkedSinceEncounter += distanceMoved;
+
+            if (distanceWalkedSinceEncounter >= minDistanceBetweenEncounters)
+            {
+                // Un cop superada la distància mínima, cada "pas" te una probabilitat
+                if (Random.value < encounterChancePerStep * distanceMoved)
+                {
+                    distanceWalkedSinceEncounter = 0f; // Reinicia el comptador de distància
+                    TriggerRandomEncounter();
+                    return; // Sortim per evitar que es pugui processar res més aquest frame
+                }
+            }
+        }
+
         // Animator:
         anim.SetBool(IsMovingHash, showMovingAnim);
 
@@ -142,21 +170,9 @@ public class PlayerController2D : MonoBehaviour
         anim.SetFloat(LastMoveXHash, lastDir.x);
         anim.SetFloat(LastMoveYHash, lastDir.y);
 
-        // ✅ Multiplicador d'animació segons proporció run/walk
-        // si camines = 1, si corres = runSpeed/walkSpeed
+        // Multiplicador d'animació segons proporció run/walk
         float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
         anim.SetFloat(SpeedMulHash, isRunning ? ratio : 1f);
-
-        // --- TICK DE COMBAT ALEATORI ---
-        if (showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterCooldownTimer <= 0f)
-        {
-            // Tira els daus base per segon
-            if (Random.value < encounterChancePerSecond * Time.deltaTime)
-            {
-                TriggerRandomEncounter();
-                encounterCooldownTimer = minEncounterCooldown; // Reinicia el rellotge fred
-            }
-        }
     }
 
     private void TriggerRandomEncounter()

@@ -18,8 +18,14 @@ MonoBehaviour:
   enemyPortrait: {fileID: 21300000, guid: 2bfba5460ca064c47a67f77144cb4999, type: 3}
   projectilePrefab: {fileID: 5410871294214501288, guid: d4ca0fb52723e8c44b986f4cc76ff8da, type: 3}
   attackDuration: 6
-  attackPatterns: 00000000
+  attackPatterns: 010000000000000004000000
   goldRewardMin: 10
   goldRewardMax: 30
-  drops: []
+  drops:
+  - itemName: Aigueta
+    probability: 150
+  - itemName: Energy
+    probability: 5
+  - itemName: Gosset
+    probability: 200
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}

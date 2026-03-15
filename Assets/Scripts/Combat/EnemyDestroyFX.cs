@@ -17,7 +17,7 @@ public class EnemyDestroyFX : MonoBehaviour
     private const float INITIAL_PAUSE  = 0.06f; // breu flash de "impacte"
 
     // ── Factory ──────────────────────────────────────────────────────
-    public static void Play(Image portrait, Action onDone)
+    public static void Play(Image portrait, Action onDone, Color? tint = null)
     {
         if (portrait == null || !portrait.enabled)
         {
@@ -33,11 +33,13 @@ public class EnemyDestroyFX : MonoBehaviour
         var fx = go.AddComponent<EnemyDestroyFX>();
         fx.sourcePortrait = portrait;
         fx.onDone         = onDone;
+        fx.tint           = tint ?? Color.white;
     }
 
     // ── Dades internes ───────────────────────────────────────────────
     private Image  sourcePortrait;
     private Action onDone;
+    private Color  tint = Color.white;
 
     private RectTransform[] tileRTs;
     private Vector2[]       velocities;
@@ -116,6 +118,7 @@ public class EnemyDestroyFX : MonoBehaviour
                         uv.width  / COLS,
                         uv.height / ROWS
                     );
+                    raw.color = tint; // Apliquem el tint aquí
                     g = raw;
                 }
                 else
@@ -123,7 +126,7 @@ public class EnemyDestroyFX : MonoBehaviour
                     // Fallback: quadrats de color si no hi ha textura
                     var img   = tileGo.AddComponent<Image>();
                     float hue = (float)(c + r) / (COLS + ROWS) * 0.12f + 0.04f;
-                    img.color = Color.HSVToRGB(hue, 0.85f, 1f);
+                    img.color = Color.HSVToRGB(hue, 0.85f, 1f) * tint;
                     g = img;
                 }
 
@@ -168,6 +171,14 @@ public class EnemyDestroyFX : MonoBehaviour
 
         // Amaguem el retrat original i mostrem les partícules
         sourcePortrait.enabled = false;
+
+        // --- NOU: So de la explosio al moment que el retrat desapareix (només per l'enemic, no projectils) ---
+        if (!isProjectile)
+        {
+            var cm = FindFirstObjectByType<CombatManager>();
+            if (cm != null) cm.PlayExplosionSound();
+        }
+
         for (int i = 0; i < count; i++)
         {
             if (tileRTs[i] != null) tileRTs[i].gameObject.SetActive(true);

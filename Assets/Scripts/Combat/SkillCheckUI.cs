@@ -112,7 +112,7 @@ public class SkillCheckUI : MonoBehaviour
         nextTick = 0.1f;
         if (damageText != null) 
         {
-            damageText.text = "PRESS E\nOR INTRO";
+            damageText.text = "PREM E\nO INTRO";
             if (customFont != null) damageText.font = customFont;
             damageText.alignment = TMPro.TextAlignmentOptions.Center;
             damageText.fontSize = 80; // Molt més gran i cridaner
@@ -327,11 +327,11 @@ public class SkillCheckUI : MonoBehaviour
             
             // Força la destrucció de qualsevol limitador heretat
             damageText.enableAutoSizing = false;
-            damageText.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+            damageText.enableWordWrapping = false; // NOU: Una sola línia sempre
             damageText.overflowMode = TMPro.TextOverflowModes.Overflow;
             
             damageText.alignment = TMPro.TextAlignmentOptions.Center;
-            damageText.fontSize = 150; // Text massiu com demanat
+            damageText.fontSize = 200; // Text massiu i més gran encara (de 150 a 200)
             damageText.fontStyle = TMPro.FontStyles.Bold;
 
             // Fiquem la caixa on viu el text a mida exagerada pq MAI faci clipping 

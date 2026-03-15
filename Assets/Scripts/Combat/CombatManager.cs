@@ -46,6 +46,10 @@ public class CombatManager : MonoBehaviour
     private int speedBuffRoundsLeft = 0;
     private float currentSpeedBuffValue = 0f;
 
+    // Estat de defensa
+    public bool IsDefending => isDefending;
+    private bool isDefending = false;
+
     [Header("UI Stats")]
     [SerializeField] private RectTransform playerUIPanel;
     [SerializeField] private TMPro.TMP_Text playerNameText;
@@ -62,10 +66,13 @@ public class CombatManager : MonoBehaviour
 
     [Header("Audio Feedback")]
     [SerializeField] private AudioClip moveMenuSound;
+    [SerializeField] private AudioClip confirmMenuSound; // NOU: So al triar opció
     [SerializeField] private AudioClip attackSound;      // So al iniciar l'atac (premem E al minijoc)
     [SerializeField] private AudioClip enemyHitSound;    // So quan l'enemic rep dany
     [SerializeField] private AudioClip takeDamageSound;
     [SerializeField] private AudioClip parrySound;
+    [SerializeField] private AudioClip defendParrySound; // NOU: So al fer parry mentre es defensa
+    [SerializeField] private AudioClip explosionSound; // NOU: Soroll de la explosio de pixels
     [SerializeField] private AudioClip playerMoveSound;
     [SerializeField] private AudioClip victorySound;    // So de victòria al final del combat
     private AudioSource audioSource;
@@ -74,6 +81,14 @@ public class CombatManager : MonoBehaviour
     [Header("VFX & Limits")]
     [SerializeField] private GameObject parryParticlePrefab;
     [SerializeField] private RectTransform projectileDestroyLimit;
+
+    [Header("Item Animation Settings")]
+    [Tooltip("Punt on neix l'objecte (part baixa de la pantalla)")]
+    [SerializeField] private RectTransform throwStartPoint;
+    [Tooltip("Alçada màxima de la paràbola")]
+    [SerializeField] private float throwArcHeight = 400f;
+    [Tooltip("Línia de terra on cauen els objectes després d'impactar")]
+    [SerializeField] private RectTransform itemGroundLine;
 
     private HandController[] handControllers;
 
@@ -357,6 +372,8 @@ public class CombatManager : MonoBehaviour
 
     private void ConfirmSelection()
     {
+        if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);
+        
         if (currentPhase == MenuPhase.Main)
         {
             // Saltem el pas de Targejar l'Enemic (TargetPhase) entrant directament a l'Atac (La Ruleta)
@@ -621,7 +638,8 @@ public class CombatManager : MonoBehaviour
     {
         if (state == State.End) return;
 
-        playerCurrentHP -= damage;
+        int finalDamage = isDefending ? Mathf.CeilToInt(damage / 2f) : damage;
+        playerCurrentHP -= finalDamage;
         if (playerCurrentHP < 0) playerCurrentHP = 0;
         UpdateStatsUI();
 
@@ -641,7 +659,19 @@ public class CombatManager : MonoBehaviour
 
     public void PlayParrySound()
     {
-        if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
+        if (isDefending && defendParrySound != null)
+        {
+            if (audioSource) audioSource.PlayOneShot(defendParrySound);
+        }
+        else
+        {
+            if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
+        }
+    }
+
+    public void PlayExplosionSound()
+    {
+        if (explosionSound && audioSource) audioSource.PlayOneShot(explosionSound);
     }
 
     public void SpawnParryEffect(Vector3 position, Sprite projectileSprite = null)
@@ -653,10 +683,32 @@ public class CombatManager : MonoBehaviour
             if (projectileSprite != null)
             {
                 var img = effect.GetComponent<UnityEngine.UI.Image>();
-                if (img) img.sprite = projectileSprite;
+                if (img) 
+                {
+                    img.sprite = projectileSprite;
+                    if (isDefending) img.color = new Color(0.2f, 1f, 0.2f, 1f); // Verd si estem defensant
+                }
             }
 
             Destroy(effect, 2f); // Auto-cleanup fallback
+        }
+    }
+
+    public void OnParrySuccess(Vector3 pos, Sprite projectileSprite)
+    {
+        PlayParrySound();
+        SpawnParryEffect(pos, projectileSprite);
+
+        if (isDefending)
+        {
+            playerCurrentHP++;
+            if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
+            UpdateStatsUI();
+
+            // Mostrem FX de curació sobre la barra de vida per reforçar el feedback
+            Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+            Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
+            HealFXUI.ShowAboveBar(canvasParent, targetImg, "+1", new Color(0.25f, 1f, 0.35f), 1f);
         }
     }
 
@@ -855,6 +907,7 @@ public class CombatManager : MonoBehaviour
     private void OnDefend()
     {
         Debug.Log("DEFEND!");
+        isDefending = true;
         EndPlayerTurn();
     }
 
@@ -862,61 +915,163 @@ public class CombatManager : MonoBehaviour
     {
         InventoryMenuUI.Show(isCombat: true, onItemSelected: (profile) =>
         {
-            ApplyItemEffect(profile);
-            
-            if (enemyCurrentHP <= 0)
-            {
-                state = State.End;
-                StartCoroutine(DefeatAndVictoryRoutine());
-            }
-            else
-            {
-                EndPlayerTurn();
-            }
+            StartCoroutine(ProcessItemSequence(profile));
         });
     }
 
-    private void ApplyItemEffect(ItemProfile profile)
+    private IEnumerator ProcessItemSequence(ItemProfile profile)
+    {
+        yield return StartCoroutine(ApplyItemEffect(profile));
+        
+        if (enemyCurrentHP <= 0)
+        {
+            state = State.End;
+            StartCoroutine(DefeatAndVictoryRoutine());
+        }
+        else
+        {
+            EndPlayerTurn();
+        }
+    }
+
+    private IEnumerator ApplyItemEffect(ItemProfile profile)
     {
         Debug.Log($"Utilitzant objecte en combat: {profile.itemName}");
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
 
         if (profile.effectType == ItemEffectType.HealPlayer)
         {
+            if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
             playerCurrentHP += profile.effectValue;
             if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
 
-            // Text verd + partícules verdes ancorats sobre la imatge configurada o la barra
+            // Text verd + partícules verdes
             Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
             HealFXUI.ShowAboveBar(canvasParent, targetImg, $"+{profile.effectValue} HP",
                                   new Color(0.25f, 1f, 0.35f));
         }
         else if (profile.effectType == ItemEffectType.DamageEnemy)
         {
-            enemyCurrentHP -= profile.effectValue;
-            if (enemyCurrentHP < 0) enemyCurrentHP = 0;
+            // --- ANIMACIÓ DE TIRAR OBJECTE ---
+            // Ara li passem un callback o esperem a que impacti per restar vida
+            yield return StartCoroutine(AnimateItemThrow(profile, () => {
+                // AQUEST CODI S'EXECUTA JUST EN EL MOMENT DE L'IMPACTE
+                enemyCurrentHP -= profile.effectValue;
+                if (enemyCurrentHP < 0) enemyCurrentHP = 0;
+                UpdateStatsUI();
 
-            // Taronja sobre la barra de l'enemic
-            HealFXUI.ShowAboveBar(canvasParent, enemyHPFill, $"-{profile.effectValue} HP",
-                                  new Color(1f, 0.45f, 0.1f));
+                if (enemyHitSound != null) audioSource.PlayOneShot(enemyHitSound);
+
+                // Taronja sobre la barra de l'enemic
+                HealFXUI.ShowAboveBar(canvasParent, enemyHPFill, $"-{profile.effectValue} HP",
+                                      new Color(1f, 0.45f, 0.1f));
+            }));
         }
         else if (profile.effectType == ItemEffectType.SpeedUpHands)
         {
+            if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
             var hands = FindObjectsByType<HandController>(FindObjectsSortMode.None);
             
-            // L'efecte no és acumulatiu; només apliquem la velocitat extra si no està ja en marxa
             if (speedBuffRoundsLeft <= 0)
             {
                 currentSpeedBuffValue = (profile.effectValue / 100f);
                 foreach (var h in hands) h.speedMultiplier += currentSpeedBuffValue;
             }
             
-            // Renova els torns de durada totals o els inicialitza
             speedBuffRoundsLeft = profile.buffDurationRounds;
-
             HealFXUI.Show(canvasParent, $"VELOC +{profile.effectValue}% ({speedBuffRoundsLeft} TORNS)", new Color(1f, 0.9f, 0.15f));
         }
         UpdateStatsUI();
+        yield return null;
+    }
+
+    private IEnumerator AnimateItemThrow(ItemProfile profile, System.Action onImpact)
+    {
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        
+        GameObject go = new GameObject("ThrownItem");
+        go.transform.SetParent(canvasParent, false);
+        Image img = go.AddComponent<Image>();
+        img.sprite = profile.itemIcon;
+        img.preserveAspect = true;
+        img.raycastTarget = false;
+        
+        RectTransform rt = go.GetComponent<RectTransform>();
+
+        // 1. Punt d'Inici (Des del Inspector o fallback)
+        Vector2 startPos = throwStartPoint != null ? throwStartPoint.anchoredPosition : new Vector2(0, -700f); 
+
+        // 2. Punt de Col·lisió (Directament el centre del rival)
+        Vector2 impactPos;
+        if (enemyPortraitImage != null) impactPos = enemyPortraitImage.rectTransform.anchoredPosition;
+        else if (enemyUIPanel != null) impactPos = enemyUIPanel.anchoredPosition;
+        else impactPos = new Vector2(0, 300f);
+
+        // 3. Línia de terra (On cau després de col·lisionar)
+        float groundY = itemGroundLine != null ? itemGroundLine.anchoredPosition.y : impactPos.y - 150f;
+        Vector2 groundPos = new Vector2(impactPos.x + Random.Range(-100f, 100f), groundY);
+
+        rt.anchoredPosition = startPos;
+        float startScale = 3.5f;
+        float endScale = 0.8f;
+        rt.localScale = Vector3.one * startScale;
+
+        if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
+
+        // --- FASE 1: VOL FINS L'IMPACTE ---
+        float duration = 0.5f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            Vector2 currentPos = Vector2.Lerp(startPos, impactPos, t);
+            float parabola = 4f * t * (1f - t);
+            currentPos.y += parabola * throwArcHeight;
+            rt.anchoredPosition = currentPos;
+            rt.localScale = Vector3.one * Mathf.Lerp(startScale, endScale, t);
+            rt.Rotate(0, 0, -800f * Time.deltaTime);
+            yield return null;
+        }
+
+        // --- MOMENT DE L'IMPACTE ---
+        onImpact?.Invoke();
+
+        // --- FASE 2: CAURE AL TERRA ---
+        elapsed = 0f;
+        float fallDuration = 0.3f;
+        Vector2 posAtImpact = rt.anchoredPosition;
+        while (elapsed < fallDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / fallDuration;
+            // Cau de forma més directa (Ease In)
+            rt.anchoredPosition = Vector2.Lerp(posAtImpact, groundPos, t * t);
+            rt.Rotate(0, 0, -200f * Time.deltaTime);
+            yield return null;
+        }
+
+        // Petit rebot al terra
+        float bounce = 0f;
+        while(bounce < 0.2f)
+        {
+            bounce += Time.deltaTime;
+            float b = Mathf.Abs(Mathf.Sin(bounce * Mathf.PI / 0.2f)) * 15f;
+            rt.anchoredPosition = groundPos + new Vector2(0, b);
+            yield return null;
+        }
+        rt.anchoredPosition = groundPos;
+
+        yield return new WaitForSeconds(1f);
+        
+        float fade = 1f;
+        while(fade > 0f)
+        {
+            fade -= Time.deltaTime * 2f;
+            img.color = new Color(1,1,1,fade);
+            yield return null;
+        }
+        Destroy(go);
     }
 
     private void EndPlayerTurn()
@@ -1020,6 +1175,9 @@ public class CombatManager : MonoBehaviour
 
             spawner.Configure(prefab, chosenPattern);
             yield return spawner.Run(dur);
+            
+            // Esperem un instant per assegurar que els últims projectils s'han registrat be
+            yield return new WaitForSeconds(0.1f);
 
             // Wait until all projectiles have finished traveling and are destroyed
             yield return new WaitUntil(() => ProjectileUI.activeProjectiles <= 0);
@@ -1048,6 +1206,7 @@ public class CombatManager : MonoBehaviour
         }
 
         state = State.PlayerTurn;
+        isDefending = false; // Reset de la defensa al començar el següent torn
         ShowTurnMenu(true);
     }
 }

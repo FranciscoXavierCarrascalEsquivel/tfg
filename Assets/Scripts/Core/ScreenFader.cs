@@ -52,13 +52,6 @@ public class ScreenFader : MonoBehaviour
         c.a = to;
         fadeImage.color = c;
     }
-    private void Update()
-{
-    if (Input.GetKeyDown(KeyCode.F))
-        StartCoroutine(FadeOutToBlack());
 
-    if (Input.GetKeyDown(KeyCode.G))
-        StartCoroutine(FadeInFromBlack());
-}
 
 }

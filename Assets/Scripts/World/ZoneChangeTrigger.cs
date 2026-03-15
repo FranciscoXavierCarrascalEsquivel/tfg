@@ -39,6 +39,13 @@ public class ZoneChangeTrigger : MonoBehaviour
     {
         busy = true;
 
+        var ctrl = player.GetComponent<PlayerController2D>();
+        if (ctrl != null) 
+        {
+            ctrl.LockMovement();
+            ctrl.SuppressEncounters(10f); // Bloqueig temporal llarg durant la càrrega
+        }
+
         // Parem la música de l'escena si hi ha una referència
         if (sceneMusic != null)
         {
@@ -49,6 +56,7 @@ public class ZoneChangeTrigger : MonoBehaviour
 
         // Movem el jugador a la nova posició
         player.position = targetSpawn.position;
+        if (ctrl != null) ctrl.SuppressEncounters(5f); // Reiniciem lastPos un altre cop just després de moure'l
 
         // Actualitzem els límits de la càmera per a la nova zona
         var camFollow = cam.GetComponent<CameraBoundedFollow>();
@@ -65,6 +73,13 @@ public class ZoneChangeTrigger : MonoBehaviour
         }
 
         if (fader != null) yield return fader.FadeInFromBlack();
+
+        // Evitem que surtin monstres els primers 2 segons després de la transició real
+        if (ctrl != null) 
+        {
+            ctrl.UnlockMovement();
+            ctrl.SuppressEncounters(2f);
+        }
 
         busy = false;
     }

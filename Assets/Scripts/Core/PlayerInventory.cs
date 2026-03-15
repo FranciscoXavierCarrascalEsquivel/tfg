@@ -123,6 +123,10 @@ public class PlayerInventory : MonoBehaviour
                 if (combatManager == null) // Fora del combat
                 {
                     Time.timeScale = 0f; // Posa en pausa el món
+                    
+                    var player = FindFirstObjectByType<PlayerController2D>();
+                    if (player != null) player.LockMovement();
+
                     InventoryMenuUI.Show(isCombat: false, onItemSelected: (profile) =>
                     {
                         // En l'escena normal, només podem curar.
@@ -136,6 +140,7 @@ public class PlayerInventory : MonoBehaviour
                     }, 
                     onClose: () => {
                         Time.timeScale = 1f; // Continua el temps al tancar
+                        if (player != null) player.UnlockMovement();
                     });
                 }
             }

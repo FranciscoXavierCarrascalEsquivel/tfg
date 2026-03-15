@@ -212,11 +212,17 @@ public enum EnemyAttackPattern
 {
     RandomDrop,
     HorizontalWaves,
-    TargetedHoming,
     CircleBurst,
     DiagonalCross,
     FastMeteors,
-    SnakeWaves
+    SnakeWaves,
+    // Versions Spinning
+    RandomDropSpinning,
+    HorizontalWavesSpinning,
+    CircleBurstSpinning,
+    DiagonalCrossSpinning,
+    FastMeteorsSpinning,
+    SnakeWavesSpinning
 }
 
 [System.Serializable]

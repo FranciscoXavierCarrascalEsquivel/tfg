@@ -13,17 +13,19 @@ MonoBehaviour:
   m_Name: Skell
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
   enemyName: Skell
-  minHP: 20
-  maxHP: 20
+  minHP: 50
+  maxHP: 70
   enemyPortrait: {fileID: 4925935257197340580, guid: 33033aee1b96c92438b92cb74b284935, type: 3}
   projectilePrefab: {fileID: 5410871294214501288, guid: cb105ea0833faa740abdebdb0ae41c81, type: 3}
   attackDuration: 6
-  attackPatterns: 03000000
-  goldRewardMin: 10
-  goldRewardMax: 30
+  attackPatterns: 0b0000000800000009000000
+  goldRewardMin: 3
+  goldRewardMax: 6
   drops:
   - itemName: Aigueta
-    probability: 100
+    probability: 10
   - itemName: Energy
-    probability: 100
+    probability: 10
+  - itemName: Gosset
+    probability: 200
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
