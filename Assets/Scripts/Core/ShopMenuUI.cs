@@ -108,7 +108,7 @@ public class ShopMenuUI : MonoBehaviour
         bubbleRT.anchorMax = new Vector2(1f, 1f);
         bubbleRT.offsetMin = bubbleRT.offsetMax = Vector2.zero;
 
-        // Tail (drawn first, behind background so stroke works correctly without blocking visual)
+        // Tail (sota fons)
         var tailRT = MakeRT("Tail", bubbleRT);
         tailRT.anchorMin = new Vector2(0.5f, 0f); tailRT.anchorMax = new Vector2(0.5f, 0f);
         tailRT.sizeDelta = new Vector2(46f, 46f);
@@ -116,28 +116,23 @@ public class ShopMenuUI : MonoBehaviour
         tailRT.localRotation = Quaternion.Euler(0, 0, 65f);
         var tailImg = tailRT.gameObject.AddComponent<Image>();
         tailImg.color = new Color(1f, 1f, 1f, 0.95f);
-        var tailOl = tailRT.gameObject.AddComponent<Outline>();
-        tailOl.effectColor = new Color(0.1f, 0.1f, 0.1f, 1f);
-        tailOl.effectDistance = new Vector2(4f, -4f);
 
-        // BG (drawn second, covering tail overlap flawlessly)
+        // BG (per sobre de la cua, utilitzant sprite de memòria arrodonit)
         var bBgRT = MakeRT("BG", bubbleRT);
         bBgRT.anchorMin = Vector2.zero; bBgRT.anchorMax = Vector2.one;
         bBgRT.offsetMin = bBgRT.offsetMax = Vector2.zero;
         var bubbleBg = bBgRT.gameObject.AddComponent<Image>();
-        bubbleBg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-        bubbleBg.type = Image.Type.Sliced;
         bubbleBg.color = new Color(1f, 1f, 1f, 0.95f);
-        var bubbleOl = bBgRT.gameObject.AddComponent<Outline>();
-        bubbleOl.effectColor = new Color(0.1f, 0.1f, 0.1f, 1f);
-        bubbleOl.effectDistance = new Vector2(4f, -4f);
+        bubbleBg.sprite = GetRoundedSprite();
+        bubbleBg.type = Image.Type.Sliced;
+        bubbleBg.pixelsPerUnitMultiplier = 0.5f; // Manté els píxels grans d'estil 8bit
 
-        dialogTxt = TxtFill(bubbleRT, "", 28f, new Color(0.1f, 0.1f, 0.1f), FontStyles.Bold, TextAlignmentOptions.Center);
+        dialogTxt = TxtFill(bubbleRT, "", 42f, new Color(0.1f, 0.1f, 0.1f), FontStyles.Bold, TextAlignmentOptions.Justified);
         dialogTxt.margin = new Vector4(25f, 25f, 25f, 25f);
         dialogTxt.enableWordWrapping = true;
         dialogTxt.enableAutoSizing = true;
-        dialogTxt.fontSizeMin = 16f;
-        dialogTxt.fontSizeMax = 28f;
+        dialogTxt.fontSizeMin = 24f;
+        dialogTxt.fontSizeMax = 48f;
 
         typeAudioSrc = gameObject.AddComponent<AudioSource>();
         typeAudioSrc.playOnAwake = false;
@@ -650,6 +645,44 @@ public class ShopMenuUI : MonoBehaviour
         {
             npcImg.color = new Color(1f, 1f, 1f, 0f);
         }
+    }
+
+    private Sprite generatedRoundedSprite;
+    
+    private Sprite GetRoundedSprite()
+    {
+        if (generatedRoundedSprite != null) return generatedRoundedSprite;
+        int size = 12;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        Color w = Color.white;
+        Color c = new Color(1f, 1f, 1f, 0f);
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                bool corner = false;
+                if (x==0 && y<=2) corner = true;
+                else if (x==1 && y<=1) corner = true;
+                else if (x==2 && y==0) corner = true;
+                else if (x==size-1 && y<=2) corner = true;
+                else if (x==size-2 && y<=1) corner = true;
+                else if (x==size-3 && y==0) corner = true;
+                else if (x==0 && y>=size-3) corner = true;
+                else if (x==1 && y>=size-2) corner = true;
+                else if (x==2 && y==size-1) corner = true;
+                else if (x==size-1 && y>=size-3) corner = true;
+                else if (x==size-2 && y>=size-2) corner = true;
+                else if (x==size-3 && y==size-1) corner = true;
+
+                tex.SetPixel(x, y, corner ? c : w);
+            }
+        }
+        tex.Apply();
+        
+        generatedRoundedSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(4, 4, 4, 4));
+        return generatedRoundedSprite;
     }
 
     private IEnumerator TypewriteText(string text)

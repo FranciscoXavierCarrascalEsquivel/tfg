@@ -13,6 +13,15 @@ public class PlayerInteractor : MonoBehaviour
         if (playerController == null)
             playerController = GetComponent<PlayerController2D>();
 
+        if (dialogueUI == null)
+            dialogueUI = FindFirstObjectByType<DialogueUI>();
+
+        if (dialogueUI == null)
+        {
+            var go = new GameObject("DialogueManager");
+            dialogueUI = go.AddComponent<DialogueUI>();
+        }
+
         // Quan es tanqui el diàleg, es desbloqueja el moviment
         if (dialogueUI != null)
             dialogueUI.OnDialogueClosed += HandleDialogueClosed;
@@ -33,6 +42,9 @@ public class PlayerInteractor : MonoBehaviour
     private void Update()
     {
         if (!Input.GetKeyDown(interactKey)) return;
+
+        // Si la botiga està oberta, es bloqueja qualsevol interacció amb el món.
+        if (ShopMenuUI.IsOpen) return;
 
         // Si hi ha diàleg obert, la E serveix per avançar línia o tancar quan toca.
         

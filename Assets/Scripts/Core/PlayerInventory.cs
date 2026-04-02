@@ -188,11 +188,6 @@ public class PlayerInventory : MonoBehaviour
                 var combatManager = FindFirstObjectByType<CombatManager>();
                 if (combatManager == null)
                 {
-                    Time.timeScale = 0f; 
-                    
-                    var player = FindFirstObjectByType<PlayerController2D>();
-                    if (player != null) player.LockMovement();
-
                     ShowShopMenu();
                 }
             }
@@ -208,9 +203,12 @@ public class PlayerInventory : MonoBehaviour
 
     public void ShowShopMenu()
     {
+        var player = FindFirstObjectByType<PlayerController2D>();
+        if (player != null) player.LockMovement();
+        Time.timeScale = 0f;
+
         ShopMenuUI.Show(onClose: () => {
             Time.timeScale = 1f;
-            var player = FindFirstObjectByType<PlayerController2D>();
             if (player != null) player.UnlockMovement();
         });
     }
