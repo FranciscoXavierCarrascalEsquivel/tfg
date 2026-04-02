@@ -22,6 +22,10 @@ public class ItemProfile : ScriptableObject
     [Tooltip("Nombre de torns que l'efecte del buff estarà actiu (Exclusivament per a SpeedUpHands)")]
     public int buffDurationRounds = 3;
     
+    [Header("Shop")]
+    public int buyPrice = 10;
+    public int sellPrice = 5;
+    
     [Header("Audio")]
     [Tooltip("So que es reprodueix quan s'utilitza l'objecte (inventari o overworld).")]
     public AudioClip useSound;

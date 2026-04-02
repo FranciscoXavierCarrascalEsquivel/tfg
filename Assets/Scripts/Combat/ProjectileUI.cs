@@ -80,6 +80,8 @@ public class ProjectileUI : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (isParried) return;
+        
         // Millora: Només fem parry si la col·lisió és amb l'objecte que té el script ParryZone
         // Aixo evita que hitboxs de moviment o llimits de la ma detectin el parry per error.
         if (collision.GetComponent<ParryZone>() != null)

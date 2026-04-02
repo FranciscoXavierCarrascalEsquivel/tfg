@@ -1005,6 +1005,7 @@ public class CombatManager : MonoBehaviour
                 UpdateStatsUI();
 
                 if (enemyHitSound != null) audioSource.PlayOneShot(enemyHitSound);
+                if (enemyPortraitImage != null) StartCoroutine(ShakeEnemySprite(enemyPortraitImage.rectTransform, 0.35f, 14f));
 
                 // Taronja sobre la barra de l'enemic
                 HealFXUI.ShowAboveBar(canvasParent, enemyHPFill, $"-{profile.effectValue} HP",
