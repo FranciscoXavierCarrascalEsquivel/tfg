@@ -27,6 +27,7 @@ public class InventoryMenuUI : MonoBehaviour
     private TextMeshProUGUI exitTxt;
     private GridLayoutGroup glg;
     private RectTransform   glgRT;
+    private RectTransform   escTopRT;
 
     private class InventoryEntry
     {
@@ -158,7 +159,39 @@ public class InventoryMenuUI : MonoBehaviour
         var exitRT = BotZone(card, "Exit", ref fromBottom, H_EXIT, 3f);
         exitBg     = exitRT.gameObject.AddComponent<Image>();
         exitBg.color = new Color(0.22f, 0.12f, 0.38f, 1f);
-        exitTxt   = TxtFill(exitRT, "[ SORTIR ]", 38f, new Color(1f, 0.92f, 0.2f), FontStyles.Bold, TextAlignmentOptions.Center);
+        exitTxt   = TxtFill(exitRT, "    [ SORTIR ]", 38f, new Color(1f, 0.92f, 0.2f), FontStyles.Bold, TextAlignmentOptions.Center);
+
+        var escGO = new GameObject("EscKey");
+        var escBtnRT = escGO.AddComponent<RectTransform>();
+        escBtnRT.SetParent(exitRT, false);
+        escBtnRT.pivot = new Vector2(0.5f, 0.5f);
+        escBtnRT.anchorMin = new Vector2(0.5f, 0.5f);
+        escBtnRT.anchorMax = new Vector2(0.5f, 0.5f);
+        escBtnRT.sizeDelta = new Vector2(76f, 36f);
+        escBtnRT.anchoredPosition = new Vector2(-150f, 0f);
+
+        var escBaseGO = new GameObject("Base");
+        escBaseGO.transform.SetParent(escBtnRT, false);
+        var escBaseRT = escBaseGO.AddComponent<RectTransform>();
+        escBaseRT.anchorMin = Vector2.zero; escBaseRT.anchorMax = Vector2.one;
+        escBaseRT.offsetMin = escBaseRT.offsetMax = Vector2.zero;
+        var escBaseImg = escBaseGO.AddComponent<Image>();
+        escBaseImg.color = new Color(0.02f, 0.02f, 0.02f, 1f);
+
+        var escTopGO = new GameObject("Top");
+        escTopGO.transform.SetParent(escBtnRT, false);
+        escTopRT = escTopGO.AddComponent<RectTransform>();
+        escTopRT.anchorMin = Vector2.zero; escTopRT.anchorMax = Vector2.one;
+        escTopRT.offsetMin = escTopRT.offsetMax = Vector2.zero;
+        escTopRT.anchoredPosition = new Vector2(0f, 4f);
+        
+        var escTopImg = escTopGO.AddComponent<Image>();
+        escTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
+        var escTopOl = escTopGO.AddComponent<Outline>();
+        escTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
+        escTopOl.effectDistance = new Vector2(2f, -2f);
+
+        TxtFill(escTopRT, "ESC", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Graella (zona que queda entre capZone i exitZone) ────────
         var gridRT_zone = MakeRT("GridZone", card);
@@ -340,6 +373,13 @@ public class InventoryMenuUI : MonoBehaviour
     // ── Navegació ──────────────────────────────────────────────────────
     private void Update()
     {
+        if (escTopRT != null)
+        {
+            float cycle = Time.unscaledTime * 1.5f;
+            bool isPressed = (cycle % 1f) > 0.7f;
+            escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+        }
+
         if (inputBlocked) return;
         bool left  = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);

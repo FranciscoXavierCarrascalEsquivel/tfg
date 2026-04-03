@@ -101,7 +101,14 @@ public class DialogueUI : MonoBehaviour
             if (up) { selectedChoiceIdx--; if (selectedChoiceIdx < 0) selectedChoiceIdx = choiceTexts.Count - 1; moved = true; }
             if (down) { selectedChoiceIdx++; if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx = 0; moved = true; }
 
-            if (moved) HighlightChoice();
+            if (moved) 
+            {
+                HighlightChoice();
+                if (PlayerInventory.Instance != null && PlayerInventory.Instance.navSound != null)
+                {
+                    ItemSoundPlayer.Play(PlayerInventory.Instance.navSound);
+                }
+            }
         }
     }
 
@@ -236,6 +243,11 @@ public class DialogueUI : MonoBehaviour
 
         if (isSelectingChoice)
         {
+            if (PlayerInventory.Instance != null && PlayerInventory.Instance.selectSound != null)
+            {
+                ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
+            }
+
             var choice = currentLineChoices[selectedChoiceIdx];
             choice.onChoiceSelected?.Invoke();
             
@@ -292,12 +304,14 @@ public class DialogueUI : MonoBehaviour
 
     private System.Collections.IEnumerator WaitMenuCloseAndAdvance(int nextIdx)
     {
-        // Esperem fins que tanquis o tornis el rellotge del món a temps real per no solapar processos per sota
+        if (currentPanelGO != null) currentPanelGO.SetActive(false); // Ocultem temporalment
+
+        // Esperem fins que tanquis o tornis el rellotge del món a temps real
         while (ShopMenuUI.IsOpen || Time.timeScale == 0f)
         {
             yield return null;
         }
-        AdvanceToLine(nextIdx);
+        AdvanceToLine(nextIdx); // El mostrarà i reproduirà de nou l'animació visual d'aparèixer
     }
 
     private IEnumerator ReopenRoutine(Interactable.DialogueLine nextLine)
@@ -331,7 +345,19 @@ public class DialogueUI : MonoBehaviour
                     PlayRandomTypingSound();
             }
 
-            yield return new WaitForSecondsRealtime(delay);
+            float currentDelay = delay;
+            
+            // Ritme de lectura orgànic
+            if (c == '.' || c == '?' || c == '!')
+            {
+                currentDelay = delay * 10f; // Pausa forta
+            }
+            else if (c == ',' || c == ';' || c == ':' || c == '-')
+            {
+                currentDelay = delay * 5f; // Pausa breu
+            }
+
+            yield return new WaitForSecondsRealtime(currentDelay);
         }
 
         isTyping = false;

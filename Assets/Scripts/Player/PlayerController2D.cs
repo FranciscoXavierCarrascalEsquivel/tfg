@@ -15,6 +15,8 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float minDistanceBetweenEncounters = 8f; // Distància mínima (metres) abans de la següent batalla
     [Tooltip("Llista d'enemics que et poden sortir aleatòriament per l'Overworld")]
     [SerializeField] private EnemyProfile[] wildEnemies;
+    
+    [SerializeField] private bool disableEncounters = false;
 
     private Rigidbody2D rb; // Referència al component Rigidbody2D per a les físiques.
     private Animator anim;  // Referència a l'Animator per gestionar les animacions.
@@ -135,7 +137,7 @@ public class PlayerController2D : MonoBehaviour
         bool showMovingAnim = isMovingInput && !isStuck;
 
         // --- SISTEMA DE COMBAT ALEATORI PER DISTÀNCIA ---
-        if (showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)
+        if (!disableEncounters && showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)
         {
             distanceWalkedSinceEncounter += distanceMoved;
 
@@ -201,5 +203,14 @@ public class PlayerController2D : MonoBehaviour
 
         float currentSpeed = isRunning ? runSpeed : walkSpeed;
         rb.MovePosition(rb.position + moveDir * currentSpeed * Time.fixedDeltaTime);
+    }
+    
+    public void SetEncountersState(bool state)
+    {
+        disableEncounters = !state;
+        if (state)
+        {
+            distanceWalkedSinceEncounter = 0f;
+        }
     }
 }

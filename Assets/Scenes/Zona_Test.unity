@@ -1730,15 +1730,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb9b2496d53da34eb968b8121ec5b81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueUI
-  panel: {fileID: 1863042725}
-  dialogueText: {fileID: 611323759}
-  portraitImage: {fileID: 1469480993}
-  portraitAnimator: {fileID: 0}
-  panelRect: {fileID: 0}
-  panelGroup: {fileID: 0}
-  animDuration: 0.5
-  slidePixels: -100
-  animateOnShow: 1
   charsPerSecond: 40
   skipSpaces: 1
   soundEveryNChars: 1
@@ -1747,6 +1738,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 0b3bcaa9144214e49a2fe180f9c80809, type: 3}
   pitchRandom: 0.05
   volume: 0.8
+  animDuration: 0.5
+  slidePixels: -100
+  animateOnShow: 1
 --- !u!114 &592884851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2554,8 +2548,39 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 925c5f9f34ae77046b4989dd253a2dcd, type: 2}
   - {fileID: 11400000, guid: 17141470ec60d6f4dace2fc64a3ed097, type: 2}
   - {fileID: 11400000, guid: 66d5b9f83791c5740b872c2a3f7a0137, type: 2}
+  shopItems:
+  - {fileID: 11400000, guid: 925c5f9f34ae77046b4989dd253a2dcd, type: 2}
+  - {fileID: 11400000, guid: 17141470ec60d6f4dace2fc64a3ed097, type: 2}
+  - {fileID: 11400000, guid: 66d5b9f83791c5740b872c2a3f7a0137, type: 2}
+  shopkeeperSprite: {fileID: 378808229580407684, guid: 08282899f7b28b1408cc028cfd9e5f82, type: 3}
+  shopWelcomeMsgs:
+  - text: No tinguis por en preguntar si tens qualevol dubte!
+    weight: 0
+    expressionSprite: {fileID: -868580323881171065, guid: 04cd130524a82274f95149fe3c0ef675, type: 3}
+  shopBuyMsgs:
+  - text: Moltes gracies per la teva compra! No t'arrepentiras, t'ho prometo!
+    weight: 0
+    expressionSprite: {fileID: 3374745350963071422, guid: 305bfe3e0118bdb46afdc2a05f591aeb, type: 3}
+  shopSellMsgs:
+  - text: Moltes gracies pel teu article, m'assegurare de donar-li una bona vida!
+    weight: 0
+    expressionSprite: {fileID: 3374745350963071422, guid: 305bfe3e0118bdb46afdc2a05f591aeb, type: 3}
+  shopCantAffordMsgs:
+  - text: Sembla ser que no tens suficients calers... Torna quan en tinguis mes o
+      ven-me uns articles per aconseguir-ne mes, si vols, es clar...
+    weight: 0
+    expressionSprite: {fileID: -3497987051152464005, guid: 94a20fb60c2655c4081825de3d20675c, type: 3}
+  shopInventoryFullMsgs:
+  - text: Veig que vas molt carregat, potser seria millor que facis una mica d'espai
+      per no fer-te malbe l'esquena... Tens algun article que no t'interessi? Potser
+      podries considerar vendre-me'l!
+    weight: 0
+    expressionSprite: {fileID: -3497987051152464005, guid: 94a20fb60c2655c4081825de3d20675c, type: 3}
   navSound: {fileID: 8300000, guid: 10c16daae2e390d45af513716f258439, type: 3}
   selectSound: {fileID: 8300000, guid: 3f485a00d0faf8d4289d7a7084607e45, type: 3}
+  shopBuySound: {fileID: 8300000, guid: 2e20af03bf6972e46ba0be0e04ce18c3, type: 3}
+  shopSellSound: {fileID: 8300000, guid: 2e20af03bf6972e46ba0be0e04ce18c3, type: 3}
+  shopVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
 --- !u!4 &662989803
 Transform:
   m_ObjectHideFlags: 0
@@ -3232,7 +3257,7 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 8
-  dialogueUI: {fileID: 592884850}
+  dialogueUI: {fileID: 0}
   playerController: {fileID: 712280466}
 --- !u!1 &751296607
 GameObject:
@@ -6359,6 +6384,115 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
   fadeImage: {fileID: 351693507}
   fadeDuration: 0.25
+--- !u!1 &1486314167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1486314168}
+  - component: {fileID: 1486314172}
+  - component: {fileID: 1486314169}
+  m_Layer: 0
+  m_Name: DT1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1486314168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486314167}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -4.19, y: -0.46, z: 0}
+  m_LocalScale: {x: 0.275, y: 4.251406, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726839082}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1486314169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486314167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42cc8ed2522f5d468e1f21d8cf67e95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  lines:
+  - text: No aconsegueixo recordar res del que m'ha passat abans d'arribar aqui...
+    portrait: {fileID: -8361232319640231066, guid: 2f50383912bcea346b41b166ae7296f2, type: 3}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 1
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 8df580135e547434a974d209e08152fd, type: 3}
+    portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
+  triggerOnlyOnce: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  playerTag: Player
+--- !u!61 &1486314172
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486314167}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &1496096377
 GameObject:
   m_ObjectHideFlags: 0
@@ -6691,13 +6825,40 @@ MonoBehaviour:
   lines:
   - text: Quin cercle tan bonic!
     portrait: {fileID: 6542110693660499982, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 0
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 0}
     portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
   - text: 'Em recorda a una pilota de ping pong... '
     portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 0
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 0}
     portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
   - text: Pero d'un tamany bastant mes gran, la veritat!
     portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 0
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 0}
     portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
   description: 
   portrait: {fileID: -4083144000507761819, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
   portraitAnimator: {fileID: 0}
@@ -6733,12 +6894,90 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
   lines:
-  - text: Es un triangle blanc.
-    portrait: {fileID: -1804691888328831285, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+  - text: 'Bones... Veig que ets nou per aqui... '
+    portrait: {fileID: 1321056030923612999, guid: 2ede7e6f222f32446954ce14c359bd8b, type: 3}
+    speakerName: ?????
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
     portraitAnimator: {fileID: 0}
-  - text: "Perque est\xE0 inclinat?"
-    portrait: {fileID: 4730343818599828477, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
+  - text: Quins modals els meus... Disculpa'm, em dic Ledgermole.
+    portrait: {fileID: -5915627475654302125, guid: d6cd80c79464ed64eb9e4ae481fe4cbd, type: 3}
+    speakerName: Ledgermole
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
     portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices: []
+  - text: Potser et podria arribar a interessar algun dels meus productes. Soc conegut
+      per aquestes zones per proporcionar OBJECTES de qualitat, vols fer una ullada?
+    portrait: {fileID: -5915627475654302125, guid: d6cd80c79464ed64eb9e4ae481fe4cbd, type: 3}
+    speakerName: Ledgermole
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
+    portraitAnimator: {fileID: 0}
+    isEndNode: 0
+    jumpToLineIndex: -1
+    choices:
+    - text: D'acord!
+      jumpToLineIndex: 3
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls:
+          - m_Target: {fileID: 662989802}
+            m_TargetAssemblyTypeName: PlayerInventory, Assembly-CSharp
+            m_MethodName: ShowShopMenu
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 2
+    - text: No, gracies...
+      jumpToLineIndex: 4
+      onChoiceSelected:
+        m_PersistentCalls:
+          m_Calls: []
+  - text: Moltes gracies per la teva visita, a reveure!
+    portrait: {fileID: 8000887055239518031, guid: d07f64c2415edd14e80868db9d0b70e7, type: 3}
+    speakerName: Ledgermole
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
+    portraitAnimator: {fileID: 0}
+    isEndNode: 1
+    jumpToLineIndex: -1
+    choices: []
+  - text: No passa res, sempre que necessitis ajuda, estic per aqui, tampoc tinc
+      opcio de moure'm...
+    portrait: {fileID: 8000887055239518031, guid: d07f64c2415edd14e80868db9d0b70e7, type: 3}
+    speakerName: Ledgermole
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 0
+    forceReopen: 0
+    customVoiceSound: {fileID: 8300000, guid: 6fd30ec752c0a9840ae851bf8efafe80, type: 3}
+    portraitAnimator: {fileID: 0}
+    isEndNode: 1
+    jumpToLineIndex: -1
+    choices: []
   description: 
   portrait: {fileID: -1804691888328831285, guid: 87130bbdffa07264e9d4bbd49c4a2ab6, type: 3}
   portraitAnimator: {fileID: 0}
@@ -6923,6 +7162,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 701679326}
+  - {fileID: 1486314168}
   - {fileID: 450794661}
   - {fileID: 624590188}
   - {fileID: 2063775141}
@@ -7035,7 +7275,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -40}
+  m_AnchoredPosition: {x: 0, y: 532}
   m_SizeDelta: {x: -1200, y: 400}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!225 &1863042729

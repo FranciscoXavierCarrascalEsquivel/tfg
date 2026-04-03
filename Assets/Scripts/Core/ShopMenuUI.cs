@@ -36,6 +36,9 @@ public class ShopMenuUI : MonoBehaviour
     private TextMeshProUGUI exitTxt;
     private GridLayoutGroup glg;
     private RectTransform   glgRT;
+    private Image           divImg;
+    private RectTransform   tabTopRT;
+    private RectTransform   escTopRT;
 
     private class ShopEntry
     {
@@ -89,7 +92,7 @@ public class ShopMenuUI : MonoBehaviour
         divider.anchorMin = new Vector2(0.35f, 0f); divider.anchorMax = new Vector2(0.35f, 1f);
         divider.sizeDelta = new Vector2(4f, 0f);
         divider.anchoredPosition = Vector2.zero;
-        var divImg = divider.gameObject.AddComponent<Image>();
+        divImg = divider.gameObject.AddComponent<Image>();
         divImg.color = new Color(0.15f, 0.85f, 0.95f, 0.25f);
 
         var rightPanel = MakeRT("RightPanel", card);
@@ -174,12 +177,29 @@ public class ShopMenuUI : MonoBehaviour
         tabKeyBtnRT.anchorMin = new Vector2(0.5f, 0.5f);
         tabKeyBtnRT.anchorMax = new Vector2(0.5f, 0.5f);
         tabKeyBtnRT.sizeDelta = new Vector2(76f, 36f);
-        var tabImg = indGO.AddComponent<Image>();
-        tabImg.color = new Color(0.05f, 0.05f, 0.05f, 1f);
-        var tabOl = indGO.AddComponent<Outline>();
-        tabOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
-        tabOl.effectDistance = new Vector2(2f, -2f);
-        TxtFill(tabKeyBtnRT, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+
+        var tabBaseGO = new GameObject("Base");
+        tabBaseGO.transform.SetParent(tabKeyBtnRT, false);
+        var tabBaseRT = tabBaseGO.AddComponent<RectTransform>();
+        tabBaseRT.anchorMin = Vector2.zero; tabBaseRT.anchorMax = Vector2.one;
+        tabBaseRT.offsetMin = tabBaseRT.offsetMax = Vector2.zero;
+        var tabBaseImg = tabBaseGO.AddComponent<Image>();
+        tabBaseImg.color = new Color(0.02f, 0.02f, 0.02f, 1f);
+
+        var tabTopGO = new GameObject("Top");
+        tabTopGO.transform.SetParent(tabKeyBtnRT, false);
+        tabTopRT = tabTopGO.AddComponent<RectTransform>();
+        tabTopRT.anchorMin = Vector2.zero; tabTopRT.anchorMax = Vector2.one;
+        tabTopRT.offsetMin = tabTopRT.offsetMax = Vector2.zero;
+        tabTopRT.anchoredPosition = new Vector2(0f, 4f);
+        
+        var tabTopImg = tabTopGO.AddComponent<Image>();
+        tabTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
+        var tabTopOl = tabTopGO.AddComponent<Outline>();
+        tabTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
+        tabTopOl.effectDistance = new Vector2(2f, -2f);
+
+        TxtFill(tabTopRT, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Stats HP / Or ───────────────────────────────────────────
         var statsRT = TopZone(rightPanel, "Stats", ref fromTop, H_STATS);
@@ -191,16 +211,16 @@ public class ShopMenuUI : MonoBehaviour
         SetFont(hpTxt, 44f, new Color(0.35f, 1f, 0.50f), FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
         hpTxt.text = $"♥  {inv.CurrentHP} / {inv.MaxHP} HP";
 
-        var goldRT = StretchChild(statsRT, "Gold", 0.5f, 0f, 1f, 1f, 0f, 0f, -22f, 0f);
+        var goldRT = StretchChild(statsRT, "Gold", 0.5f, 0f, 1f, 1f, 0f, 0f, -56f, 0f);
         goldTxt    = goldRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(goldTxt, 44f, new Color(1f, 0.90f, 0.15f), FontStyles.Bold, TextAlignmentOptions.MidlineRight);
-        goldTxt.text = $"{inv.Gold} G       ";
+        goldTxt.text = $"{inv.Gold}";
 
-        var coinRT = MakeRT("CoinIcon", goldRT);
+        var coinRT = MakeRT("CoinIcon", statsRT);
         // Ancorada completament a la dreta del panell al mig (Midline Right)
         coinRT.anchorMin = new Vector2(1f, 0.5f); coinRT.anchorMax = new Vector2(1f, 0.5f);
         coinRT.sizeDelta = new Vector2(44f, 44f);
-        coinRT.anchoredPosition = new Vector2(-12f, 0f);
+        coinRT.anchoredPosition = new Vector2(-28f, 0f);
         var coinImg = coinRT.gameObject.AddComponent<Image>();
         coinImg.preserveAspect = true;
         Sprite coinSp = LoadSprite("Art/Sprites/pixel_coin");
@@ -233,10 +253,19 @@ public class ShopMenuUI : MonoBehaviour
         detNameTxt.text = "";
 
         // Text preu (a la dreta)
-        var dPriceRT = StretchChild(detRT, "DPrice", 1f, 0.5f, 1f, 1f, -150f, 4f, -14f, -4f);
+        var dPriceRT = StretchChild(detRT, "DPrice", 1f, 0.5f, 1f, 1f, -150f, 4f, -44f, -4f);
         detPriceTxt  = dPriceRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(detPriceTxt, 44f, new Color(1f, 0.9f, 0.15f), FontStyles.Bold, TextAlignmentOptions.MidlineRight);
         detPriceTxt.text = "";
+
+        // Icona moneda de la caixa de detall
+        var detCoinRT = MakeRT("DCoin", detRT);
+        detCoinRT.anchorMin = new Vector2(1f, 0.75f); detCoinRT.anchorMax = new Vector2(1f, 0.75f);
+        detCoinRT.sizeDelta = new Vector2(36f, 36f);
+        detCoinRT.anchoredPosition = new Vector2(-24f, 0f);
+        var dcImg = detCoinRT.gameObject.AddComponent<Image>();
+        dcImg.sprite = LoadSprite("Art/Sprites/pixel_coin");
+        dcImg.preserveAspect = true;
 
         // Text desc
         var dDescRT = StretchChild(detRT, "DDesc", 0f, 0f, 1f, 0.5f, 152f, 4f, -14f, -4f);
@@ -262,7 +291,39 @@ public class ShopMenuUI : MonoBehaviour
         var exitRT = BotZone(rightPanel, "Exit", ref fromBottom, H_EXIT, 3f);
         exitBg     = exitRT.gameObject.AddComponent<Image>();
         exitBg.color = new Color(0.12f, 0.22f, 0.38f, 1f);
-        exitTxt   = TxtFill(exitRT, "[ SORTIR ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
+        exitTxt   = TxtFill(exitRT, "    [ SORTIR ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
+
+        var escGO = new GameObject("EscKey");
+        var escBtnRT = escGO.AddComponent<RectTransform>();
+        escBtnRT.SetParent(exitRT, false);
+        escBtnRT.pivot = new Vector2(0.5f, 0.5f);
+        escBtnRT.anchorMin = new Vector2(0.5f, 0.5f);
+        escBtnRT.anchorMax = new Vector2(0.5f, 0.5f);
+        escBtnRT.sizeDelta = new Vector2(76f, 36f);
+        escBtnRT.anchoredPosition = new Vector2(-150f, 0f);
+
+        var escBaseGO = new GameObject("Base");
+        escBaseGO.transform.SetParent(escBtnRT, false);
+        var escBaseRT = escBaseGO.AddComponent<RectTransform>();
+        escBaseRT.anchorMin = Vector2.zero; escBaseRT.anchorMax = Vector2.one;
+        escBaseRT.offsetMin = escBaseRT.offsetMax = Vector2.zero;
+        var escBaseImg = escBaseGO.AddComponent<Image>();
+        escBaseImg.color = new Color(0.02f, 0.02f, 0.02f, 1f);
+
+        var escTopGO = new GameObject("Top");
+        escTopGO.transform.SetParent(escBtnRT, false);
+        escTopRT = escTopGO.AddComponent<RectTransform>();
+        escTopRT.anchorMin = Vector2.zero; escTopRT.anchorMax = Vector2.one;
+        escTopRT.offsetMin = escTopRT.offsetMax = Vector2.zero;
+        escTopRT.anchoredPosition = new Vector2(0f, 4f);
+        
+        var escTopImg = escTopGO.AddComponent<Image>();
+        escTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
+        var escTopOl = escTopGO.AddComponent<Outline>();
+        escTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
+        escTopOl.effectDistance = new Vector2(2f, -2f);
+
+        TxtFill(escTopRT, "ESC", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Graella ──────────────────────────────────────────────────
         var gridRT_zone = MakeRT("GridZone", rightPanel);
@@ -427,6 +488,7 @@ public class ShopMenuUI : MonoBehaviour
             if (detImg) detImg.color = new Color(0.08f, 0.10f, 0.20f, 1f);
             if (frameImg) frameImg.color = new Color(0.15f, 0.18f, 0.30f, 1f);
             if (frameOl) frameOl.effectColor = new Color(0.15f, 0.85f, 0.95f, 0.65f);
+            if (divImg) divImg.color = new Color(0.15f, 0.85f, 0.95f, 0.25f);
         }
         else
         {
@@ -436,6 +498,7 @@ public class ShopMenuUI : MonoBehaviour
             if (detImg) detImg.color = new Color(0.20f, 0.08f, 0.08f, 1f);
             if (frameImg) frameImg.color = new Color(0.30f, 0.15f, 0.15f, 1f);
             if (frameOl) frameOl.effectColor = new Color(0.95f, 0.4f, 0.15f, 0.65f);
+            if (divImg) divImg.color = new Color(0.95f, 0.4f, 0.15f, 0.25f);
         }
     }
 
@@ -452,11 +515,40 @@ public class ShopMenuUI : MonoBehaviour
         tGo.transform.SetParent(cell.transform, false);
         var tRT = tGo.AddComponent<RectTransform>();
         tRT.anchorMin = Vector2.zero; tRT.anchorMax = Vector2.one;
-        tRT.offsetMin = new Vector2(6f, 3f); tRT.offsetMax = new Vector2(-6f, -3f);
+        tRT.offsetMin = new Vector2(6f, 30f); tRT.offsetMax = new Vector2(-6f, -4f); // Top half
         var txt = tGo.AddComponent<TextMeshProUGUI>();
-        SetFont(txt, 34f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
-        txt.text         = count > 1 ? $"{nameStr}  x{count}\n<color=#FFFF00>{price}G</color>" : $"{nameStr}\n<color=#FFFF00>{price}G</color>";
+        SetFont(txt, 30f, Color.white, FontStyles.Bold, TextAlignmentOptions.Bottom);
+        txt.text         = count > 1 ? $"{nameStr}  <color=#AAAAAA>x{count}</color>" : $"{nameStr}";
         txt.raycastTarget = false;
+
+        var pGo = new GameObject("PGroup");
+        pGo.transform.SetParent(cell.transform, false);
+        var pRT = pGo.AddComponent<RectTransform>();
+        pRT.anchorMin = new Vector2(0f, 0f); pRT.anchorMax = new Vector2(1f, 0f);
+        pRT.sizeDelta = new Vector2(0f, 30f);
+        pRT.anchoredPosition = new Vector2(0f, 15f);
+        
+        var hlg = pGo.AddComponent<HorizontalLayoutGroup>();
+        hlg.childAlignment = TextAnchor.MiddleCenter;
+        hlg.childControlHeight = true; hlg.childControlWidth = true;
+        hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
+        hlg.spacing = 8f;
+
+        var priceGo = new GameObject("PriceNum");
+        priceGo.transform.SetParent(pGo.transform, false);
+        var pTxt = priceGo.AddComponent<TextMeshProUGUI>();
+        SetFont(pTxt, 28f, new Color(1f, 0.85f, 0f), FontStyles.Bold, TextAlignmentOptions.Center);
+        pTxt.text = price.ToString();
+
+        var cGo = new GameObject("CoinIcon");
+        cGo.transform.SetParent(pGo.transform, false);
+        var cRT = cGo.AddComponent<RectTransform>();
+        var cLe = cGo.AddComponent<LayoutElement>();
+        cLe.minWidth = 24f; cLe.minHeight = 24f;
+        cLe.preferredWidth = 24f; cLe.preferredHeight = 24f;
+        var cImg = cGo.AddComponent<Image>();
+        cImg.sprite = LoadSprite("Art/Sprites/pixel_coin");
+        cImg.preserveAspect = true;
 
         entries.Add(new ShopEntry { idName = nameStr, profile = p, count = count, bg = bg, txt = txt });
     }
@@ -513,11 +605,25 @@ public class ShopMenuUI : MonoBehaviour
         }
         else detIconImg.color = new Color(1f, 1f, 1f, 0f);
         
-        detPriceTxt.text = $"{p}G";
+        detPriceTxt.text = $"{p}";
     }
 
     private void Update()
     {
+        if (tabTopRT != null)
+        {
+            float cycle = Time.unscaledTime * 1.5f;
+            bool isPressed = (cycle % 1f) > 0.7f;
+            tabTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+        }
+
+        if (escTopRT != null)
+        {
+            float cycle = Time.unscaledTime * 1.5f;
+            bool isPressed = (cycle % 1f) > 0.7f;
+            escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+        }
+
         if (inputBlocked) return;
         bool left  = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
@@ -773,7 +879,7 @@ public class ShopMenuUI : MonoBehaviour
             }
         }
 
-        goldTxt.text  = $"{inv.Gold} G       ";
+        goldTxt.text  = $"{inv.Gold}";
         capTxt.text   = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
         BuildEntries(inv);
         StartCoroutine(AdjustGrid());

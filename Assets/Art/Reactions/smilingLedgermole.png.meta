@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 2ede7e6f222f32446954ce14c359bd8b
+guid: d6cd80c79464ed64eb9e4ae481fe4cbd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1321056030923612999
-    second: spriteLedgerMole_0
-  - first:
-      213: 2148376860913235478
-    second: spriteLedgerMole_1
+      213: -5915627475654302125
+    second: smilingLedgermole_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -116,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: spriteLedgerMole_0
+      name: smilingLedgermole_0
       rect:
         serializedVersion: 2
-        x: 20
-        y: 18
-        width: 445
-        height: 437
+        x: 23
+        y: 22
+        width: 443
+        height: 423
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -131,30 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 743e69bf575555210800000000000000
-      internalID: 1321056030923612999
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: spriteLedgerMole_1
-      rect:
-        serializedVersion: 2
-        x: 354
-        y: 385
-        width: 67
-        height: 70
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 616f6665f5190dd10800000000000000
-      internalID: 2148376860913235478
+      spriteID: 356a51a372877eda0800000000000000
+      internalID: -5915627475654302125
       vertices: []
       indices: 
       edges: []
@@ -163,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 1a4fbca21b7454549bb39c2ffdd98ec7
+    spriteID: 74c08fc834bc6c64c862748ba5c8a08c
     internalID: 0
     vertices: []
     indices: 
@@ -173,8 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      spriteLedgerMole_0: 1321056030923612999
-      spriteLedgerMole_1: 2148376860913235478
+      smilingLedgermole_0: -5915627475654302125
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

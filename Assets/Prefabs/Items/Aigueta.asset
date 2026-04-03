@@ -18,5 +18,7 @@ MonoBehaviour:
   effectType: 0
   effectValue: 40
   buffDurationRounds: 3
+  buyPrice: 10
+  sellPrice: 5
   useSound: {fileID: 8300000, guid: d5f628ed95359524a92651c87eac565b, type: 3}
   isStackable: 1
