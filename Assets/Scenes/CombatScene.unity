@@ -1055,7 +1055,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 28, y: 67}
+  m_AnchoredPosition: {x: 28, y: 40}
   m_SizeDelta: {x: 355.2844, y: 355.2843}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &675021077
@@ -1131,7 +1131,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 955, y: -0.000030517578}
+  m_AnchoredPosition: {x: 327, y: -0.000030517578}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &717959028
@@ -2884,8 +2884,8 @@ MonoBehaviour:
   turnMenu: {fileID: 1144197135}
   fightButton: {fileID: 1444105843}
   reasonButton: {fileID: 1086795625}
-  defendButton: {fileID: 2118137353}
   itemButton: {fileID: 717959028}
+  fleeButton: {fileID: 2118137353}
   skillCheckPrefab: {fileID: 5710591833596068649, guid: 4fe5e1900dbecb248ad755b83af6703b, type: 3}
   playerMaxHP: 100
   enemyMaxHP: 100
@@ -3478,7 +3478,7 @@ GameObject:
   - component: {fileID: 2118137354}
   - component: {fileID: 2118137353}
   m_Layer: 5
-  m_Name: DefendButton
+  m_Name: FleeButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3500,7 +3500,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 323, y: -0.000061035156}
+  m_AnchoredPosition: {x: 950, y: -0.000061035156}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2118137353
@@ -3567,8 +3567,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 8280480350020715763, guid: b925255c63806094db3a2da232c2e4f8, type: 3}
-  m_Type: 1
+  m_Sprite: {fileID: 3227517291228842897, guid: 17b8f6020ce32ad4789ce1654b233a0a, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4

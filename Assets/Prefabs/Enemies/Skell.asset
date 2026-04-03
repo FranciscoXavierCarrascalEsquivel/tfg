@@ -19,6 +19,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 5410871294214501288, guid: cb105ea0833faa740abdebdb0ae41c81, type: 3}
   attackDuration: 6
   attackPatterns: 0b0000000800000009000000
+  fleeProbability: 0.991
   goldRewardMin: 3
   goldRewardMax: 6
   drops:
@@ -29,3 +30,7 @@ MonoBehaviour:
   - itemName: Gosset
     probability: 200
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
+  voiceSound: {fileID: 0}
+  attackReactions: []
+  healReactions: []
+  fleeFailReactions: []

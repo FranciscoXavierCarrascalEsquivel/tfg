@@ -26,9 +26,9 @@ public class EnemyDestroyFX : MonoBehaviour
         }
 
         var go = new GameObject("EnemyDestroyFX");
-        // Parenjar al mateix nivell que el retrat per coordenades iguals
+        // Parenjar al mateix nivell que el retrat i mantenir la mateixa capa de renderitzat
         go.transform.SetParent(portrait.transform.parent, false);
-        go.transform.SetAsLastSibling();
+        go.transform.SetSiblingIndex(portrait.transform.GetSiblingIndex());
 
         var fx = go.AddComponent<EnemyDestroyFX>();
         fx.sourcePortrait = portrait;

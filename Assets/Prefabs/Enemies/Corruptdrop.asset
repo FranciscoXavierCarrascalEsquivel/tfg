@@ -19,6 +19,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 5410871294214501288, guid: d4ca0fb52723e8c44b986f4cc76ff8da, type: 3}
   attackDuration: 6
   attackPatterns: 010000000000000004000000
+  fleeProbability: 0.5
   goldRewardMin: 10
   goldRewardMax: 30
   drops:
@@ -29,3 +30,13 @@ MonoBehaviour:
   - itemName: Gosset
     probability: 200
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
+  voiceSound: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
+  attackReactions:
+  - Awww, m'has fet pupa...
+  - Les besties amb rabia mosseguen mes fort!
+  healReactions:
+  - "Eyy, aix\xF2 no s'hi val, jo no tinc bra\xE7os per poder treure'm quelcom de
+    l'inventari enmig d'una lluita..."
+  fleeFailReactions:
+  - Pero a on vas maquina?
+  - Mala sort, hahaha!

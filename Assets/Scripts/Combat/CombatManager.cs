@@ -23,8 +23,8 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private GameObject turnMenu;
     [SerializeField] private Button fightButton;
     [SerializeField] private Button reasonButton;
-    [SerializeField] private Button defendButton;
     [SerializeField] private Button itemButton;
+    [SerializeField] private Button fleeButton;
     [SerializeField] private SkillCheckUI skillCheckPrefab;
 
     private Button[] mainButtons;
@@ -45,10 +45,6 @@ public class CombatManager : MonoBehaviour
     // Variables per controlar el buff de velocitat
     private int speedBuffRoundsLeft = 0;
     private float currentSpeedBuffValue = 0f;
-
-    // Estat de defensa
-    public bool IsDefending => isDefending;
-    private bool isDefending = false;
 
     [Header("UI Stats")]
     [SerializeField] private RectTransform playerUIPanel;
@@ -104,6 +100,14 @@ public class CombatManager : MonoBehaviour
     private Sprite softCircleSprite; // Procedural
     private Image selectionGlowImage; // The mirror glow
 
+    private RectTransform enemyBubbleRT;
+    private TMPro.TMP_Text enemyDialogTxt;
+    private Sprite generatedRoundedSprite;
+
+    private int attackReactionIndex = 0;
+    private int healReactionIndex = 0;
+    private int fleeFailReactionIndex = 0;
+
     private void Awake()
     {
         CreateSoftCircle(); // Generem la textura de la cervesa circular difuminada
@@ -155,6 +159,101 @@ public class CombatManager : MonoBehaviour
         if (playerHPText != null) playerHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyNameText != null) enemyNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyHPText != null) enemyHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
+        
+        BuildEnemyBubble();
+    }
+    
+    private Sprite GetRoundedSprite()
+    {
+        if (generatedRoundedSprite != null) return generatedRoundedSprite;
+        int size = 12;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        Color w = Color.white;
+        Color c = new Color(1f, 1f, 1f, 0f);
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                bool corner = false;
+                if (x==0 && y<=2) corner = true;
+                else if (x==1 && y<=1) corner = true;
+                else if (x==2 && y==0) corner = true;
+                else if (x==size-1 && y<=2) corner = true;
+                else if (x==size-2 && y<=1) corner = true;
+                else if (x==size-3 && y==0) corner = true;
+                else if (x==0 && y>=size-3) corner = true;
+                else if (x==1 && y>=size-2) corner = true;
+                else if (x==2 && y==size-1) corner = true;
+                else if (x==size-1 && y>=size-3) corner = true;
+                else if (x==size-2 && y>=size-2) corner = true;
+                else if (x==size-3 && y==size-1) corner = true;
+
+                tex.SetPixel(x, y, corner ? c : w);
+            }
+        }
+        tex.Apply();
+        
+        generatedRoundedSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(4, 4, 4, 4));
+        return generatedRoundedSprite;
+    }
+
+    private void BuildEnemyBubble()
+    {
+        if (enemyPortraitImage == null) return;
+        
+        GameObject go = new GameObject("EnemyBubble");
+        go.transform.SetParent(enemyPortraitImage.transform, false);
+        enemyBubbleRT = go.AddComponent<RectTransform>();
+        
+        enemyBubbleRT.anchorMin = new Vector2(-0.25f, 0.85f);
+        enemyBubbleRT.anchorMax = new Vector2(1.25f, 1.25f);
+        enemyBubbleRT.offsetMin = enemyBubbleRT.offsetMax = Vector2.zero;
+        
+        var tailGO = new GameObject("Tail");
+        tailGO.transform.SetParent(enemyBubbleRT, false);
+        var tailRT = tailGO.AddComponent<RectTransform>();
+        tailRT.anchorMin = new Vector2(0.5f, 0f); tailRT.anchorMax = new Vector2(0.5f, 0f);
+        tailRT.sizeDelta = new Vector2(36f, 36f);
+        tailRT.anchoredPosition = new Vector2(-20f, 8f);
+        tailRT.localRotation = Quaternion.Euler(0, 0, 65f);
+        var tailImg = tailGO.AddComponent<Image>();
+        tailImg.color = new Color(1f, 1f, 1f, 0.95f);
+
+        var bgGO = new GameObject("BG");
+        bgGO.transform.SetParent(enemyBubbleRT, false);
+        var bgRT = bgGO.AddComponent<RectTransform>();
+        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+        bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
+        var bgImg = bgGO.AddComponent<Image>();
+        bgImg.color = new Color(1f, 1f, 1f, 0.95f);
+        bgImg.sprite = GetRoundedSprite();
+        bgImg.type = Image.Type.Sliced;
+        bgImg.pixelsPerUnitMultiplier = 0.5f;
+        
+        var txtGO = new GameObject("DialogText");
+        txtGO.transform.SetParent(enemyBubbleRT, false);
+        var tRT = txtGO.AddComponent<RectTransform>();
+        tRT.anchorMin = Vector2.zero; tRT.anchorMax = Vector2.one;
+        tRT.offsetMin = tRT.offsetMax = Vector2.zero;
+        
+        enemyDialogTxt = txtGO.AddComponent<TMPro.TextMeshProUGUI>();
+        enemyDialogTxt.color = new Color(0.1f, 0.1f, 0.1f);
+        enemyDialogTxt.fontStyle = TMPro.FontStyles.Bold;
+        enemyDialogTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        enemyDialogTxt.margin = new Vector4(20f, 20f, 20f, 20f);
+        enemyDialogTxt.enableWordWrapping = true;
+        enemyDialogTxt.enableAutoSizing = true;
+        enemyDialogTxt.fontSizeMin = 18f;
+        enemyDialogTxt.fontSizeMax = 32f;
+        
+        if (playerNameText != null && playerNameText.font != null)
+        {
+            enemyDialogTxt.font = playerNameText.font;
+        }
+
+        enemyBubbleRT.gameObject.SetActive(false);
     }
 
     private void CreateSoftCircle()
@@ -240,7 +339,7 @@ public class CombatManager : MonoBehaviour
             enemyPortraitImage.enabled = false;
         }
 
-        mainButtons = new Button[] { fightButton, reasonButton, defendButton, itemButton };
+        mainButtons = new Button[] { fightButton, reasonButton, itemButton, fleeButton };
         
         if (fightButton != null)
         {
@@ -404,8 +503,8 @@ public class CombatManager : MonoBehaviour
             // Saltem el pas de Targejar l'Enemic (TargetPhase) entrant directament a l'Atac (La Ruleta)
             if (selectedIndex == 0) StartCoroutine(PerformAttackRoutine());
             else if (selectedIndex == 1) OnReason();
-            else if (selectedIndex == 2) OnDefend();
-            else if (selectedIndex == 3) OnItem();
+            else if (selectedIndex == 2) OnItem();
+            else if (selectedIndex == 3) OnFlee();
         }
         else if (currentPhase == MenuPhase.Target)
         {
@@ -527,8 +626,8 @@ public class CombatManager : MonoBehaviour
             {
                 case 0: selectionColor = new Color(1f, 0.2f, 0.2f, 0.9f); break; // Vermell (Atacar)
                 case 1: selectionColor = new Color(1f, 0.9f, 0f, 0.9f);   break; // Groc (Raonar)
-                case 2: selectionColor = new Color(0.2f, 0.6f, 1f, 0.9f); break; // Blau (Defensar)
-                case 3: selectionColor = new Color(0.7f, 0.3f, 1f, 0.9f); break; // Lila (Objectes)
+                case 2: selectionColor = new Color(0.7f, 0.3f, 1f, 0.9f); break; // Lila (Objectes)
+                case 3: selectionColor = new Color(0.2f, 0.6f, 1f, 0.9f); break; // Blau (Fugir)
             }
             selectionGlowImage.color = selectionColor;
         }
@@ -682,7 +781,7 @@ public class CombatManager : MonoBehaviour
     {
         if (state == State.End) return;
 
-        int finalDamage = isDefending ? Mathf.CeilToInt(damage / 2f) : damage;
+        int finalDamage = damage;
         playerCurrentHP -= finalDamage;
         if (playerCurrentHP < 0) playerCurrentHP = 0;
         UpdateStatsUI();
@@ -703,14 +802,7 @@ public class CombatManager : MonoBehaviour
 
     public void PlayParrySound()
     {
-        if (isDefending && defendParrySound != null)
-        {
-            if (audioSource) audioSource.PlayOneShot(defendParrySound);
-        }
-        else
-        {
-            if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
-        }
+        if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
     }
 
     public void PlayExplosionSound()
@@ -730,7 +822,7 @@ public class CombatManager : MonoBehaviour
                 if (img) 
                 {
                     img.sprite = projectileSprite;
-                    if (isDefending) img.color = new Color(0.2f, 1f, 0.2f, 1f); // Verd si estem defensant
+                    img.color = new Color(0.2f, 1f, 0.2f, 1f); // Verd ara que el parry ens cura sempre
                 }
             }
 
@@ -743,17 +835,14 @@ public class CombatManager : MonoBehaviour
         PlayParrySound();
         SpawnParryEffect(pos, projectileSprite);
 
-        if (isDefending)
-        {
-            playerCurrentHP++;
-            if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
-            UpdateStatsUI();
+        playerCurrentHP++;
+        if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
+        UpdateStatsUI();
 
-            // Mostrem FX de curació sobre la barra de vida per reforçar el feedback
-            Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
-            Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
-            HealFXUI.ShowAboveBar(canvasParent, targetImg, "+1", new Color(0.25f, 1f, 0.35f), 1f);
-        }
+        // Mostrem FX de curació sobre la barra de vida per reforçar el feedback
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
+        HealFXUI.ShowAboveBar(canvasParent, targetImg, "+1", new Color(0.25f, 1f, 0.35f), 1f);
     }
 
     public float GetDestroyLimitY()
@@ -830,7 +919,7 @@ public class CombatManager : MonoBehaviour
             yield break;
         }
 
-        EndPlayerTurn();
+        EndPlayerTurn("ATTACK");
     }
 
     // Tremolor de l'sprite de l'enemic en rebre dany
@@ -945,14 +1034,47 @@ public class CombatManager : MonoBehaviour
     private void OnReason()
     {
         Debug.Log("REASON!");
-        EndPlayerTurn();
+        EndPlayerTurn("");
     }
 
-    private void OnDefend()
+    private void OnFlee()
     {
-        Debug.Log("DEFEND!");
-        isDefending = true;
-        EndPlayerTurn();
+        ShowTurnMenu(false);
+        state = State.Resolve; 
+        StartCoroutine(FleeRoutine());
+    }
+
+    private IEnumerator FleeRoutine()
+    {
+        float fleeChance = 0.5f;
+        if (encounter != null && encounter.enemyProfile != null)
+        {
+            fleeChance = encounter.enemyProfile.fleeProbability;
+        }
+
+        if (Random.value <= fleeChance)
+        {
+            // Fugida exitosa
+            Debug.Log("Fugida exitosa!");
+            if (playerNameText != null) playerNameText.text = "FUGINT...";
+            
+            if (moveMenuSound && audioSource) audioSource.PlayOneShot(moveMenuSound);
+
+            yield return new WaitForSeconds(1f);
+            
+            state = State.End;
+            loader.EndCombat();
+        }
+        else
+        {
+            // Falla
+            Debug.Log("Has fallat al fugir!");
+            if (playerNameText != null) playerNameText.text = "FUGIDA FRACASSADA!";
+            
+            // Restaura nom i passa torn a l'enemic
+            if (playerNameText != null) playerNameText.text = "FRANC";
+            EndPlayerTurn("FLEE_FAIL");
+        }
     }
 
     private void OnItem()
@@ -974,7 +1096,7 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            EndPlayerTurn();
+            EndPlayerTurn("HEAL");
         }
     }
 
@@ -1119,11 +1241,43 @@ public class CombatManager : MonoBehaviour
         Destroy(go);
     }
 
-    private void EndPlayerTurn()
+    private IEnumerator EnemySpeakRoutine(string text)
+    {
+        if (enemyBubbleRT == null || string.IsNullOrEmpty(text)) yield break;
+
+        enemyBubbleRT.gameObject.SetActive(true);
+        enemyDialogTxt.text = "";
+
+        AudioClip voice = encounter?.enemyProfile?.voiceSound;
+
+        int count = 0;
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (enemyDialogTxt != null) enemyDialogTxt.text += text[i];
+            
+            if (char.IsLetterOrDigit(text[i]) && voice != null && audioSource != null)
+            {
+                if (count % 2 == 0)
+                {
+                    audioSource.PlayOneShot(voice, 0.7f);
+                }
+            }
+            count++;
+            
+            if (text[i] == '.' || text[i] == '?' || text[i] == '!') yield return new WaitForSecondsRealtime(0.25f);
+            else if (text[i] == ',') yield return new WaitForSecondsRealtime(0.15f);
+            else yield return new WaitForSecondsRealtime(0.015f);
+        }
+
+        yield return new WaitForSeconds(1.5f);
+        enemyBubbleRT.gameObject.SetActive(false);
+    }
+
+    private void EndPlayerTurn(string reactionType = "")
     {
         ShowTurnMenu(false);
         state = State.EnemyTurn;
-        StartCoroutine(EnemyTurnRoutine());
+        StartCoroutine(EnemyTurnRoutine(reactionType));
     }
 
     private Coroutine turnMenuAnim;
@@ -1187,9 +1341,35 @@ public class CombatManager : MonoBehaviour
     // Enemy turn
     // =========================
 
-    private IEnumerator EnemyTurnRoutine()
+    private IEnumerator EnemyTurnRoutine(string reactionType)
     {
         Debug.Log("ENEMY TURN started");
+
+        string comment = "";
+        if (encounter != null && encounter.enemyProfile != null)
+        {
+            var p = encounter.enemyProfile;
+            if (reactionType == "ATTACK" && p.attackReactions != null && attackReactionIndex < p.attackReactions.Length)
+            {
+                comment = p.attackReactions[attackReactionIndex];
+                attackReactionIndex++;
+            }
+            else if (reactionType == "HEAL" && p.healReactions != null && healReactionIndex < p.healReactions.Length)
+            {
+                comment = p.healReactions[healReactionIndex];
+                healReactionIndex++;
+            }
+            else if (reactionType == "FLEE_FAIL" && p.fleeFailReactions != null && fleeFailReactionIndex < p.fleeFailReactions.Length)
+            {
+                comment = p.fleeFailReactions[fleeFailReactionIndex];
+                fleeFailReactionIndex++;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(comment))
+        {
+            yield return EnemySpeakRoutine(comment);
+        }
 
         SetHandsActive(true);
 
@@ -1251,7 +1431,6 @@ public class CombatManager : MonoBehaviour
         }
 
         state = State.PlayerTurn;
-        isDefending = false; // Reset de la defensa al començar el següent torn
         ShowTurnMenu(true);
     }
 }

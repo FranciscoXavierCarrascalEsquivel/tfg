@@ -93,8 +93,8 @@ public class ProjectileUI : MonoBehaviour
                 Sprite s = img ? img.sprite : null;
                 cm.OnParrySuccess(transform.position, s);
                 
-                // Efecte de destruccio en pixels (Verd si estem defensant)
-                Color tint = cm.IsDefending ? new Color(0.3f, 1f, 0.3f, 1f) : Color.white;
+                // Efecte de destruccio en pixels verd (perque curam)
+                Color tint = new Color(0.3f, 1f, 0.3f, 1f);
                 EnemyDestroyFX.Play(img, () => Destroy(gameObject), tint);
             }
 

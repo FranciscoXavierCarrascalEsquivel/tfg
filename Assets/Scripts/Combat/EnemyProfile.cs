@@ -12,6 +12,10 @@ public class EnemyProfile : ScriptableObject
     [Tooltip("Llista d'atacs que pot fer aquest enemic. S'escollirà un a l'atzar cada torn.")]
     public EnemyAttackPattern[] attackPatterns = new EnemyAttackPattern[] { EnemyAttackPattern.RandomDrop };
     
+    [Range(0f, 1f)]
+    [Tooltip("Probabilitat d'escapar amb èxit d'aquest enemic (0 = impossible, 1 = sempre).")]
+    public float fleeProbability = 0.5f;
+    
     [Header("Rewards")]
     public int goldRewardMin = 10;
     public int goldRewardMax = 30;
@@ -22,6 +26,13 @@ public class EnemyProfile : ScriptableObject
     [Header("Audio")]
     [Tooltip("So que es reprodueix quan l'enemic mor.")]
     public AudioClip deathSound;
+    
+    [Header("Reaccions de Dialeg (Trets un a l'atzar cada cop)")]
+    [Tooltip("So de veu d'aquest enemic")]
+    public AudioClip voiceSound;
+    public string[] attackReactions;
+    public string[] healReactions;
+    public string[] fleeFailReactions;
 }
 
 [System.Serializable]
