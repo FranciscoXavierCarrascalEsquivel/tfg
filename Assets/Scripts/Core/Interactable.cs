@@ -57,36 +57,60 @@ public class Interactable : MonoBehaviour
         [Tooltip("Accions extres a executar quan s'escull aquesta resposta (ex: Iniciar combat, Restar or).")]
         public UnityEvent onChoiceSelected;
     }
+    
+    [Serializable]
+    public class DialogueVersion
+    {
+        [Tooltip("Sequència de línies que es mostraran en aquesta interacció.")]
+        public DialogueLine[] lines;
+    }
 
-    [Header("Dialogue Lines (1 o més)")]
-    [SerializeField] private DialogueLine[] lines; // Línies de diàleg de l'objecte.
+    [Header("Versions de Diàleg (cada interacció usa la següent; l'ultima es repeteix en bucle)")]
+    [SerializeField] private DialogueVersion[] versions;
 
-    // Compatibilitat amb el que ja tens (si tens escenes velles amb només description/portrait)
-    [Header("Legacy (si no omples 'lines')")]
+    // Compatibilitat amb el que ja tens (si no omples 'versions')
+    [Header("Legacy (si no omples 'versions')")]
     [TextArea(2, 6)]
     [SerializeField] private string description = "…";
     [SerializeField] private Sprite portrait;
     [SerializeField] private RuntimeAnimatorController portraitAnimator;
+    
+    [Header("Legacy lines (si no omples 'versions')")]
+    [SerializeField] private DialogueLine[] lines;
+
+    private int interactionCount = 0;
 
     /// <summary>
-    /// Retorna les línies de diàleg. Si no n'hi ha, fa servir les dades legacy.
+    /// Retorna les línies de diàleg corresponents a la interacció actual i incrementa el comptador.
+    /// La darrera versió es repeteix indefinidament.
     /// </summary>
-    public DialogueLine[] Lines
+    public DialogueLine[] GetCurrentLines()
     {
-        get
+        // Si hi ha versions configurades, les fem servir
+        if (versions != null && versions.Length > 0)
         {
-            if (lines != null && lines.Length > 0) return lines;
-
-            // fallback legacy
-            return new DialogueLine[]
-            {
-                new DialogueLine
-                {
-                    text = description,
-                    portrait = portrait,
-                    portraitAnimator = portraitAnimator
-                }
-            };
+            int idx = Mathf.Min(interactionCount, versions.Length - 1);
+            interactionCount++;
+            return versions[idx]?.lines ?? new DialogueLine[0];
         }
+
+        // Fallback: l'antic camp lines
+        if (lines != null && lines.Length > 0) return lines;
+
+        // Fallback legacy
+        return new DialogueLine[]
+        {
+            new DialogueLine
+            {
+                text = description,
+                portrait = portrait,
+                portraitAnimator = portraitAnimator
+            }
+        };
     }
+
+    /// <summary>
+    /// Propietat de compatibilitat per codi que feia servir .Lines
+    /// </summary>
+    public DialogueLine[] Lines => GetCurrentLines();
 }
