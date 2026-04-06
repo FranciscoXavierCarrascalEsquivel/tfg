@@ -75,6 +75,8 @@ public class CombatManager : MonoBehaviour
     private AudioSource audioSource;
     private AudioSource loopAudioSource;
     private AudioSource voiceAudioSource; // NOU: Una font de so dedicada només a veus per no afectar a la resta de sons
+    private Coroutine activeEnemySpeakCoroutine; // NOU: Registre per poder cancel·lar diàlegs si canvia la fase (específicament la bombolla)
+    private bool isPhaseShiftingThisTurn = false; // NOU: Flag per evitar diàlegs de reacció si hi ha hagut canvi de fase
 
     [Header("VFX & Limits")]
     [SerializeField] private GameObject parryParticlePrefab;
@@ -119,6 +121,10 @@ public class CombatManager : MonoBehaviour
 
     // Recompensa de reclutament pendent (es mostra fora del combat)
     private EnemyProfile pendingRecruitReward;
+
+    // Control de fases de combat
+    private int currentPhaseIndex = -1;
+    private EnemyAttackPattern[] currentPhaseAttacks;
 
     /// <summary>Retorna i neteja la recompensa pendent (si n'hi ha).</summary>
     public EnemyProfile ConsumeRecruitReward()
@@ -360,7 +366,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void Begin(CombatEncounter encounter, CombatLoader loader)
+    public IEnumerator BeginRoutine(CombatEncounter encounter, CombatLoader loader)
     {
         this.encounter = encounter;
         this.loader = loader;
@@ -396,6 +402,12 @@ public class CombatManager : MonoBehaviour
         }
 
         enemyCurrentHP = enemyMaxHP;
+        
+        // Inicialitzar fases
+        currentPhaseIndex = -1;
+        currentPhaseAttacks = (encounter?.enemyProfile != null) ? encounter.enemyProfile.attackPatterns : null;
+        CheckPhaseShift(true); 
+
         UpdateStatsUI(true); // Posa les barres completes de cop a l'inci
 
         // Aplica l'sprite visual
@@ -424,6 +436,14 @@ public class CombatManager : MonoBehaviour
         SetHandsActive(false);
 
         state = State.PlayerTurn;
+
+        // Si l'enemic ha començat parlant (per canvi de fase o inici), esperem que acabi abans de posar el menú
+        if (isPhaseShiftingThisTurn)
+        {
+            while (isEnemySpeaking) yield return null;
+            isPhaseShiftingThisTurn = false;
+        }
+
         ShowTurnMenu(true);
 
         // Configura noms
@@ -593,7 +613,7 @@ public class CombatManager : MonoBehaviour
         }
 
         // --- Handle UI Input ---
-        if (state != State.PlayerTurn) return;
+        if (state != State.PlayerTurn || isPhaseShiftingThisTurn || isEnemySpeaking) return;
 
         // Bloquejar input del combat mentre l'inventari és obert
         if (InventoryMenuUI.IsOpen) return;
@@ -627,6 +647,8 @@ public class CombatManager : MonoBehaviour
             StartCoroutine(VictoryRoutine());
         }
     }
+
+
 
     // =========================
     // UI Helpers
@@ -907,6 +929,179 @@ public class CombatManager : MonoBehaviour
         {
             SetButtonText(fightButton, $"Enemy ({enemyCurrentHP} HP)");
         }
+
+        CheckPhaseShift(instant);
+    }
+
+    private void CheckPhaseShift(bool immediate = false)
+    {
+        if (encounter == null || encounter.enemyProfile == null || encounter.enemyProfile.phases == null || encounter.enemyProfile.phases.Length == 0) return;
+
+        float hpPercent = (float)enemyCurrentHP / enemyMaxHP * 100f;
+        int bestPhase = -1;
+
+        // Trobem la fase més alta (menor threshold) que encara és activa
+        for (int i = 0; i < encounter.enemyProfile.phases.Length; i++)
+        {
+            if (hpPercent <= encounter.enemyProfile.phases[i].hpThresholdPercent)
+            {
+                bestPhase = i;
+            }
+        }
+
+        if (bestPhase != currentPhaseIndex)
+        {
+            currentPhaseIndex = bestPhase;
+            ApplyPhase(bestPhase, immediate);
+        }
+    }
+
+    private void ApplyPhase(int index, bool immediate)
+    {
+        // Cancel·lem qualsevol diàleg actiu (bombolla) si canviem de fase
+        if (activeEnemySpeakCoroutine != null)
+        {
+            StopCoroutine(activeEnemySpeakCoroutine);
+            activeEnemySpeakCoroutine = null;
+            if (enemyBubbleRT != null) enemyBubbleRT.gameObject.SetActive(false);
+            isEnemySpeaking = false;
+        }
+
+        if (immediate)
+        {
+            SetPhaseVisuals(index);
+            // Si hi ha diàlegs en aquesta fase, marquem el flag perquè l'escena s'esperi (Begin o turns)
+            var phase = (index >= 0) ? encounter.enemyProfile.phases[index] : default;
+            if (index >= 0 && phase.transitionDialogues != null && phase.transitionDialogues.Length > 0)
+                isPhaseShiftingThisTurn = true;
+
+            ShowPhaseDialogue(index);
+        }
+        else
+        {
+            // Canvi d'sprite immediat al rebre el dany
+            SetPhaseVisuals(index);
+            // El diàleg espera a que acabi el shake (0.35s) + 1 segon extra per petició usuari
+            isPhaseShiftingThisTurn = true; // Bloquegem reaccions immediatament
+            StartCoroutine(ApplyPhaseDialogueRoutine(index));
+        }
+    }
+
+    private void SetPhaseVisuals(int index)
+    {
+        if (index < 0) 
+        {
+            currentPhaseAttacks = (encounter?.enemyProfile != null) ? encounter.enemyProfile.attackPatterns : null;
+            return;
+        }
+
+        var phase = encounter.enemyProfile.phases[index];
+        currentPhaseAttacks = phase.phaseAttacks;
+
+        if (phase.transitionSound != null && audioSource != null)
+            audioSource.PlayOneShot(phase.transitionSound);
+
+        if (enemyPortraitImage != null && phase.phaseSprite != null)
+        {
+            enemyPortraitImage.sprite = phase.phaseSprite;
+            enemyPortraitImage.enabled = true;
+        }
+    }
+
+    private void ShowPhaseDialogue(int index)
+    {
+        if (index < 0) return;
+        var phase = encounter.enemyProfile.phases[index];
+        
+        if (phase.transitionDialogues != null && phase.transitionDialogues.Length > 0)
+        {
+            activeEnemySpeakCoroutine = StartCoroutine(ShowMultiplePhaseDialogues(phase.transitionDialogues));
+        }
+        else
+        {
+            // Si l'índex és vàlid però no hi havia diàlegs, cal alliberar el flag de bloqueig d'input
+            isPhaseShiftingThisTurn = false;
+        }
+    }
+
+    private IEnumerator ShowMultiplePhaseDialogues(string[] messages)
+    {
+        // isEnemySpeaking es gestiona dins de cada EnemySpeakRoutine
+        foreach (var msg in messages)
+        {
+            yield return EnemySpeakRoutine(msg);
+        }
+    }
+
+    private IEnumerator ApplyPhaseDialogueRoutine(int index)
+    {
+        yield return new WaitForSeconds(1.35f);
+
+        // NOU: Si l'enemic és rendit amistosament, la música ja comença a baixar aquí
+        if (index >= 0)
+        {
+            var phase = encounter.enemyProfile.phases[index];
+            if (phase.endFightFriendly && loader != null)
+                StartCoroutine(loader.FadeCombatMusic(false, 4f)); // Un fade una mica més llarg perquè dura el temps de diàleg
+        }
+        
+        ShowPhaseDialogue(index);
+        
+        // Esperem que realment acabi de parlar (si hi ha diàlegs)
+        while (isEnemySpeaking) yield return null;
+        yield return null; // Frame de seguretat
+
+        // NOU: Friendly End si la fase ho indica
+        if (index >= 0)
+        {
+            var phase = encounter.enemyProfile.phases[index];
+            if (phase.endFightFriendly)
+            {
+                StartCoroutine(FriendlyVictoryRoutine());
+                yield break;
+            }
+        }
+
+        isPhaseShiftingThisTurn = false;
+    }
+
+    private IEnumerator FriendlyVictoryRoutine()
+    {
+        // El fade de música ja s'hauria d'haver iniciat a l'ApplyPhaseDialogueRoutine
+        // Però per seguretat (si no hi hagués hagut diàleg), mirem de mantenir-lo
+        if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 1.5f));
+        
+        // So de victòria
+        if (victorySound != null && audioSource != null) audioSource.PlayOneShot(victorySound);
+
+        yield return new WaitForSeconds(0.5f);
+
+        ShowTurnMenu(false);
+
+        // Reclutem l'enemic directament per ser final pacífic (si hi ha inventari)
+        if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
+        {
+            PlayerInventory.Instance.RecruitEnemy(encounter.enemyProfile.enemyName);
+        }
+
+        // Slide Out UI
+        float outDur = 0.5f;
+        Vector2 outOff = new Vector2(0, 400f);
+        if (playerUIPanel != null) StartCoroutine(SlideOutRect(playerUIPanel, playerUIOriginalPos, outOff, outDur));
+        if (enemyUIPanel != null) StartCoroutine(SlideOutRect(enemyUIPanel, enemyUIOriginalPos, outOff, outDur));
+        if (playerNameText != null) StartCoroutine(SlideOutRect(playerNameText.rectTransform, playerNameOriginalPos, outOff, outDur));
+        if (playerHPText != null) StartCoroutine(SlideOutRect(playerHPText.rectTransform, playerHPTextOriginalPos, outOff, outDur));
+        if (enemyNameText != null) StartCoroutine(SlideOutRect(enemyNameText.rectTransform, enemyNameOriginalPos, outOff, outDur));
+        if (enemyHPText != null) StartCoroutine(SlideOutRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, outOff, outDur));
+
+        // Mostrem el panell animat de victòria sense haver matat a ningú (0 or, sense drops matança)
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        bool done = false;
+        VictoryPanelUI.Create(canvasParent, 0, new System.Collections.Generic.List<string>(), 
+                              PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : 0, () => done = true);
+
+        yield return new WaitUntil(() => done);
+        loader.EndCombat();
     }
 
     private IEnumerator AnimateHPBar(Image hpImage, float targetFill, float duration)
@@ -966,6 +1161,13 @@ public class CombatManager : MonoBehaviour
     {
         if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
     }
+
+    public void PlayLocalSound(AudioClip clip)
+    {
+        if (clip && audioSource) audioSource.PlayOneShot(clip);
+    }
+
+    public AudioClip DamageSound => takeDamageSound;
 
     public void PlayExplosionSound()
     {
@@ -1060,6 +1262,14 @@ public class CombatManager : MonoBehaviour
             yield return new WaitUntil(() => checkFinished);
             
             Destroy(skillCheck.gameObject); 
+
+            // NOU: Si el dany és -1, vol dir que l'usuari ha cancel·lat el minijoc
+            if (finalDmg == -1)
+            {
+                state = State.PlayerTurn;
+                ShowTurnMenu(true);
+                yield break;
+            }
         }
         else 
         {
@@ -1130,6 +1340,19 @@ public class CombatManager : MonoBehaviour
     /// Quan l'enemic mor: primer l'escapcem en pixels, despres la pantalla de victoria.
     private IEnumerator DefeatAndVictoryRoutine()
     {
+        // Baixem la música lentament en donar el cop definitiu (petició usuari)
+        if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 2.5f));
+
+        // Esperem a que la darrera animació de dany (shake) estigui cap al final
+        yield return new WaitForSeconds(0.4f);
+
+        // Els enemics ara poden dir unes últimes paraules abans de morir (E per seguir)
+        if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.deathReactions != null && encounter.enemyProfile.deathReactions.Length > 0)
+        {
+            string deathMsg = encounter.enemyProfile.deathReactions[Random.Range(0, encounter.enemyProfile.deathReactions.Length)];
+            yield return EnemySpeakRoutine(deathMsg);
+        }
+
         ShowTurnMenu(false);
 
         // Slide Out de tota la UI de combat cap amunt
@@ -1162,6 +1385,9 @@ public class CombatManager : MonoBehaviour
     private IEnumerator VictoryRoutine()
     {
         ShowTurnMenu(false);
+        // Baixem la música lentament per la victòria
+        if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 3f));
+
         // So de victòria
         if (victorySound) audioSource.PlayOneShot(victorySound);
 
@@ -1228,8 +1454,11 @@ public class CombatManager : MonoBehaviour
         var bt = encounter?.enemyProfile?.socialBT;
         if (bt == null || bt.playerActions == null || bt.playerActions.Length == 0)
         {
-            // Sense BT configurat, simplement passa el torn
-            EndPlayerTurn("");
+            // NOU: Fallback amb narrador si no hi ha BT configurat
+            string fallback = (encounter?.enemyProfile != null) ? encounter.enemyProfile.reasonFallbackDialogue : "";
+            if (string.IsNullOrEmpty(fallback)) fallback = "Tractes de parlar amb l'enemic, però no sembla haver-hi resposta.";
+            
+            StartCoroutine(ReasonFallbackRoutine(fallback));
             return;
         }
 
@@ -1239,6 +1468,18 @@ public class CombatManager : MonoBehaviour
         ShowTurnMenu(false);
         state = State.Resolve;
         StartCoroutine(SocialActionMenuRoutine(bt));
+    }
+
+    private IEnumerator ReasonFallbackRoutine(string text)
+    {
+        ShowTurnMenu(false);
+        state = State.Resolve;
+        
+        // Ús del so de veu personalitzat per aquest enemic si està definit
+        AudioClip voice = (encounter?.enemyProfile != null) ? encounter.enemyProfile.reasonFallbackSound : null;
+        
+        yield return ShowPlayerActionDialogue(text, voice);
+        EndPlayerTurn(""); // Simplement perdem el torn
     }
 
     // ─── Menú d'accions socials (node-graph) ─────────────────────────────────
@@ -1797,7 +2038,7 @@ public class CombatManager : MonoBehaviour
     /// Mostra un diàleg estil overworld a la part inferior del combat
     /// per narrar l'acció del jugador. Espera que el jugador l'avanci amb E/Enter.
     /// </summary>
-    private IEnumerator ShowPlayerActionDialogue(string text)
+    private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null)
     {
         // Creem un DialogueUI temporal per al combat
         var canvas = FindFirstObjectByType<Canvas>();
@@ -1807,10 +2048,11 @@ public class CombatManager : MonoBehaviour
         dialogGO.transform.SetParent(canvas.transform, false);
         var dialogUI = dialogGO.AddComponent<DialogueUI>();
 
-        // Personalització del so (Global de CombatManager)
-        if (playerActionVoice != null)
+        // Personalització de la veu: Prioritat al de l'enemic, fallback al global del combat
+        AudioClip voice = (overrideVoice != null) ? overrideVoice : playerActionVoice;
+        if (voice != null)
         {
-            dialogUI.SetTypingSound(playerActionVoice);
+            dialogUI.SetTypingSound(voice);
         }
 
         bool closed = false;
@@ -1847,32 +2089,50 @@ public class CombatManager : MonoBehaviour
         AudioClip voice = encounter?.enemyProfile?.voiceSound;
         int voicePlayCount = 0;
         
+        // Paràmetres orgànics idèntics a DialogueUI
+        float charsPerSecond = 45f;
+        float delay = 1f / charsPerSecond;
+
         for (int i = 0; i < cleanText.Length; i++)
         {
-            if (enemyDialogTxt != null) enemyDialogTxt.text += cleanText[i];
+            char c = cleanText[i];
+            if (enemyDialogTxt != null) enemyDialogTxt.text += c;
             
-            if (!char.IsWhiteSpace(cleanText[i]) && voice != null && voiceAudioSource != null)
+            // So de veu (cada 2 caràcters per no saturar)
+            if (!char.IsWhiteSpace(c) && voice != null && voiceAudioSource != null)
             {
-                if (voicePlayCount % 2 == 0)
+                if (i % 2 == 0)
                 {
-                    voiceAudioSource.PlayOneShot(voice, 1f); 
+                    voiceAudioSource.pitch = 1f + Random.Range(-0.06f, 0.06f);
+                    voiceAudioSource.PlayOneShot(voice, 0.8f); 
                 }
-                voicePlayCount++;
             }
             
-            if (cleanText[i] == '.' || cleanText[i] == '?' || cleanText[i] == '!') yield return new WaitForSecondsRealtime(0.25f);
-            else if (cleanText[i] == ',') yield return new WaitForSecondsRealtime(0.15f);
-            else yield return new WaitForSecondsRealtime(0.02f); 
+            float currentDelay = delay;
+            if (c == '.' || c == '?' || c == '!') currentDelay = delay * 10f;
+            else if (c == ',' || c == ';' || c == ':') currentDelay = delay * 5f;
 
-            // Permetre saltar el text amb E/Enter/Espai
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            // Espera amb possibilitat de saltar (skip) immediat
+            float elapsed = 0f;
+            bool skipped = false;
+            while (elapsed < currentDelay)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    skipped = true;
+                    break;
+                }
+                yield return null;
+            }
+
+            if (skipped)
             {
                 enemyDialogTxt.text = cleanText;
                 break;
             }
         }
 
-        yield return new WaitForSecondsRealtime(0.1f); // Espera extra perquè l'últim bit de so s'escolti
         if (voiceAudioSource != null) voiceAudioSource.pitch = 1f;
 
         // Mostrem el prompt de [E]
@@ -1989,10 +2249,14 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        if (!string.IsNullOrEmpty(comment))
+        if (!string.IsNullOrEmpty(comment) && !isPhaseShiftingThisTurn)
         {
             yield return EnemySpeakRoutine(comment);
         }
+
+        // Si hi havia un diàleg de fase en curs o pendent, esperem que s'alliberi el flag
+        // El flag s'allibera a ApplyPhaseDialogueRoutine un cop s'ha tancat la bombolla
+        while (isPhaseShiftingThisTurn) yield return null;
 
         SetHandsActive(true);
 
@@ -2010,7 +2274,11 @@ public class CombatManager : MonoBehaviour
                 if (encounter.enemyProfile != null)
                 {
                     prefab = encounter.enemyProfile.projectilePrefab;
-                    if (encounter.enemyProfile.attackPatterns != null && encounter.enemyProfile.attackPatterns.Length > 0)
+                    if (currentPhaseAttacks != null && currentPhaseAttacks.Length > 0)
+                    {
+                        chosenPattern = currentPhaseAttacks[Random.Range(0, currentPhaseAttacks.Length)];
+                    }
+                    else if (encounter.enemyProfile.attackPatterns != null && encounter.enemyProfile.attackPatterns.Length > 0)
                     {
                         chosenPattern = encounter.enemyProfile.attackPatterns[Random.Range(0, encounter.enemyProfile.attackPatterns.Length)];
                     }
@@ -2051,6 +2319,14 @@ public class CombatManager : MonoBehaviour
                 currentSpeedBuffValue = 0f;
                 Debug.Log("Buff de velocitat de mans exhaurit!");
             }
+        }
+
+        // Assegurem que qualsevol diàleg de l'enemic es tanca abans de mostrar el menú del jugador
+        if (enemyBubbleRT != null && enemyBubbleRT.gameObject.activeSelf)
+        {
+            enemyBubbleRT.gameObject.SetActive(false);
+            isEnemySpeaking = false;
+            isPhaseShiftingThisTurn = false;
         }
 
         state = State.PlayerTurn;

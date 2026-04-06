@@ -9,6 +9,8 @@ public class CombatLoader : MonoBehaviour
     [SerializeField] private string combatSceneName = "CombatScene";
     [SerializeField] private MonoBehaviour[] worldScriptsToDisable;
 
+    public static bool IsInCombat { get; private set; }
+
     [Header("Split Snapshot Transition")]
     [SerializeField] private SplitSnapshot splitOverlayPrefab;
 
@@ -44,6 +46,7 @@ public class CombatLoader : MonoBehaviour
 
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
+        IsInCombat = true;
         // Snap camera to target immediately so the snapshot is perfectly centered/clamped
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
         foreach (var camFollow in cams) camFollow.SnapToTarget();
@@ -102,9 +105,16 @@ public class CombatLoader : MonoBehaviour
         yield return StartCoroutine(overlay.PlayOpen());
 
         // Ara sí que l'animació d'entrada ha acabat, posem la música de combat
-        if (combatMusic != null && combatAudioSource != null)
+        // Prioritat: Música de l'enemic > Música global del CombatLoader
+        AudioClip musicToPlay = combatMusic;
+        if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.combatMusic != null)
         {
-            combatAudioSource.clip = combatMusic;
+            musicToPlay = encounter.enemyProfile.combatMusic;
+        }
+
+        if (musicToPlay != null && combatAudioSource != null)
+        {
+            combatAudioSource.clip = musicToPlay;
             combatAudioSource.volume = 0f;
             combatAudioSource.Play();
             StartCoroutine(FadeCombatMusic(true, 1f));
@@ -114,7 +124,7 @@ public class CombatLoader : MonoBehaviour
         foreach (var s in worldScriptsToDisable) if (s) s.enabled = false;
 
         // 6) Inicia combat de debò on els menús llisquen
-        if (cm != null) cm.Begin(encounter, this);
+        if (cm != null) yield return cm.BeginRoutine(encounter, this);
         else Debug.LogError("CombatManager no trobat a CombatScene");
     }
 
@@ -125,10 +135,12 @@ public class CombatLoader : MonoBehaviour
 
     private IEnumerator EndCombatRoutine()
     {
-        // Parem la música de combat a poc a poc
+        IsInCombat = false;
+        // Parem la música de combat a poc a poc (especialment si no ha començat encara el fadeout llarg)
         if (combatAudioSource != null && combatAudioSource.isPlaying)
         {
-            StartCoroutine(FadeCombatMusic(false, 1f));
+            if (combatAudioSource.volume > 0.1f) // Si encara té volum, fem un fade ràpid de seguretat
+                StartCoroutine(FadeCombatMusic(false, 0.8f));
         }
 
         // Recuperem la recompensa pendent ABANS de destruir l'escena de combat
@@ -226,10 +238,17 @@ public class CombatLoader : MonoBehaviour
         pausedAudioSources.Clear();
     }
 
-    private IEnumerator FadeCombatMusic(bool fadeIn, float duration)
+    private Coroutine activeFadeMusicCoroutine;
+    public IEnumerator FadeCombatMusic(bool fadeIn, float duration)
     {
         if (combatAudioSource == null) yield break;
+        if (activeFadeMusicCoroutine != null) StopCoroutine(activeFadeMusicCoroutine);
+        activeFadeMusicCoroutine = StartCoroutine(FadeCombatMusicInternal(fadeIn, duration));
+        yield return activeFadeMusicCoroutine;
+    }
 
+    private IEnumerator FadeCombatMusicInternal(bool fadeIn, float duration)
+    {
         float time = 0;
         float startVol = combatAudioSource.volume;
         float targetVol = fadeIn ? 1f : 0f;
@@ -243,6 +262,7 @@ public class CombatLoader : MonoBehaviour
 
         combatAudioSource.volume = targetVol;
         if (!fadeIn) combatAudioSource.Stop();
+        activeFadeMusicCoroutine = null;
     }
 
     private IEnumerator FadeAudio(AudioSource source, float startVol, float endVol, float duration, bool pauseAtEnd)
@@ -265,6 +285,30 @@ public class CombatLoader : MonoBehaviour
             if (pauseAtEnd) source.Pause();
         }
     }
+
+    private void OnGUI()
+    {
+        // Botó per fer debug i entrar en combat aleatori des del món
+        if (GUI.Button(new Rect(10, 10, 220, 50), "TEST: Combat Aleatori"))
+        {
+            DebugStartRandomCombat();
+        }
+    }
+
+    private void DebugStartRandomCombat()
+    {
+        if (IsInCombat) return;
+
+        if (PlayerInventory.Instance == null || PlayerInventory.Instance.enemyDatabase.Count == 0)
+        {
+            Debug.LogWarning("Sense base de dades enemics!");
+            return;
+        }
+
+        var enemy = PlayerInventory.Instance.enemyDatabase[Random.Range(0, PlayerInventory.Instance.enemyDatabase.Count)];
+        var enc = new CombatEncounter { enemyProfile = enemy };
+        StartCombat(enc);
+    }
 }
 
 public enum EnemyAttackPattern
@@ -281,7 +325,13 @@ public enum EnemyAttackPattern
     CircleBurstSpinning,
     DiagonalCrossSpinning,
     FastMeteorsSpinning,
-    SnakeWavesSpinning
+    SnakeWavesSpinning,
+    // Nous patrons (Red Projectiles / Strictly Downward)
+    RainWithRed,
+    RainWithRedSpinning,
+    RapidFireRed,
+    RedHomingBarrage,
+    RedSweepWall
 }
 
 [System.Serializable]

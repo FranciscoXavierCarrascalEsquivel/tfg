@@ -228,11 +228,23 @@ public class SkillCheckUI : MonoBehaviour
         {
             FinishCheck();
         }
+        // NOU: Cancel·lar amb Escape o Backspace
+        else if (timer > 0.1f && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace)))
+        {
+            CancelCheck();
+        }
         // Prevenció de Softlock
         else if (timer >= maxWaitTime)
         {
             FinishCheck();
         }
+    }
+
+    private void CancelCheck()
+    {
+        isChecking = false;
+        if (blinkCoroutine != null) StopCoroutine(blinkCoroutine);
+        onDamageCalculated?.Invoke(-1); // Mark as cancelled
     }
 
     private void FinishCheck()

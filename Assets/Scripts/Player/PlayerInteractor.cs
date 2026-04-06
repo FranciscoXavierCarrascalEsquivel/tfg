@@ -43,8 +43,8 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (!Input.GetKeyDown(interactKey)) return;
 
-        // Si la botiga està oberta, es bloqueja qualsevol interacció amb el món.
-        if (ShopMenuUI.IsOpen) return;
+        // Si la botiga està oberta o estem en combat, es bloqueja qualsevol interacció amb el món.
+        if (ShopMenuUI.IsOpen || CombatLoader.IsInCombat) return;
 
         // Si hi ha diàleg obert, la E serveix per avançar línia o tancar quan toca.
         

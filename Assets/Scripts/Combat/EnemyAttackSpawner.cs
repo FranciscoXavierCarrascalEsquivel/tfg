@@ -9,6 +9,7 @@ public class EnemyAttackSpawner : MonoBehaviour
 
     private GameObject projectilePrefab;
     private EnemyAttackPattern currentPattern;
+    private ParryZone[] cachedHands;
 
     public void Configure(GameObject prefab, EnemyAttackPattern pattern)
     {
@@ -53,6 +54,25 @@ public class EnemyAttackSpawner : MonoBehaviour
                 break;
             case EnemyAttackPattern.SnakeWavesSpinning:
                 yield return SnakeWavesRoutine(duration, true);
+                break;
+            
+            case EnemyAttackPattern.RainWithRed:
+                yield return RainWithRedRoutine(duration, false);
+                break;
+            case EnemyAttackPattern.RainWithRedSpinning:
+                yield return RainWithRedRoutine(duration, true);
+                break;
+
+            case EnemyAttackPattern.RapidFireRed:
+                yield return RapidFireRedRoutine(duration);
+                break;
+
+            case EnemyAttackPattern.RedHomingBarrage:
+                yield return RedHomingBarrageRoutine(duration);
+                break;
+
+            case EnemyAttackPattern.RedSweepWall:
+                yield return RedSweepWallRoutine(duration);
                 break;
 
             case EnemyAttackPattern.RandomDropSpinning:
@@ -270,6 +290,136 @@ public class EnemyAttackSpawner : MonoBehaviour
             }
             
             float wait = 0.8f; 
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 7. RAIN WITH RED (Trampes barrejades)
+    // ===================================
+    private IEnumerator RainWithRedRoutine(float duration, bool spinning)
+    {
+        float t = 0f;
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                var go = Instantiate(projectilePrefab, projectilesRoot);
+                var proj = go.GetComponent<ProjectileUI>();
+                if (proj)
+                {
+                    float x = Random.Range(-arenaRect.rect.width/3f, arenaRect.rect.width/3f);
+                    go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
+                    
+                    bool isRed = Random.value < 0.35f;
+                    proj.Init(Vector2.down, 280f, 0, 0, spinning, isRed);
+                }
+            }
+            float wait = 0.25f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 8. RED HOMING BARRAGE (Perseguiment constant)
+    // ===================================
+    private IEnumerator RedHomingBarrageRoutine(float duration)
+    {
+        if (cachedHands == null || cachedHands.Length == 0) 
+            cachedHands = FindObjectsByType<ParryZone>(FindObjectsSortMode.None);
+
+        float t = 0f;
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                var go = Instantiate(projectilePrefab, projectilesRoot);
+                var proj = go.GetComponent<ProjectileUI>();
+                if (proj)
+                {
+                    float x = Random.Range(-arenaRect.rect.width / 4f, arenaRect.rect.width / 4f);
+                    go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
+                    
+                    proj.Init(Vector2.down, 250f, 0, 0, false, true);
+                    
+                    // Agafa una de les mans (parries) aleatòriament per perseguir
+                    if (cachedHands != null && cachedHands.Length > 0)
+                    {
+                        var targetHand = cachedHands[Random.Range(0, cachedHands.Length)];
+                        proj.SetHoming(targetHand.transform, 3.8f);
+                    }
+                }
+            }
+            float wait = 0.6f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 9. RED SWEEP WALL (Murs horitzontals)
+    // ===================================
+    private IEnumerator RedSweepWallRoutine(float duration)
+    {
+        float t = 0f;
+        float screenW = arenaRect.rect.width * 0.95f;
+
+        while (t < duration)
+        {
+            // Ocupem tota la horitzontal amb 16 projectils per a fer un mur dens (sense separacions visuals grans)
+            int num = 16;
+            int hole1 = Random.Range(1, 6);   // Forat costat esquerre
+            int hole2 = Random.Range(10, 15); // Forat costat dret
+            
+            float step = screenW / (num - 1);
+
+            for (int i = 0; i < num; i++)
+            {
+                if (i == hole1 || i == hole2) continue; // Deixem l'espai per als dos parries
+
+                var go = Instantiate(projectilePrefab, projectilesRoot);
+                float x = -screenW/2f + i * step;
+                go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
+                
+                go.GetComponent<ProjectileUI>().Init(Vector2.down, 230f, 0, 0, false, true);
+            }
+
+            float wait = 2.8f; // Més temps entre franges perquè no s'ajuntin verticalment
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    private IEnumerator RapidFireRedRoutine(float duration)
+    {
+        if (cachedHands == null || cachedHands.Length == 0) 
+            cachedHands = FindObjectsByType<ParryZone>(FindObjectsSortMode.None);
+
+        float t = 0f;
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                var go = Instantiate(projectilePrefab, projectilesRoot);
+                var proj = go.GetComponent<ProjectileUI>();
+                if (proj)
+                {
+                    float x = Random.Range(-240f, 240f);
+                    go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
+                    
+                    proj.Init(Vector2.down, 500f, 0, 0, false, true);
+                    
+                    // RapidFire ara també persegueix una de les mans aleatòriament
+                    if (cachedHands != null && cachedHands.Length > 0)
+                    {
+                        var targetHand = cachedHands[Random.Range(0, cachedHands.Length)];
+                        proj.SetHoming(targetHand.transform, 4.8f);
+                    }
+                }
+            }
+            float wait = 0.4f;
             yield return new WaitForSeconds(wait);
             t += wait;
         }

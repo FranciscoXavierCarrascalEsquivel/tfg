@@ -49,6 +49,11 @@ public class ShopMenuUI : MonoBehaviour
     // ── Factory ──────────────────────────────────────────────────────
     public static void Show(Action onClose = null)
     {
+        if (CombatLoader.IsInCombat)
+        {
+            Debug.LogWarning("No es pot obrir la botiga mentre s'està en combat.");
+            return;
+        }
         var canvas = FindFirstObjectByType<Canvas>();
         if (canvas == null) return;
         var go = new GameObject("ShopMenuUI");

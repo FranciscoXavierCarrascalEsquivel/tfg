@@ -20,6 +20,11 @@ public class ProjectileUI : MonoBehaviour
     private float sinElapsed = 0f;
     private bool isSpinning = false;
     private float rotationSpeed = 360f;
+    private bool isRed = false;
+
+    // Homing settings
+    private Transform homingTarget;
+    private float homingStrength = 0.8f;
 
     private void Start() => activeProjectiles++;
     private void OnDestroy() 
@@ -33,18 +38,49 @@ public class ProjectileUI : MonoBehaviour
         cm = FindFirstObjectByType<CombatManager>();
     }
 
-    public void Init(Vector2 direction, float speedOverride = -1f, float zigzagFreq = 0f, float zigzagAmp = 0f, bool spinning = false) 
+    public void Init(Vector2 direction, float speedOverride = -1f, float zigzagFreq = 0f, float zigzagAmp = 0f, bool spinning = false, bool red = false) 
     { 
         dir = direction.normalized; 
         if (speedOverride > 0f) speed = speedOverride; 
         sinFreq = zigzagFreq;
         sinAmp = zigzagAmp;
         isSpinning = spinning;
+        isRed = red;
+
+        if (isRed)
+        {
+            var img = GetComponent<UnityEngine.UI.Image>();
+            if (img != null) img.color = Color.red;
+        }
+    }
+
+    public void SetHoming(Transform target, float strength = 1.2f)
+    {
+        homingTarget = target;
+        homingStrength = strength;
     }
 
     private void Update()
     {
         if (!rt) return;
+
+        // Si tenim un objectiu (Homing), actualitzem la direcció constantment
+        if (homingTarget != null)
+        {
+            Vector2 targetPos = homingTarget.position;
+            Vector2 currentPos = transform.position;
+            Vector2 targetDir = (targetPos - currentPos).normalized;
+            
+            // Lerpejem la direcció perque el gir no sigui infinitament instantani (més orgànic)
+            dir = Vector2.Lerp(dir, targetDir, Time.deltaTime * homingStrength).normalized;
+
+            // Restringim l'angle: No pot anar més de 45 graus cap als costats respecte a la vertical (cap avall)
+            // L'interval de seguretat és [-135, -45] graus, on -90 és recte cap avall.
+            float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            targetAngle = Mathf.Clamp(targetAngle, -135f, -45f);
+            float rad = targetAngle * Mathf.Deg2Rad;
+            dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)).normalized;
+        }
         
         Vector2 movement = dir * speed * Time.deltaTime;
         if (sinAmp > 0f)
@@ -68,7 +104,7 @@ public class ProjectileUI : MonoBehaviour
 
         if (rt.anchoredPosition.y < killY)
         {
-            if (cm) cm.PlayerTakeDamage(10);
+            if (cm && !isRed) cm.PlayerTakeDamage(10);
             Destroy(gameObject);
         }
         // Si el projectil marxa fora de la pantalla per dalt o pels costats, NO fa mal, simplement es destrueix (neteja)
@@ -89,6 +125,15 @@ public class ProjectileUI : MonoBehaviour
             var cm = FindFirstObjectByType<CombatManager>();
             if (cm) 
             {
+                if (isRed)
+                {
+                    // Els vermells només resten vida si els toques (parry)
+                    if (cm.DamageSound) cm.PlayLocalSound(cm.DamageSound);
+                    cm.PlayerTakeDamage(10);
+                    Destroy(gameObject); 
+                    return; 
+                }
+
                 var img = GetComponent<UnityEngine.UI.Image>();
                 Sprite s = img ? img.sprite : null;
                 cm.OnParrySuccess(transform.position, s);

@@ -52,6 +52,8 @@ public class EnemyProfile : ScriptableObject
     [Header("Audio")]
     [Tooltip("So que es reprodueix quan l'enemic mor.")]
     public AudioClip deathSound;
+    [Tooltip("Musica personalizada per aquest combat. Si es null, s'usara la musica per defecte.")]
+    public AudioClip combatMusic;
     
     [Header("Reaccions de Dialeg (Trets un a l'atzar cada cop)")]
     [Tooltip("So de veu d'aquest enemic")]
@@ -59,6 +61,31 @@ public class EnemyProfile : ScriptableObject
     public string[] attackReactions;
     public string[] healReactions;
     public string[] fleeFailReactions;
+    public string[] deathReactions;
+    [Tooltip("Text narratiu que es mostra al clicar 'Raonar' si aquest enemic no té arbre de diàleg social.")]
+    public string reasonFallbackDialogue;
+    public AudioClip reasonFallbackSound;
+
+    [Header("Phases (Optional)")]
+    [Tooltip("Si vols que el combat tingui fases, defineix-les aqui. Si no n'hi ha, s'usara el comportament base.")]
+    public EnemyPhase[] phases;
+}
+
+[System.Serializable]
+public struct EnemyPhase
+{
+    public string phaseName;
+    [Range(0, 100)]
+    [Tooltip("Percentatge de vida en el que s'activa aquesta fase. Exemple: 50 vol dir que s'activa quan a l'enemic li queda el 50% de la vida.")]
+    public int hpThresholdPercent;
+    public Sprite phaseSprite;
+    [Tooltip("Atacs especifics d'aquesta fase.")]
+    public EnemyAttackPattern[] phaseAttacks;
+    [Tooltip("Missatges que diu l'enemic quan canvia a aquesta fase (es mostren seqüencialment).")]
+    public string[] transitionDialogues;
+    public AudioClip transitionSound;
+    [Tooltip("Si es marca, el combat acabarà pacíficament (reclutant l'enemic) un cop acabin els diàlegs d'entrada d'aquesta fase.")]
+    public bool endFightFriendly;
 }
 
 [System.Serializable]

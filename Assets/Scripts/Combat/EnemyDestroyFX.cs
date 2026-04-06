@@ -242,7 +242,8 @@ public class EnemyDestroyFX : MonoBehaviour
             yield return null;
         }
 
-        // NO destruim l'objecte: els pixels queden amuntegats as terra per sempre
+        // Els píxels desapareixen al cap d'uns segons per no omplir massa l'escena (Petició usuari: 3s)
+        Destroy(gameObject, 3f);
         onDone?.Invoke();
     }
 }
