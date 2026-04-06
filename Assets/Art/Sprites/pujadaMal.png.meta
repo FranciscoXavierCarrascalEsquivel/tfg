@@ -1,0 +1,261 @@
+fileFormatVersion: 2
+guid: ba5286b3c30db5c47afa76672b936050
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1177127037353647285
+    second: pujadaMal_0
+  - first:
+      213: -4842652469499590883
+    second: pujadaMal_1
+  - first:
+      213: -942333523383557677
+    second: pujadaMal_2
+  - first:
+      213: 6759860542884883394
+    second: pujadaMal_3
+  - first:
+      213: 7880862640637224457
+    second: pujadaMal_4
+  - first:
+      213: -6711099194513223238
+    second: pujadaMal_5
+  - first:
+      213: -2971483890306146679
+    second: pujadaMal_6
+  - first:
+      213: -5050754517435115596
+    second: pujadaMal_7
+  - first:
+      213: -8876836810010756918
+    second: pujadaMal_8
+  - first:
+      213: 4641005251725549768
+    second: pujadaMal_9
+  - first:
+      213: -1074368417769235045
+    second: pujadaMal_10
+  - first:
+      213: 7951594906306191835
+    second: pujadaMal_11
+  - first:
+      213: 4038524750833767426
+    second: pujadaMal_12
+  - first:
+      213: 3146670687373169588
+    second: pujadaMal_13
+  - first:
+      213: 5569037579035758290
+    second: pujadaMal_14
+  - first:
+      213: -4860253400389111402
+    second: pujadaMal_15
+  - first:
+      213: 3684091217978522982
+    second: pujadaMal_16
+  - first:
+      213: 1554766332513532315
+    second: pujadaMal_17
+  - first:
+      213: -2692688940751815661
+    second: pujadaMal_18
+  - first:
+      213: -606933806701164456
+    second: pujadaMal_19
+  - first:
+      213: -1465133606184503388
+    second: pujadaMal_20
+  - first:
+      213: -7365929449053749574
+    second: pujadaMal_21
+  - first:
+      213: -8302401130666208074
+    second: pujadaMal_22
+  - first:
+      213: 4193194509736726823
+    second: pujadaMal_23
+  - first:
+      213: -9110445146962620990
+    second: pujadaMal_24
+  - first:
+      213: -8042612968941602580
+    second: pujadaMal_25
+  - first:
+      213: -1036675732308007673
+    second: pujadaMal_26
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: pujadaMal_9
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 281
+        width: 532
+        height: 578
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 18, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c0e2d5ffa9286040800000000000000
+      internalID: 4641005251725549768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 3c42af7b09552a04698ae3b3dfa862e7
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      pujadaMal_0: -1177127037353647285
+      pujadaMal_1: -4842652469499590883
+      pujadaMal_10: -1074368417769235045
+      pujadaMal_11: 7951594906306191835
+      pujadaMal_12: 4038524750833767426
+      pujadaMal_13: 3146670687373169588
+      pujadaMal_14: 5569037579035758290
+      pujadaMal_15: -4860253400389111402
+      pujadaMal_16: 3684091217978522982
+      pujadaMal_17: 1554766332513532315
+      pujadaMal_18: -2692688940751815661
+      pujadaMal_19: -606933806701164456
+      pujadaMal_2: -942333523383557677
+      pujadaMal_20: -1465133606184503388
+      pujadaMal_21: -7365929449053749574
+      pujadaMal_22: -8302401130666208074
+      pujadaMal_23: 4193194509736726823
+      pujadaMal_24: -9110445146962620990
+      pujadaMal_25: -8042612968941602580
+      pujadaMal_26: -1036675732308007673
+      pujadaMal_27: 1461950112
+      pujadaMal_3: 6759860542884883394
+      pujadaMal_4: 7880862640637224457
+      pujadaMal_5: -6711099194513223238
+      pujadaMal_6: -2971483890306146679
+      pujadaMal_7: -5050754517435115596
+      pujadaMal_8: -8876836810010756918
+      pujadaMal_9: 4641005251725549768
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

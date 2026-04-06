@@ -16,6 +16,32 @@ public class EnemyProfile : ScriptableObject
     [Tooltip("Probabilitat d'escapar amb èxit d'aquest enemic (0 = impossible, 1 = sempre).")]
     public float fleeProbability = 0.5f;
     
+    [Header("Comportament Social (Actuar)")]
+    [Tooltip("Behavior Tree que defineix com reacciona l'enemic a les accions socials del jugador.")]
+    public SocialBehaviorTree socialBT;
+    
+    [Header("Recruitment")]
+    [Tooltip("Límit màxim de vegades que aquest enemic pot ser reclutat o trobat un cop assolides les vegades màximes d'amistat.")]
+    public int maxRecruitLimit = 1;
+    [Tooltip("Sprite de recompensa que es mostra al final de la barra de reclutaments al menú.")]
+    public Sprite recruitmentRewardSprite;
+    [Tooltip("Descripció breu que es veu a les targetes de l'inventari, sota la barra.")]
+    [TextArea(2, 3)]
+    public string recruitmentRewardDescription = "";
+    [Tooltip("Missatge que surt a la pantalla gran un cop es completa TOTA la barra de reclutament d'aquest enemic.")]
+    [TextArea(2, 4)]
+    public string recruitmentCompleteMessage = "";
+    [Tooltip("So que es reprodueix quan s'obté la recompensa de reclutament.")]
+    public AudioClip recruitmentRewardSound;
+
+    [Header("Recruitment Bonuses (%)")]
+    [Tooltip("Percentatge d'increment d'atac al completar la barra (ex: 20 = +20%)")]
+    public float bonusAttackPercent = 0f;
+    [Tooltip("Percentatge d'increment de vida màxima al completar la barra (ex: 15 = +15%)")]
+    public float bonusHealthPercent = 0f;
+    [Tooltip("Percentatge de reducció de dany rebut al completar la barra (ex: 10 = -10% dany rebut)")]
+    public float bonusDefensePercent = 0f;
+    
     [Header("Rewards")]
     public int goldRewardMin = 10;
     public int goldRewardMax = 30;

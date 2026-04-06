@@ -131,6 +131,14 @@ public class CombatLoader : MonoBehaviour
             StartCoroutine(FadeCombatMusic(false, 1f));
         }
 
+        // Recuperem la recompensa pendent ABANS de destruir l'escena de combat
+        EnemyProfile pendingReward = null;
+        var cm = FindFirstObjectByType<CombatManager>();
+        if (cm != null)
+        {
+            pendingReward = cm.ConsumeRecruitReward();
+        }
+
         // REVERSE OVERLAY: fa que els trossos de la pantalla del món tornin a ajuntarse 
         // tapant de nou tot el combat actual.
         SplitSnapshot overlayToDestroy = null;
@@ -156,6 +164,57 @@ public class CombatLoader : MonoBehaviour
         // Assegurem que la càmera estigui exactament on toca abans d'alliberar el jugador
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
         foreach (var camFollow in cams) camFollow.SnapToTarget();
+
+        // ── Si hi ha recompensa de reclutament pendent, la mostrem ARA al món ──
+        if (pendingReward != null)
+        {
+            // Reclamem la recompensa perquè els bonus s'apliquin a partir d'ara
+            if (PlayerInventory.Instance != null)
+            {
+                PlayerInventory.Instance.ClaimRecruitReward(pendingReward.enemyName);
+            }
+
+            // Millora de detecció de Canvas: busquem el Canvas principal de la UI del món
+            Canvas worldCanvas = null;
+            Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            foreach (var c in allCanvases)
+            {
+                if (c.isRootCanvas && c.gameObject.activeInHierarchy && c.enabled)
+                {
+                    // Prioritzem el que es digui "MainCanvas" o "UI"
+                    if (c.name.Contains("Main") || c.name.Contains("UI") || c.name.Contains("Overworld"))
+                    {
+                        worldCanvas = c;
+                        break;
+                    }
+                    worldCanvas = c; // Fallback al primer root actiu que trobi
+                }
+            }
+
+            if (worldCanvas != null)
+            {
+                bool rewardDone = false;
+                string msg = !string.IsNullOrEmpty(pendingReward.recruitmentCompleteMessage)
+                    ? pendingReward.recruitmentCompleteMessage
+                    : pendingReward.recruitmentRewardDescription;
+
+                RecruitRewardPanelUI.Create(
+                    worldCanvas.transform,
+                    pendingReward.recruitmentRewardSprite,
+                    msg,
+                    pendingReward.enemyName,
+                    pendingReward.recruitmentRewardSound,
+                    () => { rewardDone = true; }
+                );
+                
+                // Esperem que l'usuari tanqui el panell
+                yield return new WaitUntil(() => rewardDone);
+            }
+            else
+            {
+                Debug.LogWarning("No s'ha trobat cap Canvas actiu al món per mostrar la recompensa de reclutament.");
+            }
+        }
 
         LockPlayer(false);
 

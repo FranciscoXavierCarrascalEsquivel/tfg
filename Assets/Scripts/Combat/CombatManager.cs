@@ -71,8 +71,10 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private AudioClip explosionSound; // NOU: Soroll de la explosio de pixels
     [SerializeField] private AudioClip playerMoveSound;
     [SerializeField] private AudioClip victorySound;    // So de victòria al final del combat
+    [SerializeField] private AudioClip playerActionVoice; // NOU: So del narrador en combat (playerActionText)
     private AudioSource audioSource;
     private AudioSource loopAudioSource;
+    private AudioSource voiceAudioSource; // NOU: Una font de so dedicada només a veus per no afectar a la resta de sons
 
     [Header("VFX & Limits")]
     [SerializeField] private GameObject parryParticlePrefab;
@@ -102,11 +104,29 @@ public class CombatManager : MonoBehaviour
 
     private RectTransform enemyBubbleRT;
     private TMPro.TMP_Text enemyDialogTxt;
+    private RectTransform enemyBubblePromptRT;
+    private CanvasGroup enemyBubblePromptCG;
+    private bool isEnemySpeaking;
     private Sprite generatedRoundedSprite;
 
     private int attackReactionIndex = 0;
     private int healReactionIndex = 0;
     private int fleeFailReactionIndex = 0;
+
+    // Social BT
+    private SocialBTState socialState;
+    private GameObject socialMenuGO;
+
+    // Recompensa de reclutament pendent (es mostra fora del combat)
+    private EnemyProfile pendingRecruitReward;
+
+    /// <summary>Retorna i neteja la recompensa pendent (si n'hi ha).</summary>
+    public EnemyProfile ConsumeRecruitReward()
+    {
+        var r = pendingRecruitReward;
+        pendingRecruitReward = null;
+        return r;
+    }
 
     private void Awake()
     {
@@ -122,6 +142,10 @@ public class CombatManager : MonoBehaviour
         loopAudioSource.playOnAwake = false;
         loopAudioSource.loop = true;
         loopAudioSource.spatialBlend = 0f;
+
+        voiceAudioSource = gameObject.AddComponent<AudioSource>();
+        voiceAudioSource.playOnAwake = false;
+        voiceAudioSource.spatialBlend = 0f;
 
         if (turnMenu != null) 
         {
@@ -253,6 +277,43 @@ public class CombatManager : MonoBehaviour
             enemyDialogTxt.font = playerNameText.font;
         }
 
+        // --- NOU: PROMPT DE [E] ---
+        var promptGO = new GameObject("EPrompt");
+        promptGO.transform.SetParent(enemyBubbleRT, false);
+        enemyBubblePromptRT = promptGO.AddComponent<RectTransform>();
+        enemyBubblePromptRT.anchorMin = new Vector2(1f, 0f);
+        enemyBubblePromptRT.anchorMax = new Vector2(1f, 0f);
+        enemyBubblePromptRT.pivot = new Vector2(1f, 0f);
+        enemyBubblePromptRT.sizeDelta = new Vector2(32f, 32f);
+        enemyBubblePromptRT.anchoredPosition = new Vector2(-10f, 10f);
+
+        enemyBubblePromptCG = promptGO.AddComponent<CanvasGroup>();
+        enemyBubblePromptCG.alpha = 0f;
+
+        var pBase = new GameObject("Base");
+        pBase.transform.SetParent(enemyBubblePromptRT, false);
+        var pbRT = pBase.AddComponent<RectTransform>();
+        pbRT.anchorMin = Vector2.zero; pbRT.anchorMax = Vector2.one; pbRT.offsetMin = pbRT.offsetMax = Vector2.zero;
+        var pbImg = pBase.AddComponent<Image>();
+        pbImg.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+        
+        var pTop = new GameObject("Top");
+        pTop.transform.SetParent(enemyBubblePromptRT, false);
+        var ptRT = pTop.AddComponent<RectTransform>();
+        ptRT.anchorMin = Vector2.zero; ptRT.anchorMax = Vector2.one; ptRT.offsetMin = ptRT.offsetMax = Vector2.zero;
+        ptRT.anchoredPosition = new Vector2(0f, 3f);
+        var ptImg = pTop.AddComponent<Image>();
+        ptImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+
+        var pTxtGO = new GameObject("T");
+        pTxtGO.transform.SetParent(ptRT, false);
+        var ptxRT = pTxtGO.AddComponent<RectTransform>();
+        ptxRT.anchorMin = Vector2.zero; ptxRT.anchorMax = Vector2.one; ptxRT.offsetMin = ptxRT.offsetMax = Vector2.zero;
+        var pTxt = pTxtGO.AddComponent<TMPro.TextMeshProUGUI>();
+        pTxt.text = "E"; pTxt.fontSize = 20f; pTxt.color = Color.black; pTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        pTxt.fontStyle = TMPro.FontStyles.Bold;
+        if (playerNameText != null && playerNameText.font != null) pTxt.font = playerNameText.font;
+
         enemyBubbleRT.gameObject.SetActive(false);
     }
 
@@ -289,6 +350,7 @@ public class CombatManager : MonoBehaviour
             if (finalEnemySprite != null)
             {
                 enemyPortraitImage.sprite = finalEnemySprite;
+                enemyPortraitImage.preserveAspect = true; // Manté les proporcions naturals
                 enemyPortraitImage.enabled = true;
             }
             else
@@ -303,6 +365,11 @@ public class CombatManager : MonoBehaviour
         this.encounter = encounter;
         this.loader = loader;
 
+        if (PlayerInventory.Instance != null && encounter != null && encounter.enemyProfile != null)
+        {
+            PlayerInventory.Instance.EncounterEnemy(encounter.enemyProfile.enemyName);
+        }
+
         // Llegeix HP de l'inventari persistent (si existeix i té vida > 0)
         if (PlayerInventory.Instance != null && PlayerInventory.Instance.CurrentHP > 0)
         {
@@ -313,6 +380,9 @@ public class CombatManager : MonoBehaviour
         {
             playerCurrentHP = playerMaxHP;
         }
+
+        // Nota: El bonus de vida de reclutament ja està inclòs a PlayerInventory.Instance.MaxHP
+        // i es manté persistentment. No cal aplicar-lo manualment cada combat.
         
         // Sobreescriu valors base d'enemic si heu fet algun perfil (ScriptableObject) personalitzat
         string finalEnemyName = "MONSTER";
@@ -369,7 +439,71 @@ public class CombatManager : MonoBehaviour
         if (playerHPText != null) StartCoroutine(SlideInRect(playerHPText.rectTransform, playerHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
         if (enemyNameText != null) StartCoroutine(SlideInRect(enemyNameText.rectTransform, enemyNameOriginalPos, new Vector2(0, 300f), 0.7f));
         if (enemyHPText != null) StartCoroutine(SlideInRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
+
+        // ── Botons de debug (proves) ────────────────────────────────
+        #if UNITY_EDITOR
+        SpawnDebugButtons();
+        #endif
     }
+
+    #if UNITY_EDITOR
+    private void SpawnDebugButtons()
+    {
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+
+        // Botó "PERDONAR" (victòria pacífica)
+        CreateDebugButton(canvasParent, "DBG_Peace", "✓ PERDONAR", new Vector2(-100f, -30f),
+            new Color(0.15f, 0.5f, 0.15f, 0.85f), () =>
+        {
+            if (state == State.End) return;
+            state = State.End;
+            StopAllCoroutines();
+            StartCoroutine(FriendVictoryRoutine());
+        });
+
+        // Botó "MATAR" (victòria agressiva)
+        CreateDebugButton(canvasParent, "DBG_Kill", "✗ MATAR", new Vector2(100f, -30f),
+            new Color(0.5f, 0.15f, 0.15f, 0.85f), () =>
+        {
+            if (state == State.End) return;
+            state = State.End;
+            enemyCurrentHP = 0;
+            StopAllCoroutines();
+            StartCoroutine(VictoryRoutine());
+        });
+    }
+
+    private void CreateDebugButton(Transform parent, string name, string label, Vector2 pos, Color bgColor, UnityEngine.Events.UnityAction onClick)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.sizeDelta = new Vector2(170f, 40f);
+        rt.anchoredPosition = pos;
+
+        var img = go.AddComponent<Image>();
+        img.color = bgColor;
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(onClick);
+
+        var txtGo = new GameObject("Text");
+        txtGo.transform.SetParent(go.transform, false);
+        var txtRT = txtGo.AddComponent<RectTransform>();
+        txtRT.anchorMin = Vector2.zero; txtRT.anchorMax = Vector2.one;
+        txtRT.offsetMin = Vector2.zero; txtRT.offsetMax = Vector2.zero;
+        var txt = txtGo.AddComponent<TMPro.TextMeshProUGUI>();
+        txt.text = label;
+        txt.fontSize = 20f;
+        txt.alignment = TMPro.TextAlignmentOptions.Center;
+        txt.color = Color.white;
+        txt.fontStyle = TMPro.FontStyles.Bold;
+    }
+    #endif
 
     private IEnumerator SlideInRect(RectTransform rect, Vector2 targetPos, Vector2 startOffset, float duration)
     {
@@ -412,6 +546,22 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
+        // Animació del Prompt de [E] a la bombolla de l'enemic
+        if (enemyBubblePromptCG != null && enemyBubblePromptRT != null)
+        {
+            if (enemyBubbleRT != null && enemyBubbleRT.gameObject.activeSelf && enemyBubblePromptCG.alpha > 0.5f)
+            {
+                float cycle = Time.unscaledTime * 1.5f;
+                bool isPressed = (cycle % 1f) > 0.7f;
+                // Accedim al "Top" (fill 1) per moure'l com si fos una tecla
+                if (enemyBubblePromptRT.childCount > 1)
+                {
+                    var topRT = enemyBubblePromptRT.GetChild(1).GetComponent<RectTransform>();
+                    if (topRT != null) topRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 3f);
+                }
+            }
+        }
+
         // --- Handle Player Movement Sound looping centrally ---
         bool anyHandMoving = false;
         if (handControllers != null)
@@ -782,6 +932,18 @@ public class CombatManager : MonoBehaviour
         if (state == State.End) return;
 
         int finalDamage = damage;
+
+        // Aplica bonus de defensa per reclutament completat
+        if (PlayerInventory.Instance != null)
+        {
+            float defBonus = PlayerInventory.Instance.GetTotalDefenseBonus();
+            if (defBonus > 0f)
+            {
+                int reduction = Mathf.RoundToInt(finalDamage * (defBonus / 100f));
+                finalDamage = Mathf.Max(1, finalDamage - reduction); // Mínim 1 de dany
+            }
+        }
+
         playerCurrentHP -= finalDamage;
         if (playerCurrentHP < 0) playerCurrentHP = 0;
         UpdateStatsUI();
@@ -826,7 +988,7 @@ public class CombatManager : MonoBehaviour
                 }
             }
 
-            Destroy(effect, 2f); // Auto-cleanup fallback
+            Destroy(effect, 3f); // Auto-cleanup: desapareixen al cap de 3 segons
         }
     }
 
@@ -880,6 +1042,14 @@ public class CombatManager : MonoBehaviour
 
             // Wait until skill check finishes and returns damage via callback
             bool checkFinished = false;
+
+            // Passar multiplicador de dany segons els reclutaments completats
+            if (PlayerInventory.Instance != null)
+            {
+                float atkBonus = PlayerInventory.Instance.GetTotalAttackBonus();
+                skillCheck.SetDamageMultiplier(1f + (atkBonus / 100f));
+            }
+
             skillCheck.StartSkillCheck((calcDmg) => 
             {
                 finalDmg = calcDmg;
@@ -900,6 +1070,9 @@ public class CombatManager : MonoBehaviour
 
         Debug.Log($"FIGHT! Dealt {finalDmg} damage.");
 
+        // El bonus d'atac ja s'ha aplicat dins el SkillCheckUI per mostrar el número real boostat
+        // finalDmg ja inclou el multiplicador del PlayerInventory. GetTotalAttackBonus()
+        
         enemyCurrentHP -= finalDmg;
         if (enemyCurrentHP < 0) enemyCurrentHP = 0;
         UpdateStatsUI();
@@ -917,6 +1090,20 @@ public class CombatManager : MonoBehaviour
             Debug.Log("ENEMY DEFEATED");
             StartCoroutine(DefeatAndVictoryRoutine());
             yield break;
+        }
+
+        if (socialState != null)
+        {
+            var bt = encounter?.enemyProfile?.socialBT;
+            if (bt != null)
+            {
+                var currentNode = bt.GetNode(socialState.currentNodeId);
+                if (currentNode != null && !string.IsNullOrEmpty(currentNode.attackNextNodeId))
+                {
+                    socialState.MoveTo(currentNode.attackNextNodeId);
+                    Debug.Log($"Attack triggered node transition to: {currentNode.attackNextNodeId}");
+                }
+            }
         }
 
         EndPlayerTurn("ATTACK");
@@ -1010,6 +1197,11 @@ public class CombatManager : MonoBehaviour
         // Guarda HP restant del jugador i recompenses a l'inventari persistent
         if (PlayerInventory.Instance != null)
         {
+            if (encounter != null && encounter.enemyProfile != null)
+            {
+                PlayerInventory.Instance.KillEnemy(encounter.enemyProfile.enemyName);
+            }
+
             PlayerInventory.Instance.SetHP(playerCurrentHP);
             PlayerInventory.Instance.AddGold(gold);
             foreach (var item in earnedItems)
@@ -1033,8 +1225,361 @@ public class CombatManager : MonoBehaviour
 
     private void OnReason()
     {
-        Debug.Log("REASON!");
-        EndPlayerTurn("");
+        var bt = encounter?.enemyProfile?.socialBT;
+        if (bt == null || bt.playerActions == null || bt.playerActions.Length == 0)
+        {
+            // Sense BT configurat, simplement passa el torn
+            EndPlayerTurn("");
+            return;
+        }
+
+        if (socialState == null)
+            socialState = new SocialBTState(bt.startNodeId);
+
+        ShowTurnMenu(false);
+        state = State.Resolve;
+        StartCoroutine(SocialActionMenuRoutine(bt));
+    }
+
+    // ─── Menú d'accions socials (node-graph) ─────────────────────────────────
+
+    private IEnumerator SocialActionMenuRoutine(SocialBehaviorTree bt)
+    {
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        TMPro.TextMeshProUGUI headerTxt = null;
+
+        // Mostrem el text d'entrada del node actual (si n'hi ha)
+        SocialNode currentNode = bt.GetNode(socialState.currentNodeId);
+        if (currentNode != null && !string.IsNullOrEmpty(currentNode.enemyEntryText))
+            yield return EnemySpeakRoutine(currentNode.enemyEntryText);
+
+        // Construïm la llista d'accions final (accions BT + possible Perdonar)
+        System.Collections.Generic.List<string> displayedActions = new System.Collections.Generic.List<string>(bt.playerActions);
+        if (currentNode != null && currentNode.enableApology)
+        {
+            displayedActions.Add("Demanar Disculpes");
+        }
+
+        // Construïm el panell d'accions (PANEL LATERAL ESQUERRA)
+        socialMenuGO = new GameObject("SocialActionMenu");
+        socialMenuGO.transform.SetParent(canvasParent, false);
+
+        var panelRT = socialMenuGO.AddComponent<RectTransform>();
+        panelRT.anchorMin = new Vector2(0f, 0.5f);
+        panelRT.anchorMax = new Vector2(0f, 0.5f);
+        panelRT.pivot = new Vector2(0f, 0.5f);
+        panelRT.sizeDelta = new Vector2(400f, 700f);
+        
+        // Comença fora de la pantalla per l'esquerra
+        Vector2 finalPos = new Vector2(50f, 0f);
+        panelRT.anchoredPosition = new Vector2(-500f, 0f);
+
+        var panelBg = socialMenuGO.AddComponent<Image>();
+        panelBg.color = new Color(0.08f, 0.08f, 0.12f, 0.96f);
+        panelBg.sprite = GetRoundedSprite();
+        panelBg.type = Image.Type.Sliced;
+
+        var outline = socialMenuGO.AddComponent<Outline>();
+        outline.effectColor = new Color(0.95f, 0.8f, 0.15f, 0.6f);
+        outline.effectDistance = new Vector2(5, -5);
+
+        // Header
+        var headerGO = new GameObject("Header");
+        headerGO.transform.SetParent(panelRT, false);
+        var headerRT = headerGO.AddComponent<RectTransform>();
+        headerRT.anchorMin = new Vector2(0f, 0.85f); headerRT.anchorMax = new Vector2(1f, 1f);
+        headerRT.offsetMin = new Vector2(10, 0); headerRT.offsetMax = new Vector2(-10, 0);
+        headerTxt = headerGO.AddComponent<TMPro.TextMeshProUGUI>();
+        headerTxt.text = bt.menuHeader;
+        headerTxt.fontSize = 36f;
+        headerTxt.fontStyle = TMPro.FontStyles.Bold;
+        headerTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        headerTxt.color = new Color(1f, 0.92f, 0.2f);
+        if (playerNameText != null && playerNameText.font != null) headerTxt.font = playerNameText.font;
+
+        // Contenidor vertical de botons
+        var buttonsContainer = new GameObject("ButtonsContainer");
+        buttonsContainer.transform.SetParent(panelRT, false);
+        var bcRT = buttonsContainer.AddComponent<RectTransform>();
+        bcRT.anchorMin = new Vector2(0, 0); bcRT.anchorMax = new Vector2(1, 0.82f);
+        bcRT.offsetMin = new Vector2(20, 20); bcRT.offsetMax = new Vector2(-20, 0);
+
+        var vlg = buttonsContainer.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
+        vlg.padding = new RectOffset(10, 10, 10, 10);
+        vlg.spacing = 15;
+        vlg.childControlHeight = true;
+        vlg.childForceExpandHeight = false;
+
+        int actionCount = displayedActions.Count;
+        int chosenActionIndex = -1;
+        Image[] btnImages = new Image[actionCount];
+
+        for (int i = 0; i < actionCount; i++)
+        {
+            string actionName = displayedActions[i];
+            int capturedI = i;
+
+            var btnGO = new GameObject($"ActionBtn_{i}");
+            btnGO.transform.SetParent(bcRT.transform, false);
+            var le = btnGO.AddComponent<UnityEngine.UI.LayoutElement>();
+            le.minHeight = 80f;
+
+            var btnImg = btnGO.AddComponent<Image>();
+            btnImg.sprite = GetRoundedSprite();
+            btnImg.type = Image.Type.Sliced;
+            
+            // Color base depenent de si és "Demanar Disculpes"
+            if (actionName == "Demanar Disculpes")
+                btnImg.color = new Color(0.1f, 0.35f, 0.15f, 1f); // Verd fosc
+            else
+                btnImg.color = new Color(0.18f, 0.18f, 0.32f, 1f); // Blau fosc estàndard
+            
+            btnImages[i] = btnImg;
+
+            var btnComp = btnGO.AddComponent<UnityEngine.UI.Button>();
+            btnComp.targetGraphic = btnImg;
+
+            var btnTxtGO = new GameObject("Label");
+            btnTxtGO.transform.SetParent(btnGO.transform, false);
+            var btnTxtRT = btnTxtGO.AddComponent<RectTransform>();
+            btnTxtRT.anchorMin = Vector2.zero; btnTxtRT.anchorMax = Vector2.one;
+            btnTxtRT.offsetMin = new Vector2(15, 0); btnTxtRT.offsetMax = new Vector2(-15, 0);
+            var btnTxt = btnTxtGO.AddComponent<TMPro.TextMeshProUGUI>();
+            btnTxt.text = actionName;
+            btnTxt.fontSize = 28f;
+            btnTxt.fontStyle = TMPro.FontStyles.Bold;
+            btnTxt.alignment = TMPro.TextAlignmentOptions.Center;
+            btnTxt.color = Color.white;
+            if (playerNameText != null && playerNameText.font != null) btnTxt.font = playerNameText.font;
+
+            btnComp.onClick.AddListener(() => { chosenActionIndex = capturedI; });
+        }
+
+        // Animació d'entrada (Slide in de l'esquerra)
+        StartCoroutine(AnimateSideMenu(panelRT, finalPos, 0.5f));
+
+        // Navegació per teclat (VERTICAL)
+        int keyboardIndex = 0;
+        void UpdateHighlight()
+        {
+            for (int i = 0; i < actionCount; i++)
+            {
+                bool isSelected = (i == keyboardIndex);
+                if (displayedActions[i] == "Demanar Disculpes")
+                {
+                    btnImages[i].color = isSelected ? new Color(0.2f, 0.6f, 0.25f, 1f) : new Color(0.1f, 0.35f, 0.15f, 1f);
+                }
+                else
+                {
+                    btnImages[i].color = isSelected ? new Color(0.4f, 0.35f, 0.7f, 1f) : new Color(0.18f, 0.18f, 0.32f, 1f);
+                }
+            }
+        }
+        UpdateHighlight();
+
+        while (chosenActionIndex < 0)
+        {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                keyboardIndex = (keyboardIndex - 1 + actionCount) % actionCount;
+                if (moveMenuSound) audioSource.PlayOneShot(moveMenuSound);
+                UpdateHighlight();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                keyboardIndex = (keyboardIndex + 1) % actionCount;
+                if (moveMenuSound) audioSource.PlayOneShot(moveMenuSound);
+                UpdateHighlight();
+            }
+            else if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return))
+            {
+                string actionName = displayedActions[keyboardIndex];
+                var trans = bt.GetTransition(currentNode, actionName);
+                
+                if (trans != null && trans.requiredItem != null)
+                {
+                    if (PlayerInventory.Instance == null || PlayerInventory.Instance.CountItem(trans.requiredItem.itemName) <= 0)
+                    {
+                        // Mostrem l'error al propi panell d'accions (al header)
+                        headerTxt.text = $"No tens: {trans.requiredItem.itemName}!";
+                        headerTxt.color = new Color(1f, 0.3f, 0.3f); // Vermell d'error
+                        
+                        // Petit efecte de vibrat per donar feedback d'error
+                        StartCoroutine(ShakeSideMenu(panelRT, finalPos));
+                        
+                        if (audioSource && takeDamageSound) audioSource.PlayOneShot(takeDamageSound, 0.5f);
+                        
+                        yield return new WaitForSeconds(1.2f);
+                        
+                        // Restaurem el header
+                        headerTxt.text = bt.menuHeader;
+                        headerTxt.color = new Color(1f, 0.92f, 0.2f);
+                        continue; 
+                    }
+                }
+                chosenActionIndex = keyboardIndex;
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace))
+            {
+                // Animació de sortida i tanca
+                yield return StartCoroutine(AnimateSideMenu(panelRT, new Vector2(-400f, 0f), 0.3f));
+                Destroy(socialMenuGO);
+                state = State.PlayerTurn;
+                ShowTurnMenu(true);
+                yield break;
+            }
+            yield return null;
+        }
+
+        // Animació de sortida abans d'executar l'acció
+        yield return StartCoroutine(AnimateSideMenu(panelRT, new Vector2(-400f, 0f), 0.3f));
+        Destroy(socialMenuGO);
+
+        // Processem l'acció
+        string chosen = displayedActions[chosenActionIndex];
+        if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);
+
+        // Busquem la transició al node actual
+        SocialTransition transition = bt.GetTransition(currentNode, chosen);
+
+        // NOU: Restar l'objecte si era necessari
+        if (transition != null && transition.requiredItem != null)
+        {
+            if (PlayerInventory.Instance != null)
+            {
+                PlayerInventory.Instance.RemoveItem(transition.requiredItem.itemName);
+                Debug.Log($"Objecte {transition.requiredItem.itemName} restat de l'inventari per acció social.");
+            }
+        }
+
+        string reactionText;
+        string nextNodeId;
+
+        if (transition != null)
+        {
+            reactionText = transition.enemyReactionText;
+            nextNodeId   = transition.nextNodeId;
+        }
+        else
+        {
+            // Acció sense transició definida → reacció per defecte, quedem al mateix node
+            reactionText = currentNode != null ? currentNode.defaultReactionText : "...";
+            nextNodeId   = "";
+        }
+
+        // Mostrem diàleg narratiu del jugador (estil overworld) abans de la reacció de l'enemic
+        string playerText = transition != null ? transition.playerActionText : null;
+        if (!string.IsNullOrEmpty(playerText))
+        {
+            yield return StartCoroutine(ShowPlayerActionDialogue(playerText));
+        }
+
+        // Mostra reacció
+        if (!string.IsNullOrEmpty(reactionText))
+            yield return EnemySpeakRoutine(reactionText);
+
+        // Moure a nou node
+        socialState.MoveTo(nextNodeId);
+
+        if (socialState.IsFriend)
+        {
+            state = State.End;
+            StartCoroutine(FriendVictoryRoutine());
+        }
+        else
+        {
+            EndPlayerTurn("");
+        }
+    }
+
+    private IEnumerator AnimateSideMenu(RectTransform rect, Vector2 targetPos, float duration)
+    {
+        Vector2 startPos = rect.anchoredPosition;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            float ease = 1f - Mathf.Pow(1f - t, 3f); // Ease out cubic
+            rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, ease);
+            yield return null;
+        }
+        rect.anchoredPosition = targetPos;
+    }
+
+    private IEnumerator ShakeSideMenu(RectTransform rect, Vector2 basePos)
+    {
+        float elapsed = 0f;
+        float duration = 0.25f;
+        float intensity = 10f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledTime;
+            float offX = Random.Range(-intensity, intensity);
+            float offY = Random.Range(-intensity, intensity);
+            rect.anchoredPosition = basePos + new Vector2(offX, offY);
+            yield return null;
+        }
+        rect.anchoredPosition = basePos;
+    }
+
+    private IEnumerator FriendVictoryRoutine()
+    {
+        ShowTurnMenu(false);
+
+        // Mostrem el diàleg d'amistat (ara a través de la bombolla de l'enemic)
+        var bt = encounter?.enemyProfile?.socialBT;
+        if (bt != null && !string.IsNullOrEmpty(bt.friendshipText))
+        {
+            yield return EnemySpeakRoutine(bt.friendshipText);
+        }
+
+        float outDur = 0.5f;
+        Vector2 outOff = new Vector2(0, 400f);
+        if (playerUIPanel != null)   StartCoroutine(SlideOutRect(playerUIPanel, playerUIOriginalPos, outOff, outDur));
+        if (enemyUIPanel != null)    StartCoroutine(SlideOutRect(enemyUIPanel, enemyUIOriginalPos, outOff, outDur));
+        if (playerNameText != null)  StartCoroutine(SlideOutRect(playerNameText.rectTransform, playerNameOriginalPos, outOff, outDur));
+        if (playerHPText != null)    StartCoroutine(SlideOutRect(playerHPText.rectTransform, playerHPTextOriginalPos, outOff, outDur));
+        if (enemyNameText != null)   StartCoroutine(SlideOutRect(enemyNameText.rectTransform, enemyNameOriginalPos, outOff, outDur));
+        if (enemyHPText != null)     StartCoroutine(SlideOutRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, outOff, outDur));
+
+        if (victorySound) audioSource.PlayOneShot(victorySound);
+
+        yield return new WaitForSeconds(outDur + 0.3f);
+
+        // Càlcul d'or per resolució amistosa
+        int friendGold = 0;
+        if (bt != null && bt.friendGoldMax > 0)
+        {
+            friendGold = Random.Range(bt.friendGoldMin, bt.friendGoldMax + 1);
+            if (PlayerInventory.Instance != null)
+                PlayerInventory.Instance.AddGold(friendGold);
+        }
+
+        if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
+        {
+            PlayerInventory.Instance.RecruitEnemy(encounter.enemyProfile.enemyName);
+        }
+
+        Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
+        bool done = false;
+        VictoryPanelUI.Create(canvasParent, friendGold, new System.Collections.Generic.List<string>(),
+            PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : friendGold, () => done = true);
+
+        yield return new WaitUntil(() => done);
+
+        // ── Comprova si s'ha completat la barra de reclutament ──────
+        // Guardem les dades per mostrar la recompensa UN COP FORA del combat
+        if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
+        {
+            var completedProfile = PlayerInventory.Instance.CheckRecruitmentJustCompleted(encounter.enemyProfile.enemyName);
+            if (completedProfile != null)
+            {
+                pendingRecruitReward = completedProfile;
+            }
+        }
+
+        loader.EndCombat();
     }
 
     private void OnFlee()
@@ -1079,9 +1624,16 @@ public class CombatManager : MonoBehaviour
 
     private void OnItem()
     {
+        ShowTurnMenu(false);
+        state = State.Resolve;
         InventoryMenuUI.Show(isCombat: true, onItemSelected: (profile) =>
         {
             StartCoroutine(ProcessItemSequence(profile));
+        },
+        onClose: () =>
+        {
+            state = State.PlayerTurn;
+            ShowTurnMenu(true);
         });
     }
 
@@ -1241,36 +1793,107 @@ public class CombatManager : MonoBehaviour
         Destroy(go);
     }
 
-    private IEnumerator EnemySpeakRoutine(string text)
+    /// <summary>
+    /// Mostra un diàleg estil overworld a la part inferior del combat
+    /// per narrar l'acció del jugador. Espera que el jugador l'avanci amb E/Enter.
+    /// </summary>
+    private IEnumerator ShowPlayerActionDialogue(string text)
     {
-        if (enemyBubbleRT == null || string.IsNullOrEmpty(text)) yield break;
+        // Creem un DialogueUI temporal per al combat
+        var canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) { yield break; }
 
-        enemyBubbleRT.gameObject.SetActive(true);
-        enemyDialogTxt.text = "";
+        var dialogGO = new GameObject("CombatDialogueUI");
+        dialogGO.transform.SetParent(canvas.transform, false);
+        var dialogUI = dialogGO.AddComponent<DialogueUI>();
 
-        AudioClip voice = encounter?.enemyProfile?.voiceSound;
-
-        int count = 0;
-        for (int i = 0; i < text.Length; i++)
+        // Personalització del so (Global de CombatManager)
+        if (playerActionVoice != null)
         {
-            if (enemyDialogTxt != null) enemyDialogTxt.text += text[i];
-            
-            if (char.IsLetterOrDigit(text[i]) && voice != null && audioSource != null)
-            {
-                if (count % 2 == 0)
-                {
-                    audioSource.PlayOneShot(voice, 0.7f);
-                }
-            }
-            count++;
-            
-            if (text[i] == '.' || text[i] == '?' || text[i] == '!') yield return new WaitForSecondsRealtime(0.25f);
-            else if (text[i] == ',') yield return new WaitForSecondsRealtime(0.15f);
-            else yield return new WaitForSecondsRealtime(0.015f);
+            dialogUI.SetTypingSound(playerActionVoice);
         }
 
-        yield return new WaitForSeconds(1.5f);
+        bool closed = false;
+        dialogUI.OnDialogueClosed += () => closed = true;
+        dialogUI.Show(text);
+
+        // Esperem que el jugador avanci/tanqui el diàleg
+        while (!closed)
+        {
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                dialogUI.AdvanceOrSkip();
+            }
+            yield return null;
+        }
+
+        // Petit respir abans de la reacció de l'enemic
+        yield return new WaitForSeconds(0.15f);
+
+        if (dialogGO != null) Destroy(dialogGO);
+    }
+
+    private IEnumerator EnemySpeakRoutine(string text)
+    {
+        if (enemyBubbleRT == null || string.IsNullOrEmpty(text) || voiceAudioSource == null) yield break;
+        
+        string cleanText = text.Trim();
+        voiceAudioSource.pitch = 1f;
+        isEnemySpeaking = true;
+        enemyBubbleRT.gameObject.SetActive(true);
+        enemyDialogTxt.text = "";
+        if (enemyBubblePromptCG != null) enemyBubblePromptCG.alpha = 0f;
+
+        AudioClip voice = encounter?.enemyProfile?.voiceSound;
+        int voicePlayCount = 0;
+        
+        for (int i = 0; i < cleanText.Length; i++)
+        {
+            if (enemyDialogTxt != null) enemyDialogTxt.text += cleanText[i];
+            
+            if (!char.IsWhiteSpace(cleanText[i]) && voice != null && voiceAudioSource != null)
+            {
+                if (voicePlayCount % 2 == 0)
+                {
+                    voiceAudioSource.PlayOneShot(voice, 1f); 
+                }
+                voicePlayCount++;
+            }
+            
+            if (cleanText[i] == '.' || cleanText[i] == '?' || cleanText[i] == '!') yield return new WaitForSecondsRealtime(0.25f);
+            else if (cleanText[i] == ',') yield return new WaitForSecondsRealtime(0.15f);
+            else yield return new WaitForSecondsRealtime(0.02f); 
+
+            // Permetre saltar el text amb E/Enter/Espai
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                enemyDialogTxt.text = cleanText;
+                break;
+            }
+        }
+
+        yield return new WaitForSecondsRealtime(0.1f); // Espera extra perquè l'últim bit de so s'escolti
+        if (voiceAudioSource != null) voiceAudioSource.pitch = 1f;
+
+        // Mostrem el prompt de [E]
+        if (enemyBubblePromptCG != null) enemyBubblePromptCG.alpha = 1f;
+
+        // Esperem input del jugador per tancar
+        bool advance = false;
+        yield return new WaitForSeconds(0.15f); // Prevenir tancat instantani si estavem pitjant
+        while (!advance)
+        {
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                advance = true;
+                if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);
+            }
+            yield return null;
+        }
+
+        if (enemyBubblePromptCG != null) enemyBubblePromptCG.alpha = 0f;
         enemyBubbleRT.gameObject.SetActive(false);
+        isEnemySpeaking = false;
     }
 
     private void EndPlayerTurn(string reactionType = "")

@@ -2909,6 +2909,7 @@ MonoBehaviour:
   explosionSound: {fileID: 8300000, guid: e14d45c59536c9c4baabbd143fa954bf, type: 3}
   playerMoveSound: {fileID: 8300000, guid: 41797510c5d8d9f4fa395630abbce744, type: 3}
   victorySound: {fileID: 8300000, guid: 94ef0849a9bccae4199e4336cfbf80fc, type: 3}
+  playerActionVoice: {fileID: 8300000, guid: a0b83e19ae49a324a8b5c22a0f913b28, type: 3}
   parryParticlePrefab: {fileID: 0}
   projectileDestroyLimit: {fileID: 22431405}
   throwStartPoint: {fileID: 1120669640}

@@ -8,7 +8,7 @@ public class DialogueUI : MonoBehaviour
     [Header("Typewriter")]
     [SerializeField] private float charsPerSecond = 40f;
     [SerializeField] private bool skipSpaces = true;
-    [SerializeField] private int soundEveryNChars = 1;
+    [SerializeField] private int soundEveryNChars = 2;
 
     [Header("Typing Sounds")]
     [SerializeField] private AudioSource audioSource;
@@ -114,6 +114,12 @@ public class DialogueUI : MonoBehaviour
 
     public bool IsOpen => isOpen;
     public bool IsTyping => isTyping;
+
+    public void SetTypingSound(AudioClip clip, int every = 2)
+    {
+        if (clip != null) typingClips = new AudioClip[] { clip };
+        soundEveryNChars = every;
+    }
 
     public void StartDialogue(Interactable.DialogueLine[] lines)
     {
@@ -328,11 +334,12 @@ public class DialogueUI : MonoBehaviour
         isTyping = true;
         if (dialogueText) dialogueText.text = "";
 
+        string cleanText = text.Trim();
         float delay = 1f / Mathf.Max(1f, charsPerSecond);
 
-        for (int i = 0; i < text.Length; i++)
+        for (int i = 0; i < cleanText.Length; i++)
         {
-            char c = text[i];
+            char c = cleanText[i];
             if (dialogueText) dialogueText.text += c;
 
             bool shouldSound = true;
@@ -363,6 +370,8 @@ public class DialogueUI : MonoBehaviour
         isTyping = false;
         typingRoutine = null;
 
+        if (audioSource != null) audioSource.pitch = 1f;
+
         if (currentLineChoices != null && currentLineChoices.Length > 0)
         {
             ShowChoices();
@@ -373,7 +382,11 @@ public class DialogueUI : MonoBehaviour
     {
         if (currentLineVoice != null)
         {
-            if (!audioSource) audioSource = gameObject.AddComponent<AudioSource>();
+            if (!audioSource) 
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.spatialBlend = 0f; // 2D per a combat
+            }
             audioSource.pitch = 1f + Random.Range(-pitchRandom, pitchRandom);
             audioSource.PlayOneShot(currentLineVoice, volume);
             return;
@@ -381,9 +394,13 @@ public class DialogueUI : MonoBehaviour
 
         if (typingClips != null && typingClips.Length > 0)
         {
-            if (!audioSource) audioSource = gameObject.AddComponent<AudioSource>();
+            if (!audioSource) 
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.spatialBlend = 0f; // 2D per a combat
+            }
             var clip = typingClips[Random.Range(0, typingClips.Length)];
-            audioSource.pitch = 1f + Random.Range(-pitchRandom, pitchRandom);
+            audioSource.pitch = 1f + Random.Range(-pitchRandom * 0.5f, pitchRandom * 0.5f); // Reduït el rang per no sonar tan agut
             audioSource.PlayOneShot(clip, volume);
             return;
         }

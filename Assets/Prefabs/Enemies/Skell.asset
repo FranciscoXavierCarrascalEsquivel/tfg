@@ -19,7 +19,16 @@ MonoBehaviour:
   projectilePrefab: {fileID: 5410871294214501288, guid: cb105ea0833faa740abdebdb0ae41c81, type: 3}
   attackDuration: 6
   attackPatterns: 0b0000000800000009000000
-  fleeProbability: 0.991
+  fleeProbability: 0.5
+  socialBT: {fileID: 11400000, guid: de419e6ca8f90094daf8daa54bf8ac87, type: 2}
+  maxRecruitLimit: 5
+  recruitmentRewardSprite: {fileID: 4641005251725549768, guid: ba5286b3c30db5c47afa76672b936050, type: 3}
+  recruitmentRewardDescription: Recluta a tots els enemics d'aquests tipus per obtenir
+    un augment de mal del 25%.
+  recruitmentCompleteMessage: Ara gaudiras d'un increment d'atac d'un 25%.
+  bonusAttackPercent: 20
+  bonusHealthPercent: 0
+  bonusDefensePercent: 0
   goldRewardMin: 3
   goldRewardMax: 6
   drops:
@@ -28,9 +37,20 @@ MonoBehaviour:
   - itemName: Energy
     probability: 10
   - itemName: Gosset
-    probability: 200
+    probability: 1
+  - itemName: Os
+    probability: 150
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
-  voiceSound: {fileID: 0}
-  attackReactions: []
-  healReactions: []
-  fleeFailReactions: []
+  voiceSound: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
+  attackReactions:
+  - Aguanta Skell, recorda que lluitem en honor al nostre creador...
+  - Awww...
+  - S'ha de ser fort...
+  healReactions:
+  - "Aix\xED que fas trampes, eh? D'acord, jo far\xE9 el mateix... Espera... Que
+    jo no tinc butxaques..."
+  - Cobard, deixa de fer servir objectes i lluita!
+  fleeFailReactions:
+  - Et penses que anava a ser aixi de facil? Vine aqui!
+  - Que intentes?
+  - Bon intent, sac de pel...

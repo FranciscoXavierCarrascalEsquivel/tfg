@@ -139,16 +139,37 @@ public class PlayerController2D : MonoBehaviour
         // --- SISTEMA DE COMBAT ALEATORI PER DISTÀNCIA ---
         if (!disableEncounters && showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)
         {
-            distanceWalkedSinceEncounter += distanceMoved;
-
-            if (distanceWalkedSinceEncounter >= minDistanceBetweenEncounters)
+            // Verify if there are any wild enemies that can still be recruited/encountered
+            bool anyValidEnemy = false;
+            if (PlayerInventory.Instance == null)
             {
-                // Un cop superada la distància mínima, cada "pas" te una probabilitat
-                if (Random.value < encounterChancePerStep * distanceMoved)
+                anyValidEnemy = true;
+            }
+            else
+            {
+                foreach (var enemy in wildEnemies)
                 {
-                    distanceWalkedSinceEncounter = 0f; // Reinicia el comptador de distància
-                    TriggerRandomEncounter();
-                    return; // Sortim per evitar que es pugui processar res més aquest frame
+                    if (PlayerInventory.Instance.GetRecruitedCount(enemy.enemyName) < PlayerInventory.Instance.GetAvailableRecruitLimit(enemy))
+                    {
+                        anyValidEnemy = true;
+                        break;
+                    }
+                }
+            }
+
+            if (anyValidEnemy)
+            {
+                distanceWalkedSinceEncounter += distanceMoved;
+
+                if (distanceWalkedSinceEncounter >= minDistanceBetweenEncounters)
+                {
+                    // Un cop superada la distància mínima, cada "pas" te una probabilitat
+                    if (Random.value < encounterChancePerStep * distanceMoved)
+                    {
+                        distanceWalkedSinceEncounter = 0f; // Reinicia el comptador de distància
+                        TriggerRandomEncounter();
+                        return; // Sortim per evitar que es pugui processar res més aquest frame
+                    }
                 }
             }
         }
@@ -188,8 +209,23 @@ public class PlayerController2D : MonoBehaviour
         anim.SetFloat(MoveYHash, 0);
         anim.SetFloat(SpeedMulHash, 1f);
 
-        // Escollim un enemic a l'atzar
-        EnemyProfile chosenEnemy = wildEnemies[Random.Range(0, wildEnemies.Length)];
+        // Escollim un enemic a l'atzar que encara no hagi assolit el límit
+        System.Collections.Generic.List<EnemyProfile> validEnemies = new System.Collections.Generic.List<EnemyProfile>();
+        foreach (var enemy in wildEnemies)
+        {
+            if (PlayerInventory.Instance == null || PlayerInventory.Instance.GetRecruitedCount(enemy.enemyName) < PlayerInventory.Instance.GetAvailableRecruitLimit(enemy))
+            {
+                validEnemies.Add(enemy);
+            }
+        }
+
+        if (validEnemies.Count == 0)
+        {
+            UnlockMovement();
+            return;
+        }
+
+        EnemyProfile chosenEnemy = validEnemies[Random.Range(0, validEnemies.Count)];
         
         CombatEncounter enc = new CombatEncounter();
         enc.enemyProfile = chosenEnemy;

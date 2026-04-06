@@ -28,6 +28,10 @@ public class PlayerInventory : MonoBehaviour
     [Tooltip("Posa aquí els Item Profiles per relacionar-los.")]
     public List<ItemProfile> itemDatabase = new List<ItemProfile>();
 
+    [Header("Enemy Database")]
+    [Tooltip("Posa aquí els Enemy Profiles per poder consultar la llista i els límits.")]
+    public List<EnemyProfile> enemyDatabase = new List<EnemyProfile>();
+
     [Header("Shop")]
     [Tooltip("Objectes disponibles per comprar a la botiga.")]
     public List<ItemProfile> shopItems = new List<ItemProfile>();
@@ -49,7 +53,16 @@ public class PlayerInventory : MonoBehaviour
     public AudioClip shopVoiceSound;
 
     // ── HP ──────────────────────────────────────────────────────────
-    public int MaxHP   { get; private set; }
+    private int baseMaxHP;
+    public int MaxHP 
+    { 
+        get 
+        {
+            float bonus = GetTotalHealthBonus();
+            if (bonus <= 0f) return baseMaxHP;
+            return baseMaxHP + Mathf.RoundToInt(baseMaxHP * (bonus / 100f));
+        }
+    }
     public int CurrentHP { get; private set; }
 
     // ── Or i objectes ────────────────────────────────────────────────
@@ -57,6 +70,18 @@ public class PlayerInventory : MonoBehaviour
 
     private List<string> items = new List<string>();
     public IReadOnlyList<string> Items => items.AsReadOnly();
+
+    private Dictionary<string, int> recruitedEnemies = new Dictionary<string, int>();
+    public IReadOnlyDictionary<string, int> RecruitedEnemies => recruitedEnemies;
+
+    private Dictionary<string, int> killedEnemies = new Dictionary<string, int>();
+    public IReadOnlyDictionary<string, int> KilledEnemies => killedEnemies;
+
+    private List<string> encounteredEnemies = new List<string>();
+    public IReadOnlyList<string> EncounteredEnemies => encounteredEnemies.AsReadOnly();
+
+    // Recompenses de reclutament ja reclamades (per no aplicar-les dues vegades)
+    private HashSet<string> claimedRecruitRewards = new HashSet<string>();
 
     // ────────────────────────────────────────────────────────────────
     private void Awake()
@@ -69,7 +94,7 @@ public class PlayerInventory : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        MaxHP     = startingMaxHP;
+        baseMaxHP = startingMaxHP;
         CurrentHP = startingMaxHP;   // Primera vegada: vida plena
     }
 
@@ -81,7 +106,7 @@ public class PlayerInventory : MonoBehaviour
 
     public void SetMaxHP(int max)
     {
-        MaxHP = Mathf.Max(1, max);
+        baseMaxHP = Mathf.Max(1, max);
         CurrentHP = Mathf.Min(CurrentHP, MaxHP);
     }
 
@@ -136,6 +161,144 @@ public class PlayerInventory : MonoBehaviour
         return items.Remove(itemName);
     }
 
+    // ── Enemics reclutats ───────────────────────────────────────────
+    public void RecruitEnemy(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName)) return;
+        
+        if (recruitedEnemies.ContainsKey(enemyName))
+        {
+            recruitedEnemies[enemyName]++;
+        }
+        else
+        {
+            recruitedEnemies[enemyName] = 1;
+        }
+        Debug.Log($"Enemic reclutat: {enemyName}. Total: {recruitedEnemies[enemyName]}");
+    }
+
+    public int GetRecruitedCount(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName) || !recruitedEnemies.ContainsKey(enemyName)) return 0;
+        return recruitedEnemies[enemyName];
+    }
+    
+    public EnemyProfile GetEnemyProfile(string enemyName)
+    {
+        if (enemyDatabase == null) return null;
+        return enemyDatabase.Find(x => x.enemyName == enemyName || x.name == enemyName);
+    }
+    
+    // ── Enemics matats i límits ─────────────────────────────────────
+    public void EncounterEnemy(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName)) return;
+        if (!encounteredEnemies.Contains(enemyName)) encounteredEnemies.Add(enemyName);
+    }
+
+    public bool HasEncounteredEnemy(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName)) return false;
+        return encounteredEnemies.Contains(enemyName);
+    }
+
+    public void KillEnemy(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName)) return;
+        if (killedEnemies.ContainsKey(enemyName)) killedEnemies[enemyName]++;
+        else killedEnemies[enemyName] = 1;
+        Debug.Log($"Enemic matat: {enemyName}. Total morts: {killedEnemies[enemyName]}");
+    }
+
+    public int GetKilledCount(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName) || !killedEnemies.ContainsKey(enemyName)) return 0;
+        return killedEnemies[enemyName];
+    }
+
+    public int GetAvailableRecruitLimit(EnemyProfile enemy)
+    {
+        if (enemy == null) return 0;
+        return Mathf.Max(0, enemy.maxRecruitLimit - GetKilledCount(enemy.enemyName));
+    }
+
+    /// <summary>
+    /// Comprova si s'acaba de completar la barra de reclutament per a un enemic.
+    /// Retorna l'EnemyProfile si s'ha completat just ara, null si no.
+    /// </summary>
+    public EnemyProfile CheckRecruitmentJustCompleted(string enemyName)
+    {
+        if (string.IsNullOrEmpty(enemyName)) return null;
+
+        // Si ja hem reclamat la recompensa, no hem d'activar el panell de "Completat!" de nou.
+        if (HasClaimedRecruitReward(enemyName)) return null;
+        
+        foreach (var ep in enemyDatabase)
+        {
+            if (ep == null) continue;
+            if (ep.enemyName == enemyName)
+            {
+                int limit = GetAvailableRecruitLimit(ep);
+                int recruited = GetRecruitedCount(enemyName);
+                if (limit > 0 && recruited >= limit)
+                    return ep;
+            }
+        }
+        return null;
+    }
+
+    // ── Recruitment Bonuses ──────────────────────────────────────────────
+
+    /// <summary>Marca la recompensa de reclutament com a reclamada.</summary>
+    public void ClaimRecruitReward(string enemyName)
+    {
+        if (!string.IsNullOrEmpty(enemyName)) claimedRecruitRewards.Add(enemyName);
+    }
+
+    public bool HasClaimedRecruitReward(string enemyName)
+    {
+        return claimedRecruitRewards.Contains(enemyName);
+    }
+
+    /// <summary>Retorna el bonus total d'atac (%) de totes les barres completades.</summary>
+    public float GetTotalAttackBonus()
+    {
+        float total = 0f;
+        foreach (var ep in enemyDatabase)
+        {
+            if (ep == null) continue;
+            if (claimedRecruitRewards.Contains(ep.enemyName))
+                total += ep.bonusAttackPercent;
+        }
+        return total;
+    }
+
+    /// <summary>Retorna el bonus total de vida (%) de totes les barres completades.</summary>
+    public float GetTotalHealthBonus()
+    {
+        float total = 0f;
+        foreach (var ep in enemyDatabase)
+        {
+            if (ep == null) continue;
+            if (claimedRecruitRewards.Contains(ep.enemyName))
+                total += ep.bonusHealthPercent;
+        }
+        return total;
+    }
+
+    /// <summary>Retorna el bonus total de defensa (%) de totes les barres completades.</summary>
+    public float GetTotalDefenseBonus()
+    {
+        float total = 0f;
+        foreach (var ep in enemyDatabase)
+        {
+            if (ep == null) continue;
+            if (claimedRecruitRewards.Contains(ep.enemyName))
+                total += ep.bonusDefensePercent;
+        }
+        return total;
+    }
+
     // ── Input: Obrir Inventari o Botiga (Fora Combat) ───────────────────────
     private void Update()
     {
@@ -173,7 +336,9 @@ public class PlayerInventory : MonoBehaviour
                     }, 
                     onClose: () => {
                         Time.timeScale = 1f; // Continua el temps al tancar
-                        if (player != null) player.UnlockMovement();
+                        var dialogUI = FindFirstObjectByType<DialogueUI>();
+                        if (player != null && (dialogUI == null || !dialogUI.IsOpen))
+                            player.UnlockMovement();
                     });
                 }
             }
@@ -209,7 +374,9 @@ public class PlayerInventory : MonoBehaviour
 
         ShopMenuUI.Show(onClose: () => {
             Time.timeScale = 1f;
-            if (player != null) player.UnlockMovement();
+            var dialogUI = FindFirstObjectByType<DialogueUI>();
+            if (player != null && (dialogUI == null || !dialogUI.IsOpen))
+                player.UnlockMovement();
         });
     }
 

@@ -1,0 +1,276 @@
+fileFormatVersion: 2
+guid: d4796cae3a08d3a428117b4f2d5d4c5c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 26913118143591116
+    second: defensaExtra_0
+  - first:
+      213: 7446845439312522799
+    second: defensaExtra_1
+  - first:
+      213: 5271244953520597260
+    second: defensaExtra_2
+  - first:
+      213: -632052795497546781
+    second: defensaExtra_3
+  - first:
+      213: -863058079776986039
+    second: defensaExtra_4
+  - first:
+      213: 9211219889726047592
+    second: defensaExtra_5
+  - first:
+      213: -1965490765752197045
+    second: defensaExtra_6
+  - first:
+      213: 3647512450225290391
+    second: defensaExtra_7
+  - first:
+      213: -5048652732113543086
+    second: defensaExtra_8
+  - first:
+      213: -4512753446000482100
+    second: defensaExtra_9
+  - first:
+      213: -9209261985300201750
+    second: defensaExtra_10
+  - first:
+      213: -1730751430374832998
+    second: defensaExtra_11
+  - first:
+      213: -3537335354536256288
+    second: defensaExtra_12
+  - first:
+      213: 3513762335647932243
+    second: defensaExtra_13
+  - first:
+      213: -2855739404954359090
+    second: defensaExtra_14
+  - first:
+      213: -6857650186150244659
+    second: defensaExtra_15
+  - first:
+      213: 8110242646488071417
+    second: defensaExtra_16
+  - first:
+      213: -7184558575316392890
+    second: defensaExtra_17
+  - first:
+      213: 6402418287601128475
+    second: defensaExtra_18
+  - first:
+      213: -441530258593449393
+    second: defensaExtra_19
+  - first:
+      213: 1828799570763144048
+    second: defensaExtra_20
+  - first:
+      213: -3131147525089627025
+    second: defensaExtra_21
+  - first:
+      213: 5520227723503747958
+    second: defensaExtra_22
+  - first:
+      213: -8112771640752326977
+    second: defensaExtra_23
+  - first:
+      213: -8085348663444207277
+    second: defensaExtra_24
+  - first:
+      213: -2162532604744677524
+    second: defensaExtra_25
+  - first:
+      213: 3861452900282309851
+    second: defensaExtra_26
+  - first:
+      213: -3554780656280344600
+    second: defensaExtra_27
+  - first:
+      213: 8510699994888053147
+    second: defensaExtra_28
+  - first:
+      213: 1698959448978676059
+    second: defensaExtra_29
+  - first:
+      213: -163401119297614585
+    second: defensaExtra_30
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: defensaExtra_0
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 308
+        width: 529
+        height: 512
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc23fbe965d9f5000800000000000000
+      internalID: 26913118143591116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 55dec69b176823844ba4b75cc8cbc926
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      defensaExtra_0: 26913118143591116
+      defensaExtra_1: 7446845439312522799
+      defensaExtra_10: -9209261985300201750
+      defensaExtra_11: -1730751430374832998
+      defensaExtra_12: -3537335354536256288
+      defensaExtra_13: 3513762335647932243
+      defensaExtra_14: -2855739404954359090
+      defensaExtra_15: -6857650186150244659
+      defensaExtra_16: 8110242646488071417
+      defensaExtra_17: -7184558575316392890
+      defensaExtra_18: 6402418287601128475
+      defensaExtra_19: -441530258593449393
+      defensaExtra_2: 5271244953520597260
+      defensaExtra_20: 1828799570763144048
+      defensaExtra_21: -3131147525089627025
+      defensaExtra_22: 5520227723503747958
+      defensaExtra_23: -8112771640752326977
+      defensaExtra_24: -8085348663444207277
+      defensaExtra_25: -2162532604744677524
+      defensaExtra_26: 3861452900282309851
+      defensaExtra_27: -3554780656280344600
+      defensaExtra_28: 8510699994888053147
+      defensaExtra_29: 1698959448978676059
+      defensaExtra_3: -632052795497546781
+      defensaExtra_30: -163401119297614585
+      defensaExtra_4: -863058079776986039
+      defensaExtra_5: 9211219889726047592
+      defensaExtra_6: -1965490765752197045
+      defensaExtra_7: 3647512450225290391
+      defensaExtra_8: -5048652732113543086
+      defensaExtra_9: -4512753446000482100
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -10,25 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
-  m_Name: Corruptdrop
+  m_Name: Sharky
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
-  enemyName: Corruptdrop
+  enemyName: Sharky
   minHP: 50
   maxHP: 70
-  enemyPortrait: {fileID: 21300000, guid: 2bfba5460ca064c47a67f77144cb4999, type: 3}
+  enemyPortrait: {fileID: 7578653041199382124, guid: 24cd6d9f7c2461442834b6ed46a1a3ae, type: 3}
   projectilePrefab: {fileID: 5410871294214501288, guid: d4ca0fb52723e8c44b986f4cc76ff8da, type: 3}
   attackDuration: 6
   attackPatterns: 010000000000000004000000
   fleeProbability: 0.5
-  goldRewardMin: 10
-  goldRewardMax: 30
+  socialBT: {fileID: 11400000, guid: dac90fcd0b57bf24aaba6260d18ba0a7, type: 2}
+  maxRecruitLimit: 1
+  recruitmentRewardSprite: {fileID: 6207838520875497828, guid: 76d45721b4dd2924abbe19ecf1c99188, type: 3}
+  recruitmentRewardDescription: "Recluta a tots els enemics d'aquest tipus per obtenir
+    un 20% m\xE9s de punts de vida."
+  recruitmentCompleteMessage: 
+  bonusAttackPercent: 20
+  bonusHealthPercent: 20
+  bonusDefensePercent: 20
+  goldRewardMin: 3
+  goldRewardMax: 10
   drops:
   - itemName: Aigueta
     probability: 150
   - itemName: Energy
-    probability: 5
+    probability: 20
   - itemName: Gosset
-    probability: 200
+    probability: 1
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
   voiceSound: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
   attackReactions:

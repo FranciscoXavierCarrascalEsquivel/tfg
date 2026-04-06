@@ -91,10 +91,17 @@ public class SkillCheckUI : MonoBehaviour
     private System.Action<int> onDamageCalculated;
     private Coroutine blinkCoroutine;
 
+    private float damageMultiplier = 1f;
+
     /// <summary>
     /// Permet al CombatManager passar el so d'atac configurat a la Scene.
     /// </summary>
     public void SetAttackSound(AudioClip clip) => attackSound = clip;
+
+    /// <summary>
+    /// Permet passar el potenciador de mal per reclutament (ex: 1.2f per un 20% extra)
+    /// </summary>
+    public void SetDamageMultiplier(float mul) => damageMultiplier = mul;
 
     /// <summary>
     /// Iniciem el minijoc cridant-lo des del CombatManager
@@ -257,7 +264,7 @@ public class SkillCheckUI : MonoBehaviour
         if (deltaAngle <= perfectZone)
         {
             // Puntuació Perfecta
-            finalDamage = maxDamage;
+            finalDamage = Mathf.RoundToInt(maxDamage * damageMultiplier);
             if (critSound != null) audioSource.PlayOneShot(critSound);
             if (damageText != null) 
             {
@@ -274,7 +281,8 @@ public class SkillCheckUI : MonoBehaviour
             
             int maxFailDamage = 10;
             int minFailDamage = 1;
-            finalDamage = Mathf.RoundToInt(Mathf.Lerp(minFailDamage, maxFailDamage, accuracyDrop));
+            int baseDmg = Mathf.RoundToInt(Mathf.Lerp(minFailDamage, maxFailDamage, accuracyDrop));
+            finalDamage = Mathf.RoundToInt(baseDmg * damageMultiplier);
             
             if (hitSound != null) audioSource.PlayOneShot(hitSound);
             if (damageText != null) 

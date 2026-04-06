@@ -18,7 +18,19 @@ public class InventoryMenuUI : MonoBehaviour
     private const int EXIT_IDX = -1;
     private const int NCOLS    = 2;
 
+    private enum InventoryMode { Items, Recruits }
+    private InventoryMode currentMode = InventoryMode.Items;
+
     private TextMeshProUGUI hpTxt, goldTxt, capTxt;
+    private Image itemsTabBg, recruitsTabBg;
+    private TextMeshProUGUI itemsTabTxt, recruitsTabTxt;
+    private RectTransform tabKeyBtnRT;
+    private GameObject      detZoneGO;
+    private GameObject      statsZoneGO;
+    private GameObject      capZoneGO;
+    private RectTransform   gridZoneRT;
+    private float           topOffsetWithDetAndStats = 0f;
+    private float           topOffsetNoDetNoStats = 0f;
     private TextMeshProUGUI detNameTxt, detDescTxt;
     private Image           detIconImg;
     private RectTransform   hpRT;
@@ -31,7 +43,7 @@ public class InventoryMenuUI : MonoBehaviour
 
     private class InventoryEntry
     {
-        public string name; public ItemProfile profile; public int count; public bool canUse;
+        public string name; public ItemProfile profile; public EnemyProfile enemyProfile; public int count; public bool canUse;
         public Image bg; public TextMeshProUGUI txt;
     }
 
@@ -82,13 +94,50 @@ public class InventoryMenuUI : MonoBehaviour
 
         float fromTop = 0f;   // píxels ja usats des del top
 
-        // ─── Títol ───────────────────────────────────────────────────
+        // ─── Títol (Tabs) ───────────────────────────────────────────────────
         var titleRT = TopZone(card, "Title", ref fromTop, H_TITLE);
-        titleRT.gameObject.AddComponent<Image>().color = new Color(0.18f, 0.10f, 0.34f, 1f);
-        TxtFill(titleRT, "*  INVENTARI  *", 58f, new Color(1f, 0.92f, 0.2f), FontStyles.Bold, TextAlignmentOptions.Center);
+        
+        var itemsRT = StretchChild(titleRT, "Items", 0f, 0f, 0.5f, 1f);
+        itemsTabBg = itemsRT.gameObject.AddComponent<Image>();
+        itemsTabTxt = TxtFill(itemsRT, "OBJECTES", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        
+        var recruitsRT = StretchChild(titleRT, "Recruits", 0.5f, 0f, 1f, 1f);
+        recruitsTabBg = recruitsRT.gameObject.AddComponent<Image>();
+        recruitsTabTxt = TxtFill(recruitsRT, "RECLUTATS", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+
+        var indGO = new GameObject("TabKey");
+        tabKeyBtnRT = indGO.AddComponent<RectTransform>();
+        tabKeyBtnRT.pivot = new Vector2(0.5f, 0.5f);
+        tabKeyBtnRT.anchorMin = new Vector2(0.5f, 0.5f);
+        tabKeyBtnRT.anchorMax = new Vector2(0.5f, 0.5f);
+        tabKeyBtnRT.sizeDelta = new Vector2(76f, 36f);
+
+        var tabBaseGO = new GameObject("Base");
+        tabBaseGO.transform.SetParent(tabKeyBtnRT, false);
+        var tabBaseRT = tabBaseGO.AddComponent<RectTransform>();
+        tabBaseRT.anchorMin = Vector2.zero; tabBaseRT.anchorMax = Vector2.one;
+        tabBaseRT.offsetMin = tabBaseRT.offsetMax = Vector2.zero;
+        var tabBaseImg = tabBaseGO.AddComponent<Image>();
+        tabBaseImg.color = new Color(0.02f, 0.02f, 0.02f, 1f);
+
+        var tabTopGO = new GameObject("Top");
+        tabTopGO.transform.SetParent(tabKeyBtnRT, false);
+        var tabTopRT = tabTopGO.AddComponent<RectTransform>();
+        tabTopRT.anchorMin = Vector2.zero; tabTopRT.anchorMax = Vector2.one;
+        tabTopRT.offsetMin = tabTopRT.offsetMax = Vector2.zero;
+        tabTopRT.anchoredPosition = new Vector2(0f, 4f);
+        
+        var tabTopImg = tabTopGO.AddComponent<Image>();
+        tabTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
+        var tabTopOl = tabTopGO.AddComponent<Outline>();
+        tabTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
+        tabTopOl.effectDistance = new Vector2(2f, -2f);
+
+        TxtFill(tabTopRT, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Stats HP / Or ───────────────────────────────────────────
         var statsRT = TopZone(card, "Stats", ref fromTop, H_STATS);
+        statsZoneGO = statsRT.gameObject;
         statsRT.gameObject.AddComponent<Image>().color = new Color(0.04f, 0.03f, 0.11f, 1f);
 
         hpRT  = StretchChild(statsRT, "HP", 0f, 0f, 0.5f, 1f, 22f, 0f, 0f, 0f);
@@ -113,6 +162,7 @@ public class InventoryMenuUI : MonoBehaviour
 
         // ─── Panell detall ────────────────────────────────────────────
         var detRT = TopZone(card, "Detail", ref fromTop, H_DETAIL, 2f);
+        detZoneGO = detRT.gameObject;
         detRT.gameObject.AddComponent<Image>().color = new Color(0.10f, 0.08f, 0.20f, 1f);
 
         // Marc icona (quadrat esquerra amb contorn)
@@ -143,7 +193,9 @@ public class InventoryMenuUI : MonoBehaviour
 
         // ─── Capacitat ───────────────────────────────────────────────
         var capRT = TopZone(card, "Cap", ref fromTop, H_CAP);
+        capZoneGO = capRT.gameObject;
         capTxt    = capRT.gameObject.AddComponent<TextMeshProUGUI>();
+        topOffsetWithDetAndStats = fromTop;
         SetFont(capTxt, 26f, new Color(0.5f, 0.5f, 0.5f), FontStyles.Normal, TextAlignmentOptions.Center);
         capTxt.text = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
 
@@ -152,8 +204,8 @@ public class InventoryMenuUI : MonoBehaviour
 
         // Hint
         var hintRT = BotZone(card, "Hint", ref fromBottom, H_HINT);
-        TxtFill(hintRT, "FLETXES / WASD  navegar    |    E / INTRO  usar    |    ESC  tancar",
-                24f, new Color(0.40f, 0.40f, 0.40f), FontStyles.Normal, TextAlignmentOptions.Center);
+        TxtFill(hintRT, "FLETXES / WASD investigar  |  E / INTRO usar  |  TAB pestanya  |  ESC tancar",
+                20f, new Color(0.40f, 0.40f, 0.40f), FontStyles.Normal, TextAlignmentOptions.Center);
 
         // EXIT
         var exitRT = BotZone(card, "Exit", ref fromBottom, H_EXIT, 3f);
@@ -195,10 +247,12 @@ public class InventoryMenuUI : MonoBehaviour
 
         // ─── Graella (zona que queda entre capZone i exitZone) ────────
         var gridRT_zone = MakeRT("GridZone", card);
+        gridZoneRT = gridRT_zone;
+        topOffsetNoDetNoStats = H_TITLE; // Només queda el títol!
         gridRT_zone.anchorMin = new Vector2(0f, 0f);
         gridRT_zone.anchorMax = new Vector2(1f, 1f);
         gridRT_zone.offsetMin = new Vector2(6f, fromBottom + 3f);    // from bottom
-        gridRT_zone.offsetMax = new Vector2(-6f, -(fromTop + 2f));   // from top
+        gridRT_zone.offsetMax = new Vector2(-6f, -(fromTop + 2f));   // fallback inicial
 
         var grid = MakeRT("Grid", gridRT_zone);
         grid.anchorMin = Vector2.zero; grid.anchorMax = Vector2.one;
@@ -297,7 +351,17 @@ public class InventoryMenuUI : MonoBehaviour
             float w     = glgRT.rect.width;
             float padH  = glg.padding.left + glg.padding.right;
             float cellW = (w - padH - glg.spacing.x * (NCOLS - 1)) / NCOLS;
-            glg.cellSize = new Vector2(Mathf.Max(cellW, 60f), glg.cellSize.y);
+            if (currentMode == InventoryMode.Items)
+            {
+                glg.cellSize = new Vector2(Mathf.Max(cellW, 60f), 60f);
+            }
+            else
+            {
+                float h = glgRT.rect.height;
+                float padV = glg.padding.top + glg.padding.bottom;
+                float cellH = (h - padV - glg.spacing.y) / 2f; // 2 files
+                glg.cellSize = new Vector2(Mathf.Max(cellW, 60f), Mathf.Max(cellH, 60f));
+            }
         }
     }
 
@@ -307,24 +371,104 @@ public class InventoryMenuUI : MonoBehaviour
         entries.Clear();
         foreach (Transform c in gridParent) Destroy(c.gameObject);
 
-        var counts = new Dictionary<string, int>();
-        foreach (var i in inv.Items) { counts.TryGetValue(i, out int n); counts[i] = n + 1; }
+        RefreshTabs();
 
-        if (counts.Count == 0) return;
-
-        foreach (var kvp in counts)
+        if (currentMode == InventoryMode.Items)
         {
-            ItemProfile p = inv.GetItemProfile(kvp.Key);
-            bool canUse   = p != null && (inCombat || p.CanUseInOverworld());
+            var counts = new Dictionary<string, int>();
+            foreach (var i in inv.Items) { counts.TryGetValue(i, out int n); counts[i] = n + 1; }
 
-            // Crea la cel·la — GridLayoutGroup la dimensionarà automàticament
-            var cell = new GameObject($"C_{kvp.Key}");
-            cell.transform.SetParent(gridParent, false);
-            cell.AddComponent<RectTransform>();          // GridLayoutGroup necessita RT
-            var bg = cell.AddComponent<Image>();
-            bg.color         = new Color(0.15f, 0.12f, 0.25f, 1f);
-            bg.raycastTarget = false;
+            if (counts.Count > 0)
+            {
+                foreach (var kvp in counts)
+                {
+                    ItemProfile p = inv.GetItemProfile(kvp.Key);
+                    bool canUse   = p != null && (inCombat || p.CanUseInOverworld());
+                    CreateCell(kvp.Key, p, null, kvp.Value, canUse);
+                }
+            }
+        }
+        else // Recruits mode
+        {
+            HashSet<string> seenEnemies = new HashSet<string>();
 
+            if (inv.enemyDatabase != null)
+            {
+                foreach (var enemy in inv.enemyDatabase)
+                {
+                    if (enemy == null) continue;
+                    seenEnemies.Add(enemy.enemyName);
+                    int count = inv.GetRecruitedCount(enemy.enemyName);
+                    bool encountered = inv.HasEncounteredEnemy(enemy.enemyName);
+                    CreateCell(enemy.enemyName, null, enemy, count, false, encountered);
+                }
+            }
+
+            // Fallback per enemics que s'hagin reclutat/encontrat però l'usuari s'hagi oblidat d'afegir-los al enemyDatabase de l'inspector
+            if (inv.RecruitedEnemies != null)
+            {
+                foreach (var kvp in inv.RecruitedEnemies)
+                {
+                    if (seenEnemies.Contains(kvp.Key)) continue;
+                    seenEnemies.Add(kvp.Key);
+                    CreateCell(kvp.Key, null, null, kvp.Value, false, true);
+                }
+            }
+            if (inv.EncounteredEnemies != null)
+            {
+                foreach (var enc in inv.EncounteredEnemies)
+                {
+                    if (seenEnemies.Contains(enc)) continue;
+                    seenEnemies.Add(enc);
+                    int count = inv.GetRecruitedCount(enc);
+                    CreateCell(enc, null, null, count, false, true);
+                }
+            }
+        }
+
+        if (entries.Count == 0 && selIdx != EXIT_IDX) selIdx = EXIT_IDX;
+        else if (entries.Count > 0 && selIdx >= entries.Count) selIdx = entries.Count - 1;
+        else if (entries.Count > 0 && selIdx == EXIT_IDX) selIdx = 0;
+    }
+
+    private void RefreshTabs()
+    {
+        bool isItems = (currentMode == InventoryMode.Items);
+        itemsTabBg.color = isItems ? new Color(0.18f, 0.10f, 0.34f, 1f) : new Color(0.09f, 0.05f, 0.17f, 1f);
+        itemsTabTxt.color = isItems ? new Color(1f, 0.92f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
+        itemsTabTxt.text = isItems ? "OBJECTES" : "           OBJECTES"; // Extra espais
+        
+        recruitsTabBg.color = !isItems ? new Color(0.34f, 0.10f, 0.18f, 1f) : new Color(0.17f, 0.05f, 0.09f, 1f);
+        recruitsTabTxt.color = !isItems ? new Color(1f, 0.5f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
+        recruitsTabTxt.text = !isItems ? "RECLUTATS" : "           RECLUTATS"; // Extra espais
+
+        if (tabKeyBtnRT != null)
+        {
+            tabKeyBtnRT.SetParent(isItems ? recruitsTabBg.transform : itemsTabBg.transform, false);
+            tabKeyBtnRT.anchoredPosition = new Vector2(isItems ? -120f : -120f, 0f); // Més a l'esquerra per evitar overlap
+        }
+
+        if (detZoneGO != null) detZoneGO.SetActive(isItems);
+        if (capZoneGO != null) capZoneGO.SetActive(isItems);
+        if (statsZoneGO != null) statsZoneGO.SetActive(isItems);
+        
+        if (gridZoneRT != null)
+        {
+            gridZoneRT.offsetMax = new Vector2(-6f, -(isItems ? (topOffsetWithDetAndStats + 2f) : (topOffsetNoDetNoStats + 2f)));
+        }
+    }
+
+    private void CreateCell(string nameStr, ItemProfile itemP, EnemyProfile enemyP, int count, bool canUse, bool encountered = true)
+    {
+        var cell = new GameObject($"C_{nameStr}");
+        cell.transform.SetParent(gridParent, false);
+        cell.AddComponent<RectTransform>();
+        var bg = cell.AddComponent<Image>();
+        bg.color = currentMode == InventoryMode.Items ? new Color(0.15f, 0.12f, 0.25f, 1f) : new Color(0.15f, 0.12f, 0.15f, 1f);
+        bg.raycastTarget = false;
+
+        if (currentMode == InventoryMode.Items)
+        {
             var tGo = new GameObject("T");
             tGo.transform.SetParent(cell.transform, false);
             var tRT = tGo.AddComponent<RectTransform>();
@@ -332,25 +476,154 @@ public class InventoryMenuUI : MonoBehaviour
             tRT.offsetMin = new Vector2(6f, 3f); tRT.offsetMax = new Vector2(-6f, -3f);
             var txt = tGo.AddComponent<TextMeshProUGUI>();
             SetFont(txt, 34f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
-            txt.text         = $"{kvp.Key}  x{kvp.Value}";
+            txt.text = $"{nameStr}  x{count}";
             txt.raycastTarget = false;
 
-            entries.Add(new InventoryEntry { name = kvp.Key, profile = p, count = kvp.Value, canUse = canUse, bg = bg, txt = txt });
+            entries.Add(new InventoryEntry { name = nameStr, profile = itemP, enemyProfile = enemyP, count = count, canUse = canUse, bg = bg, txt = txt });
+        }
+        else
+        {
+            var iconGO = new GameObject("Icon");
+            iconGO.transform.SetParent(cell.transform, false);
+            var iconRT = iconGO.AddComponent<RectTransform>();
+            iconRT.anchorMin = new Vector2(0f, 0.25f); iconRT.anchorMax = new Vector2(1f, 1f);
+            iconRT.offsetMin = new Vector2(10f, 10f); iconRT.offsetMax = new Vector2(-10f, -10f);
+            var img = iconGO.AddComponent<Image>();
+            img.preserveAspect = true;
+            if (enemyP != null && enemyP.enemyPortrait != null) img.sprite = enemyP.enemyPortrait;
+            else img.color = new Color(1f, 1f, 1f, 0f);
+
+            if (!encountered && img.sprite != null)
+            {
+                img.color = new Color(0f, 0f, 0f, 1f);
+            }
+
+            int limit = 1;
+            if (enemyP != null && PlayerInventory.Instance != null)
+                limit = Mathf.Max(1, PlayerInventory.Instance.GetAvailableRecruitLimit(enemyP)); // max 1 for division safety
+
+            string dispName = encountered ? nameStr : "???";
+
+            // Títol de l'enemic
+            var tGo = new GameObject("T");
+            tGo.transform.SetParent(cell.transform, false);
+            var tRT = tGo.AddComponent<RectTransform>();
+            tRT.anchorMin = new Vector2(0f, 0.22f); tRT.anchorMax = new Vector2(1f, 0.32f);
+            tRT.offsetMin = new Vector2(6f, 0f); tRT.offsetMax = new Vector2(-6f, 0f);
+            var txt = tGo.AddComponent<TextMeshProUGUI>();
+            SetFont(txt, 26f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+            txt.text = $"{dispName}  <color=#FFFF00>{count} / {limit}</color>";
+            txt.raycastTarget = false;
+
+            // Barra base (Fons)
+            var barBgGO = new GameObject("BarBG");
+            barBgGO.transform.SetParent(cell.transform, false);
+            var barBgRT = barBgGO.AddComponent<RectTransform>();
+            barBgRT.anchorMin = new Vector2(0.25f, 0.12f); barBgRT.anchorMax = new Vector2(0.75f, 0.22f);
+            barBgRT.offsetMin = new Vector2(0f, 0f); barBgRT.offsetMax = new Vector2(-40f, 0f); 
+            var barBgImg = barBgGO.AddComponent<Image>();
+            barBgImg.color = new Color(0.12f, 0.10f, 0.20f, 1f); // Més claret per fer-ho visible!
+            
+            var barBgOutline = barBgGO.AddComponent<Outline>();
+            barBgOutline.effectColor = new Color(0f, 0f, 0f, 1f);
+            barBgOutline.effectDistance = new Vector2(2f, -2f);
+
+            // Barra plena (Groc)
+            var barFillGO = new GameObject("BarFill");
+            barFillGO.transform.SetParent(barBgGO.transform, false);
+            var barFillRT = barFillGO.AddComponent<RectTransform>();
+            float fillPct = Mathf.Clamp01((float)count / limit);
+            barFillRT.anchorMin = new Vector2(0f, 0f); barFillRT.anchorMax = new Vector2(fillPct, 1f);
+            barFillRT.offsetMin = Vector2.zero; barFillRT.offsetMax = Vector2.zero;
+            var barFillImg = barFillGO.AddComponent<Image>();
+            barFillImg.color = new Color(1f, 0.85f, 0.15f, 1f);
+
+            // Línies de separació (cada unitat)
+            for (int i = 1; i < limit; i++)
+            {
+                var sepGO = new GameObject($"Sep_{i}");
+                sepGO.transform.SetParent(barBgGO.transform, false);
+                var sepRT = sepGO.AddComponent<RectTransform>();
+                float p = (float)i / limit;
+                sepRT.anchorMin = new Vector2(p, 0f); sepRT.anchorMax = new Vector2(p, 1f);
+                sepRT.offsetMin = new Vector2(-2f, 0f); sepRT.offsetMax = new Vector2(2f, 0f); // Anchura real de la línia = 4
+                var sepImg = sepGO.AddComponent<Image>();
+                sepImg.color = new Color(0.05f, 0.02f, 0.08f, 1f); // Fosques per destacar
+            }
+
+            // Sprite a la vora dreta de la barra
+            var rewardGO = new GameObject("Reward");
+            rewardGO.transform.SetParent(cell.transform, false);
+            var rewardRT = rewardGO.AddComponent<RectTransform>();
+            rewardRT.anchorMin = new Vector2(0.75f, 0.17f); rewardRT.anchorMax = new Vector2(0.75f, 0.17f); // Centrat a la barra
+            rewardRT.pivot = new Vector2(0f, 0.5f);
+            rewardRT.sizeDelta = new Vector2(70f, 70f); // Mida duplicada!
+            rewardRT.anchoredPosition = new Vector2(-25f, 0f); // Una mica ficat cap endins per solapar el final
+            var rewardImg = rewardGO.AddComponent<Image>();
+            rewardImg.preserveAspect = true;
+            if (enemyP != null && enemyP.recruitmentRewardSprite != null)
+            {
+                rewardImg.sprite = enemyP.recruitmentRewardSprite;
+                rewardImg.color = Color.white; // Sempre a color ara!
+            }
+            else
+            {
+                rewardImg.color = new Color(1f, 1f, 1f, 0f); // amagat
+            }
+
+            // Descripció de recompensa
+            var descGO = new GameObject("Desc");
+            descGO.transform.SetParent(cell.transform, false);
+            var descRT = descGO.AddComponent<RectTransform>();
+            descRT.anchorMin = new Vector2(0.05f, 0.0f); descRT.anchorMax = new Vector2(0.95f, 0.08f); // 0.08 per estar ben separat del 0.12 de la barra
+            descRT.offsetMin = new Vector2(0f, 0f); descRT.offsetMax = new Vector2(0f, 0f);
+            var descTxt = descGO.AddComponent<TextMeshProUGUI>();
+            SetFont(descTxt, 24f, new Color(0.75f, 0.75f, 0.75f, 1f), FontStyles.Normal, TextAlignmentOptions.Top);
+            
+            if (encountered && enemyP != null && !string.IsNullOrEmpty(enemyP.recruitmentRewardDescription))
+            {
+                descTxt.text = enemyP.recruitmentRewardDescription;
+            }
+            else
+            {
+                descTxt.text = "???";
+            }
+            descTxt.raycastTarget = false;
+
+            entries.Add(new InventoryEntry { name = dispName, profile = itemP, enemyProfile = enemyP, count = count, canUse = false, bg = bg, txt = txt });
         }
     }
 
     // ── Selecció visual ────────────────────────────────────────────────
     private void RefreshHighlights()
     {
+        bool isItems = (currentMode == InventoryMode.Items);
         bool exitSel  = (selIdx == EXIT_IDX);
-        exitBg.color  = exitSel ? new Color(0.40f, 0.18f, 0.60f) : new Color(0.22f, 0.12f, 0.38f);
-        exitTxt.color = exitSel ? new Color(1f, 0.92f, 0.2f) : new Color(0.6f, 0.55f, 0.75f);
+
+        if (isItems)
+        {
+            exitBg.color  = exitSel ? new Color(0.40f, 0.18f, 0.60f) : new Color(0.22f, 0.12f, 0.38f);
+            exitTxt.color = exitSel ? new Color(1f, 0.92f, 0.2f) : new Color(0.6f, 0.55f, 0.75f);
+        }
+        else
+        {
+            exitBg.color  = exitSel ? new Color(0.60f, 0.18f, 0.25f) : new Color(0.38f, 0.12f, 0.18f);
+            exitTxt.color = exitSel ? new Color(1f, 0.5f, 0.2f) : new Color(0.75f, 0.55f, 0.6f);
+        }
 
         for (int i = 0; i < entries.Count; i++)
         {
             bool s = (i == selIdx);
-            if (entries[i].bg  != null) entries[i].bg.color  = s ? new Color(0.28f, 0.22f, 0.50f) : new Color(0.15f, 0.12f, 0.25f);
-            if (entries[i].txt != null) entries[i].txt.color = s ? new Color(1f, 0.92f, 0.2f) : Color.white;
+            if (entries[i].bg  != null) 
+            {
+                if (isItems) entries[i].bg.color  = s ? new Color(0.28f, 0.22f, 0.50f) : new Color(0.15f, 0.12f, 0.25f);
+                else         entries[i].bg.color  = s ? new Color(0.50f, 0.22f, 0.28f) : new Color(0.25f, 0.12f, 0.15f);
+            }
+            if (entries[i].txt != null) 
+            {
+                if (isItems) entries[i].txt.color = s ? new Color(1f, 0.92f, 0.2f) : Color.white;
+                else         entries[i].txt.color = s ? new Color(1f, 0.5f, 0.2f) : Color.white;
+            }
         }
     }
 
@@ -363,11 +636,24 @@ public class InventoryMenuUI : MonoBehaviour
         }
         var e = entries[selIdx];
         detNameTxt.text = $"{e.name}  x{e.count}";
-        detDescTxt.text = e.profile != null
-            ? e.profile.itemDescription
-            : "(sense ItemProfile)";
-        if (e.profile?.itemIcon != null) { detIconImg.sprite = e.profile.itemIcon; detIconImg.color = Color.white; }
-        else detIconImg.color = new Color(1f, 1f, 1f, 0f);
+        
+        if (currentMode == InventoryMode.Items)
+        {
+            detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(sense ItemProfile)";
+            if (e.profile?.itemIcon != null) { detIconImg.sprite = e.profile.itemIcon; detIconImg.color = Color.white; }
+            else detIconImg.color = new Color(1f, 1f, 1f, 0f);
+        }
+        else
+        {
+            detDescTxt.text = "Enemic reclutat a base de conversar.\nAmistat completada.";
+            if (e.enemyProfile != null)
+            {
+                detDescTxt.text += $"\n({e.count} / {e.enemyProfile.maxRecruitLimit} disponibles reclutats)";
+                if (e.enemyProfile.enemyPortrait != null) { detIconImg.sprite = e.enemyProfile.enemyPortrait; detIconImg.color = Color.white; }
+                else detIconImg.color = new Color(1f, 1f, 1f, 0f);
+            }
+            else detIconImg.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 
     // ── Navegació ──────────────────────────────────────────────────────
@@ -380,6 +666,14 @@ public class InventoryMenuUI : MonoBehaviour
             escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
         }
 
+        if (tabKeyBtnRT != null)
+        {
+            float cycle = Time.unscaledTime * 1.5f;
+            bool isPressed = (cycle % 1f) > 0.7f;
+            var tabTopRT = tabKeyBtnRT.Find("Top") as RectTransform;
+            if (tabTopRT != null) tabTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+        }
+
         if (inputBlocked) return;
         bool left  = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
@@ -387,6 +681,19 @@ public class InventoryMenuUI : MonoBehaviour
         bool down  = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
         bool use   = Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return);
         bool close = Input.GetKeyDown(KeyCode.Escape);
+        bool tab   = Input.GetKeyDown(KeyCode.Tab);
+
+        if (tab)
+        {
+            currentMode = currentMode == InventoryMode.Items ? InventoryMode.Recruits : InventoryMode.Items;
+            var inv = PlayerInventory.Instance;
+            if (inv != null && inv.navSound != null) ItemSoundPlayer.Play(inv.navSound);
+            BuildEntries(PlayerInventory.Instance);
+            RefreshDetail();
+            RefreshHighlights();
+            StartCoroutine(AdjustGrid());
+            return;
+        }
 
         if (close || (use && selIdx == EXIT_IDX)) 
         { 
@@ -441,7 +748,14 @@ public class InventoryMenuUI : MonoBehaviour
             if (!entries[selIdx].canUse)
             {
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim());
+                if (currentMode == InventoryMode.Items)
+                {
+                    errorAnim = StartCoroutine(ShowErrorAnim("AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT."));
+                }
+                else
+                {
+                    errorAnim = StartCoroutine(ShowErrorAnim("ELS ENEMICS RECLUTATS NO ES PODEN UTILITZAR."));
+                }
             }
             else
             {
@@ -502,7 +816,7 @@ public class InventoryMenuUI : MonoBehaviour
 
         onItemSelected?.Invoke(entry.profile);
 
-        if (inCombat) { CloseMenu(); return; }
+        if (inCombat) { IsOpen = false; Destroy(gameObject); return; }
 
         if (entry.profile != null && entry.profile.effectType == ItemEffectType.HealPlayer)
             StartCoroutine(ShowHealAnim($"+{entry.profile.effectValue} HP"));
