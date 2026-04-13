@@ -121,7 +121,7 @@ public class DialogueUI : MonoBehaviour
         soundEveryNChars = every;
     }
 
-    public void StartDialogue(Interactable.DialogueLine[] lines)
+    public void StartDialogue(Interactable.DialogueLine[] lines, bool animateIn = true)
     {
         if (lines == null || lines.Length == 0)
         {
@@ -135,7 +135,7 @@ public class DialogueUI : MonoBehaviour
         seqIndex = 0;
         inSequence = true;
 
-        ShowInternal(sequence[0], playInAnim: true);
+        ShowInternal(sequence[0], playInAnim: animateIn);
     }
 
     public void Show(string text, Sprite portrait = null, RuntimeAnimatorController portraitAnim = null)
@@ -200,6 +200,15 @@ public class DialogueUI : MonoBehaviour
 
         if (playInAnim && animateOnShow) PlayIn();
         else ForceShown();
+
+        // NOU: Força el càlcul de la mida ideal de la lletra només amb el text complet
+        if (dialogueText != null)
+        {
+            dialogueText.enableAutoSizing = true;
+            dialogueText.text = fullText;
+            dialogueText.ForceMeshUpdate();
+            dialogueText.enableAutoSizing = false;
+        }
 
         if (typingRoutine != null) StopCoroutine(typingRoutine);
         typingRoutine = StartCoroutine(TypeRoutine(fullText));
@@ -385,10 +394,12 @@ public class DialogueUI : MonoBehaviour
             if (!audioSource) 
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.spatialBlend = 0f; // 2D per a combat
+                audioSource.spatialBlend = 0f;
             }
             audioSource.pitch = 1f + Random.Range(-pitchRandom, pitchRandom);
-            audioSource.PlayOneShot(currentLineVoice, volume);
+            audioSource.clip = currentLineVoice;
+            audioSource.volume = volume;
+            audioSource.Play();
             return;
         }
 
@@ -397,21 +408,23 @@ public class DialogueUI : MonoBehaviour
             if (!audioSource) 
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.spatialBlend = 0f; // 2D per a combat
+                audioSource.spatialBlend = 0f;
             }
-            var clip = typingClips[Random.Range(0, typingClips.Length)];
-            audioSource.pitch = 1f + Random.Range(-pitchRandom * 0.5f, pitchRandom * 0.5f); // Reduït el rang per no sonar tan agut
-            audioSource.PlayOneShot(clip, volume);
+            audioSource.clip = typingClips[Random.Range(0, typingClips.Length)];
+            audioSource.pitch = 1f + Random.Range(-pitchRandom * 0.5f, pitchRandom * 0.5f);
+            audioSource.volume = volume;
+            audioSource.Play();
             return;
         }
 
-        // Fallback a so global si s'ha autogenerat
         var inv = PlayerInventory.Instance;
         if (inv != null && inv.shopVoiceSound != null)
         {
             if (!audioSource) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.clip = inv.shopVoiceSound;
             audioSource.pitch = 1f + Random.Range(-0.1f, 0.1f);
-            audioSource.PlayOneShot(inv.shopVoiceSound, 0.5f);
+            audioSource.volume = 0.5f;
+            audioSource.Play();
         }
     }
 

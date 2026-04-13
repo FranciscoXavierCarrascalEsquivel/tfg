@@ -9,7 +9,7 @@ public class CombatLoader : MonoBehaviour
     [SerializeField] private string combatSceneName = "CombatScene";
     [SerializeField] private MonoBehaviour[] worldScriptsToDisable;
 
-    public static bool IsInCombat { get; private set; }
+    public static bool IsInCombat { get; set; }
 
     [Header("Split Snapshot Transition")]
     [SerializeField] private SplitSnapshot splitOverlayPrefab;

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1ea60e05a61518f4fbb778bda2389c8f
+guid: 40b0052a6b352414a82f405b3a7eb693
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7467107022522695555
-    second: ae37efde-a68a-4099-bc2a-a5121f31a9dd_0
+      213: -7447036221622574902
+    second: reasonruin_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -96,40 +96,27 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ae37efde-a68a-4099-bc2a-a5121f31a9dd_0
+      name: reasonruin_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 0
-        width: 1494
-        height: 1024
+        x: 56
+        y: 127
+        width: 1428
+        height: 831
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 4, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 38f3a49464e70a760800000000000000
-      internalID: 7467107022522695555
+      spriteID: ac028b43300d6a890800000000000000
+      internalID: -7447036221622574902
       vertices: []
       indices: 
       edges: []
@@ -138,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 43911ec2a32eb2d4bac8b68413e5b0cc
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ae37efde-a68a-4099-bc2a-a5121f31a9dd_0: 7467107022522695555
+      reasonruin_0: -7447036221622574902
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

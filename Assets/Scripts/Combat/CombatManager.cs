@@ -78,6 +78,11 @@ public class CombatManager : MonoBehaviour
     private Coroutine activeEnemySpeakCoroutine; // NOU: Registre per poder cancel·lar diàlegs si canvia la fase (específicament la bombolla)
     private bool isPhaseShiftingThisTurn = false; // NOU: Flag per evitar diàlegs de reacció si hi ha hagut canvi de fase
 
+    [Header("Game Over Settings")]
+    [SerializeField] private AudioClip gameOverMusic;
+    [SerializeField] private AudioClip gameOverVoice;
+    [SerializeField] [TextArea] private string gameOverText = "...";
+
     [Header("VFX & Limits")]
     [SerializeField] private GameObject parryParticlePrefab;
     [SerializeField] private RectTransform projectileDestroyLimit;
@@ -1153,8 +1158,172 @@ public class CombatManager : MonoBehaviour
         {
             state = State.End;
             Debug.Log("PLAYER DIED");
-            loader.EndCombat();
+            StartCoroutine(GameOverRoutine());
         }
+    }
+
+    private IEnumerator GameOverRoutine()
+    {
+        // 1. Pantalla negra i silenci
+        GameObject blackScreenGO = new GameObject("GameOverScreen");
+        Canvas c = blackScreenGO.AddComponent<Canvas>();
+        c.renderMode = RenderMode.ScreenSpaceOverlay;
+        c.sortingOrder = 9999;
+        
+        UnityEngine.UI.Image img = blackScreenGO.AddComponent<UnityEngine.UI.Image>();
+        img.color = new Color(0, 0, 0, 0f); 
+
+        // Aturarem el combat loader i els audios de cop
+        loader.StartCoroutine(loader.FadeCombatMusic(false, 0f));
+        if (audioSource) audioSource.Stop();
+        if (loopAudioSource) loopAudioSource.Stop();
+        if (voiceAudioSource) voiceAudioSource.Stop();
+
+        // 2. Pantalla negra de cop i espera un total de 3 segons de silenci
+        img.color = Color.black;
+
+        yield return new WaitForSecondsRealtime(3f);
+
+        // 3. Música de game over
+        if (gameOverMusic != null)
+        {
+            audioSource.clip = gameOverMusic;
+            audioSource.loop = true;
+            audioSource.volume = 1f;
+            audioSource.Play();
+        }
+
+        // 4. Dialeg (tipus overworld)
+        DialogueUI dialogueUI = FindFirstObjectByType<DialogueUI>();
+        if (dialogueUI == null)
+        {
+            var go = new GameObject("DialogueManager");
+            dialogueUI = go.AddComponent<DialogueUI>();
+        }
+
+        Interactable.DialogueLine gameOverLine = new Interactable.DialogueLine();
+        gameOverLine.text = string.IsNullOrEmpty(gameOverText) ? "GAME OVER" : gameOverText;
+        gameOverLine.customVoiceSound = gameOverVoice;
+
+        // Desactivem l'animació d'entrada passant un 'false' al nou paràmetre
+        dialogueUI.StartDialogue(new Interactable.DialogueLine[] { gameOverLine }, false);
+
+        // Forçar que el diàleg estigui per davant de la pantalla negra
+        GameObject dialogPanel = GameObject.Find("DynamicDialoguePanel");
+        if (dialogPanel != null)
+        {
+            Canvas panelCanvas = dialogPanel.GetComponent<Canvas>();
+            if (panelCanvas == null) panelCanvas = dialogPanel.AddComponent<Canvas>();
+            panelCanvas.overrideSorting = true;
+            panelCanvas.sortingOrder = 10000;
+
+            // Retocs visuals per mostrar només text i botó al centre per al Game Over
+            UnityEngine.UI.Image bgImg = dialogPanel.GetComponent<UnityEngine.UI.Image>();
+            if (bgImg != null) bgImg.enabled = false;
+            
+            UnityEngine.UI.Outline bgOl = dialogPanel.GetComponent<UnityEngine.UI.Outline>();
+            if (bgOl != null) bgOl.enabled = false;
+
+            RectTransform prt = dialogPanel.GetComponent<RectTransform>();
+            if (prt != null)
+            {
+                // Ampliem el requadre a gairebé tota la pantalla per aprofitar millor l'espai
+                prt.anchorMin = new Vector2(0.1f, 0.1f);
+                prt.anchorMax = new Vector2(0.9f, 0.9f);
+            }
+
+            Transform txtBox = dialogPanel.transform.Find("TextBox");
+            if (txtBox != null)
+            {
+                TMPro.TextMeshProUGUI tmp = txtBox.GetComponent<TMPro.TextMeshProUGUI>();
+                if (tmp != null)
+                {
+                    tmp.alignment = TMPro.TextAlignmentOptions.Top;
+                    
+                    // Com que ara l'àrea és més gran, l'hi aixequem el límit màxim (abans estava ancorat a 50px de base)
+                    tmp.fontSizeMax = 150f;
+
+                    // I força el recàlcul d'autoescalat un altre cop amagant la lletra correctament, doncs el límit inicial l'havia bloquejat.
+                    string typedSoFar = tmp.text;
+                    tmp.enableAutoSizing = true;
+                    tmp.text = gameOverLine.text;
+                    tmp.ForceMeshUpdate();
+                    tmp.enableAutoSizing = false;
+                    tmp.text = typedSoFar;
+                }
+            }
+            
+            Transform eBtn = dialogPanel.transform.Find("E_Button");
+            if (eBtn != null)
+            {
+                // Canviem el pare cap al Canvas arrel de la pantalla negra per a posar-ho a la cantonada real inferior-dreta
+                eBtn.SetParent(blackScreenGO.transform, false);
+                RectTransform ert = eBtn.GetComponent<RectTransform>();
+                if (ert != null)
+                {
+                    ert.anchorMin = new Vector2(1f, 0f);
+                    ert.anchorMax = new Vector2(1f, 0f);
+                    ert.anchoredPosition = new Vector2(-50f, 50f); // marge des de la vora de la pantalla
+                }
+            }
+        }
+
+        // Esperem fins que el text hagi acabat de mostrar-se, i permetem saltar-lo
+        while (dialogueUI.IsTyping)
+        {
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return))
+            {
+                dialogueUI.AdvanceOrSkip();
+            }
+            yield return null;
+        }
+
+        // Purgar un frame per evitar que la mateixa pulsació compti pel salt i per tancar
+        yield return null; 
+
+        while (!Input.GetKeyDown(KeyCode.E) && !Input.GetKeyDown(KeyCode.Return))
+        {
+            yield return null;
+        }
+        
+        // No cridem "dialogueUI.Hide();" per evitar que el text faci el desplaçament de sortida cap a sota.
+        // D'aquesta manera, es quedarà rígid mentre es fa el fade out superior.
+
+        // FADE OUT ABANS DE CANVIAR D'ESCENA (Pintem un llençol negre per damunt de tot)
+        GameObject fadeOutGO = new GameObject("FadeOutScreen");
+        Canvas fadeCanvas = fadeOutGO.AddComponent<Canvas>();
+        fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        fadeCanvas.sortingOrder = 10005; 
+        UnityEngine.UI.Image fadeImg = fadeOutGO.AddComponent<UnityEngine.UI.Image>();
+        fadeImg.color = new Color(0, 0, 0, 0f); // Comença transparent
+        
+        float fadeTime = 0f;
+        float fadeDuration = 1.0f;
+        float startVolume = (audioSource != null) ? audioSource.volume : 0f;
+
+        while(fadeTime < fadeDuration)
+        {
+            fadeTime += Time.unscaledDeltaTime;
+            fadeImg.color = new Color(0, 0, 0, fadeTime / fadeDuration);
+            // També fem fade out lent a la música del llop si n'hi ha.
+            if (audioSource != null && startVolume > 0)
+            {
+                audioSource.volume = Mathf.Lerp(startVolume, 0f, fadeTime / fadeDuration);
+            }
+            yield return null;
+        }
+
+        // Esborrar progres al overworld
+        if (PlayerInventory.Instance != null)
+        {
+            Destroy(PlayerInventory.Instance.gameObject);
+        }
+        
+        // Netejar la flag global de combat per no deixar el jugador bloquejat
+        CombatLoader.IsInCombat = false;
+
+        // Torna a l'escena d'inici
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 
     public void PlayParrySound()
@@ -2327,6 +2496,12 @@ public class CombatManager : MonoBehaviour
             enemyBubbleRT.gameObject.SetActive(false);
             isEnemySpeaking = false;
             isPhaseShiftingThisTurn = false;
+        }
+
+        // Si el jugador ha mort durant el torn de l'enemic (projectils), aturem-ho tot abans de donar-li el torn.
+        if (state == State.End)
+        {
+            yield break;
         }
 
         state = State.PlayerTurn;

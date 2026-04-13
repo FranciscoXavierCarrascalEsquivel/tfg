@@ -2910,6 +2910,14 @@ MonoBehaviour:
   playerMoveSound: {fileID: 8300000, guid: 41797510c5d8d9f4fa395630abbce744, type: 3}
   victorySound: {fileID: 8300000, guid: 94ef0849a9bccae4199e4336cfbf80fc, type: 3}
   playerActionVoice: {fileID: 8300000, guid: a0b83e19ae49a324a8b5c22a0f913b28, type: 3}
+  gameOverMusic: {fileID: 8300000, guid: d9df364a1b4eeec47b98f6628901f0b8, type: 3}
+  gameOverVoice: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
+  gameOverText: "You fell.\n\nIt won't be the first time... but neither the last
+    one.\n\nThis place is full of creations like you: ideas that someday felt important,
+    projects that someone started with hope but, after all, were left behind.\n\nThey
+    failed not because they were evil, but also nobody continued.\n\nNow you are
+    part of it. \n\nJust another forgotten one.\n\nBut something still remains...
+    a spark.\n\nThe same one that brought you here.\n\nThank you for trying the demo!"
   parryParticlePrefab: {fileID: 0}
   projectileDestroyLimit: {fileID: 22431405}
   throwStartPoint: {fileID: 1120669640}
