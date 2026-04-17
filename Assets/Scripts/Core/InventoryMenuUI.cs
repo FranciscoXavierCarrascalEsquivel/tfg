@@ -383,7 +383,7 @@ public class InventoryMenuUI : MonoBehaviour
                 foreach (var kvp in counts)
                 {
                     ItemProfile p = inv.GetItemProfile(kvp.Key);
-                    bool canUse   = p != null && (inCombat || p.CanUseInOverworld());
+                    bool canUse   = p != null && (inCombat ? p.CanUseInCombat() : p.CanUseInOverworld());
                     CreateCell(kvp.Key, p, null, kvp.Value, canUse);
                 }
             }
@@ -750,7 +750,10 @@ public class InventoryMenuUI : MonoBehaviour
                 if (errorAnim != null) StopCoroutine(errorAnim);
                 if (currentMode == InventoryMode.Items)
                 {
-                    errorAnim = StartCoroutine(ShowErrorAnim("AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT."));
+                    if (entries[selIdx].profile != null && entries[selIdx].profile.effectType == ItemEffectType.KeyItem)
+                        errorAnim = StartCoroutine(ShowErrorAnim("AQUEST ÉS UN OBJECTE CLAU, ES FA SERVIR AUTOMÀTICAMENT."));
+                    else
+                        errorAnim = StartCoroutine(ShowErrorAnim("AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT."));
                 }
                 else
                 {
@@ -812,7 +815,16 @@ public class InventoryMenuUI : MonoBehaviour
 
         // Reproduir el so d'ús de l'objecte
         if (entry.profile != null)
+        {
             ItemSoundPlayer.Play(entry.profile.useSound);
+            if (entry.profile.additionalUseSounds != null)
+            {
+                foreach (var clip in entry.profile.additionalUseSounds)
+                {
+                    ItemSoundPlayer.Play(clip);
+                }
+            }
+        }
 
         onItemSelected?.Invoke(entry.profile);
 

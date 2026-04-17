@@ -160,6 +160,9 @@ public class DialogueUI : MonoBehaviour
         fullText = line?.text ?? "";
         typedCount = 0;
 
+        // Invoca els esdeveniments assignats al arribar d'aquesta línia
+        line?.onLineReached?.Invoke();
+
         isCurrentOnTop = (line != null && line.showOnTop);
         currentLineVoice = line != null ? line.customVoiceSound : null;
         currentLineChoices = line?.choices;
@@ -258,12 +261,17 @@ public class DialogueUI : MonoBehaviour
 
         if (isSelectingChoice)
         {
-            if (PlayerInventory.Instance != null && PlayerInventory.Instance.selectSound != null)
+            var choice = currentLineChoices[selectedChoiceIdx];
+
+            if (choice.customSelectSound != null)
+            {
+                if (audioSource != null) audioSource.PlayOneShot(choice.customSelectSound);
+            }
+            else if (PlayerInventory.Instance != null && PlayerInventory.Instance.selectSound != null)
             {
                 ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
             }
 
-            var choice = currentLineChoices[selectedChoiceIdx];
             choice.onChoiceSelected?.Invoke();
             
             isSelectingChoice = false;

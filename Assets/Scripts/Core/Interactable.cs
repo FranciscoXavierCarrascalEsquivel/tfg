@@ -43,6 +43,10 @@ public class Interactable : MonoBehaviour
 
         [Tooltip("Opcional: Afegeix respostes interactives si vols que el jugador esculli camins diferents.")]
         public DialogueChoice[] choices;
+
+        [Header("Esdeveniments")]
+        [Tooltip("Accions extres a executar quan el jugador arriba a aquesta línia de diàleg (ex: Donar un objecte, Iniciar una animació).")]
+        public UnityEvent onLineReached;
     }
 
     [Serializable]
@@ -53,6 +57,9 @@ public class Interactable : MonoBehaviour
 
         [Tooltip("A quina línia (índex de la matriu 'lines' començant per 0) saltem? Fica -1 per finalitzar i tancar l'arbre.")]
         public int jumpToLineIndex = -1;
+
+        [Tooltip("Opcional: So exclusiu al seleccionar aquesta resposta específica.")]
+        public AudioClip customSelectSound;
 
         [Tooltip("Accions extres a executar quan s'escull aquesta resposta (ex: Iniciar combat, Restar or).")]
         public UnityEvent onChoiceSelected;

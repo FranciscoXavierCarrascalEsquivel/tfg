@@ -2070,6 +2070,13 @@ public class CombatManager : MonoBehaviour
         if (profile.effectType == ItemEffectType.HealPlayer)
         {
             if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
+            if (profile.additionalUseSounds != null)
+            {
+                foreach (var clip in profile.additionalUseSounds)
+                {
+                    if (clip != null) audioSource.PlayOneShot(clip);
+                }
+            }
             playerCurrentHP += profile.effectValue;
             if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
 
@@ -2099,6 +2106,13 @@ public class CombatManager : MonoBehaviour
         else if (profile.effectType == ItemEffectType.SpeedUpHands)
         {
             if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
+            if (profile.additionalUseSounds != null)
+            {
+                foreach (var clip in profile.additionalUseSounds)
+                {
+                    if (clip != null) audioSource.PlayOneShot(clip);
+                }
+            }
             var hands = FindObjectsByType<HandController>(FindObjectsSortMode.None);
             
             if (speedBuffRoundsLeft <= 0)
@@ -2146,6 +2160,13 @@ public class CombatManager : MonoBehaviour
         rt.localScale = Vector3.one * startScale;
 
         if (profile.useSound != null) audioSource.PlayOneShot(profile.useSound);
+        if (profile.additionalUseSounds != null)
+        {
+            foreach (var clip in profile.additionalUseSounds)
+            {
+                if (clip != null) audioSource.PlayOneShot(clip);
+            }
+        }
 
         // --- FASE 1: VOL FINS L'IMPACTE ---
         float duration = 0.5f;

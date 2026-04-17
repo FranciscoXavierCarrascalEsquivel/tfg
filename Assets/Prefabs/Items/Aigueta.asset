@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Aigueta
   m_EditorClassIdentifier: Assembly-CSharp::ItemProfile
   itemName: Aigueta
-  itemDescription: 'Una aigueta Font Comic Sans fresqueta, cura 40hp. '
+  itemDescription: 'A fresh water bottle from Comic Sans Fountain. It heals 25hp. '
   itemIcon: {fileID: -7644904310294725508, guid: e4a0866dfb0b13742af2ec16dad2195b, type: 3}
   effectType: 0
-  effectValue: 40
+  effectValue: 25
   buffDurationRounds: 3
   buyPrice: 10
   sellPrice: 5
