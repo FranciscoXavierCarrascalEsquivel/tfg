@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class ZoneChangeTrigger : MonoBehaviour
 {
+    public delegate void ZoneTransitionHandler();
+    public event ZoneTransitionHandler OnZoneTransition;
+
     [SerializeField] private Transform targetSpawn;     // Punt on apareix el jugador a la nova zona.
     [SerializeField] private Transform cameraTarget;    // Referència antiga per la càmera (fallback).
     
@@ -30,6 +33,8 @@ public class ZoneChangeTrigger : MonoBehaviour
     {
         if (busy) return;
         if (!other.CompareTag("Player")) return;
+
+        OnZoneTransition?.Invoke();
 
         // Si el jugador entra, iniciem la transició de zona
         StartCoroutine(DoTransition(other.transform));

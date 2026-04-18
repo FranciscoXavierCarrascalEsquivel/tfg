@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class TerminalCutscene : MonoBehaviour
 {
@@ -18,7 +19,13 @@ public class TerminalCutscene : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TMP_Text terminalText;
 
-    [Header("Splash (abans del terminal)")]
+    [Header("Video Intro (Opcional)")]
+    [Tooltip("Vídeo que es reproduirà fullscreen en entrar, abans del terminal.")]
+    [SerializeField] private VideoClip introVideoClip;
+    [Tooltip("Petita pausa o fosa en negre just després que s'acabi el vídeo.")]
+    [SerializeField] private float videoFadeDuration = 0.5f;
+
+    [Header("Splash (abans del terminal, després del vídeo)")]
     [SerializeField] private Image splashImage;      // Referència a la imatge de splash.
     [SerializeField] private Sprite splashSprite;    // L'sprite que es mostrarà.
     [SerializeField] private float splashFadeIn = 0.6f; // Temps d'aparició.
@@ -132,6 +139,12 @@ public class TerminalCutscene : MonoBehaviour
 
     IEnumerator RunSequence()
     {
+        // 0) Reproducció del Vídeo Intro
+        if (introVideoClip != null)
+        {
+            yield return StartCoroutine(PlayVideoRoutine());
+        }
+
         // 1) Splash
         if (splashImage != null && splashSprite != null)
         {
@@ -154,6 +167,90 @@ public class TerminalCutscene : MonoBehaviour
 
         // Iniciem la impressió de les línies del terminal
         yield return PlayCutscene();
+    }
+
+    IEnumerator PlayVideoRoutine()
+    {
+        // Amaguem el Canvas original perquè no destorbi
+        Canvas rootCanvas = terminalText != null ? terminalText.GetComponentInParent<Canvas>() : null;
+        if (rootCanvas != null) rootCanvas.enabled = false;
+
+        // Creem un Canvas temporal a prova de bombes (Overlay Topmost) independent de la càmera/URP
+        GameObject canvasGO = new GameObject("TempVideoCanvas");
+        Canvas tempCanvas = canvasGO.AddComponent<Canvas>();
+        tempCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        tempCanvas.sortingOrder = 999;
+        
+        // Fons negre absolut darrere el vídeo
+        GameObject bgGO = new GameObject("BlackBG");
+        bgGO.transform.SetParent(canvasGO.transform, false);
+        var bgRaw = bgGO.AddComponent<RawImage>();
+        bgRaw.color = Color.black;
+        var bgRT = bgGO.GetComponent<RectTransform>();
+        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+        bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+
+        // La imatge on es projectarà el vídeo
+        GameObject videoImgGO = new GameObject("VideoTarget");
+        videoImgGO.transform.SetParent(canvasGO.transform, false);
+        var rawImg = videoImgGO.AddComponent<RawImage>();
+        rawImg.color = Color.white;
+        var rRT = rawImg.GetComponent<RectTransform>();
+        rRT.anchorMin = Vector2.zero; rRT.anchorMax = Vector2.one;
+        rRT.offsetMin = Vector2.zero; rRT.offsetMax = Vector2.zero;
+
+        GameObject videoGO = new GameObject("IntroVideoPlayer");
+        var vp = videoGO.AddComponent<VideoPlayer>();
+        
+        vp.playOnAwake = false;
+        vp.clip = introVideoClip;
+        
+        // Modalitat API Only: Agafem els fotogrames manualment, molt més estable en URP
+        vp.renderMode = VideoRenderMode.APIOnly; 
+        vp.isLooping = false;
+        
+        if (audioSource != null)
+        {
+            vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            vp.SetTargetAudioSource(0, audioSource);
+        }
+        else
+        {
+            vp.audioOutputMode = VideoAudioOutputMode.Direct;
+        }
+
+        vp.Prepare();
+        
+        // Esperem fins que el disc/pista estigui llest a la memòria per evitar lag strikes
+        while (!vp.isPrepared && !skipping)
+        {
+            yield return null;
+        }
+
+        if (!skipping)
+        {
+            vp.Play();
+            yield return null; // assepare que Play fa un pas
+
+            // Esperar que el vídeo acabi per complet connectant textures en temps real
+            while (vp.isPlaying && !skipping)
+            {
+                if (vp.texture != null)
+                {
+                    rawImg.texture = vp.texture;
+                }
+                yield return null;
+            }
+        }
+
+        vp.Stop();
+        Destroy(videoGO);
+        Destroy(canvasGO); // Netegem la pantalla negra i la interfície temporal
+
+        // Tornem a activar la interfície del text/Splash quan ha passat el vídeo
+        if (rootCanvas != null) rootCanvas.enabled = true;
+        
+        if (!skipping) yield return new WaitForSeconds(videoFadeDuration);
     }
 
     IEnumerator PlayCutscene()

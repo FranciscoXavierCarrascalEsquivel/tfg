@@ -14,9 +14,14 @@ public class CombatLoader : MonoBehaviour
     [Header("Split Snapshot Transition")]
     [SerializeField] private SplitSnapshot splitOverlayPrefab;
 
+    [Header("Triggers")]
+    [SerializeField] private ZoneChangeTrigger[] stopMusicTriggers;
+
     [Header("Audio")]
+    [SerializeField] private AudioClip backgroundMusic;
     [SerializeField] private AudioClip combatMusic;
     private AudioSource combatAudioSource;
+    private AudioSource backgroundAudioSource;
     private System.Collections.Generic.Dictionary<AudioSource, float> pausedAudioSources = new System.Collections.Generic.Dictionary<AudioSource, float>();
 
     private void Awake()
@@ -25,6 +30,59 @@ public class CombatLoader : MonoBehaviour
         combatAudioSource.loop = true;
         combatAudioSource.playOnAwake = false;
         combatAudioSource.spatialBlend = 0f;
+
+        backgroundAudioSource = gameObject.AddComponent<AudioSource>();
+        backgroundAudioSource.loop = true;
+        backgroundAudioSource.playOnAwake = false;
+        backgroundAudioSource.spatialBlend = 0f;
+    }
+
+    private void OnEnable()
+    {
+        if (stopMusicTriggers != null)
+        {
+            foreach (var t in stopMusicTriggers)
+            {
+                if (t != null) t.OnZoneTransition += StopBackgroundMusic;
+            }
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (stopMusicTriggers != null)
+        {
+            foreach (var t in stopMusicTriggers)
+            {
+                if (t != null) t.OnZoneTransition -= StopBackgroundMusic;
+            }
+        }
+    }
+
+    private void Start()
+    {
+        if (backgroundMusic != null)
+        {
+            backgroundAudioSource.clip = backgroundMusic;
+            backgroundAudioSource.Play();
+        }
+    }
+
+    public void StopBackgroundMusic()
+    {
+        if (backgroundAudioSource != null && backgroundAudioSource.isPlaying)
+        {
+            // Fem un fade out progressiu de 3 segons abans de pausar/parar
+            StartCoroutine(FadeAudio(backgroundAudioSource, backgroundAudioSource.volume, 0f, 3f, true));
+        }
+    }
+
+    public void PlayBackgroundMusic(AudioClip clip)
+    {
+        if (backgroundAudioSource == null) return;
+        backgroundAudioSource.volume = 1f; // Resetegem el volum per si venim d'un fade out
+        backgroundAudioSource.clip = clip;
+        backgroundAudioSource.Play();
     }
 
     public void StartCombat(CombatEncounter encounter)
