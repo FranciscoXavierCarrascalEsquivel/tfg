@@ -34,9 +34,30 @@ public class Interactable : MonoBehaviour
         [Tooltip("Opcional: si vols retrat animat (Animator Controller)")]
         public RuntimeAnimatorController portraitAnimator;
 
+        [Tooltip("Si vols canviar l'sprite de l'Interactable en aquesta línia de diàleg (opcional)")]
+        public Sprite interactableSpriteChange;
+
+        [Tooltip("Opcional: So a reproduir quan l'Interactable canvia d'sprite")]
+        public AudioClip interactableSpriteChangeSound;
+
+        [HideInInspector]
+        public Interactable owner;
+
         [Header("Behaviour Tree & Branching")]
         [Tooltip("Si és cert, el diàleg es tancarà un cop finalitzi aquesta línia, ignorant les següents.")]
         public bool isEndNode = false;
+
+        [Header("Ritme (Puses & Auto-Avanç)")]
+        [Tooltip("Opcional: Espera X segons (pantalla amagada/buida) ABANS de començar a mostrar aquesta línia.")]
+        public float delayBeforeLine = 0f;
+
+        [Tooltip("Opcional: Si és &gt; 0, el diàleg avançarà a la següent línia automàticament al cap d'aquests segons un cop hagi acabat de teclejar (sense esperar a premer la E).")]
+        public float autoAdvanceTime = 0f;
+
+        [Header("Xarxa de Nodes")]
+
+        [Tooltip("Sobreescriu quina Versió de diàleg (índex) es reproduirà la propera vegada que interaccionis amb l'objecte. (-1 descarta)")]
+        public int setNextInteractionVersion = -1;
 
         [Tooltip("A quin índex saltem automàticament des d'aquí? (-1 vol dir llegir la posició següent de forma lineal)")]
         public int jumpToLineIndex = -1;
@@ -87,33 +108,55 @@ public class Interactable : MonoBehaviour
 
     private int interactionCount = 0;
 
+    public void SetNextInteractionVersion(int versionIndex)
+    {
+        if (versionIndex >= 0)
+        {
+            interactionCount = versionIndex;
+        }
+    }
+
     /// <summary>
     /// Retorna les línies de diàleg corresponents a la interacció actual i incrementa el comptador.
     /// La darrera versió es repeteix indefinidament.
     /// </summary>
     public DialogueLine[] GetCurrentLines()
     {
+        DialogueLine[] linesToReturn = null;
         // Si hi ha versions configurades, les fem servir
         if (versions != null && versions.Length > 0)
         {
             int idx = Mathf.Min(interactionCount, versions.Length - 1);
             interactionCount++;
-            return versions[idx]?.lines ?? new DialogueLine[0];
+            linesToReturn = versions[idx]?.lines ?? new DialogueLine[0];
+        }
+        // Fallback: l'antic camp lines
+        else if (lines != null && lines.Length > 0)
+        {
+            linesToReturn = lines;
+        }
+        // Fallback legacy
+        else
+        {
+            linesToReturn = new DialogueLine[]
+            {
+                new DialogueLine
+                {
+                    text = description,
+                    portrait = portrait,
+                    portraitAnimator = portraitAnimator
+                }
+            };
         }
 
-        // Fallback: l'antic camp lines
-        if (lines != null && lines.Length > 0) return lines;
-
-        // Fallback legacy
-        return new DialogueLine[]
+        if (linesToReturn != null)
         {
-            new DialogueLine
+            foreach (var l in linesToReturn)
             {
-                text = description,
-                portrait = portrait,
-                portraitAnimator = portraitAnimator
+                if (l != null) l.owner = this;
             }
-        };
+        }
+        return linesToReturn;
     }
 
     /// <summary>

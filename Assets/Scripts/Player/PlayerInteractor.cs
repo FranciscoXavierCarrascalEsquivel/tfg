@@ -22,21 +22,6 @@ public class PlayerInteractor : MonoBehaviour
             dialogueUI = go.AddComponent<DialogueUI>();
         }
 
-        // Quan es tanqui el diàleg, es desbloqueja el moviment
-        if (dialogueUI != null)
-            dialogueUI.OnDialogueClosed += HandleDialogueClosed;
-    }
-
-    private void OnDestroy()
-    {
-        if (dialogueUI != null)
-            dialogueUI.OnDialogueClosed -= HandleDialogueClosed;
-    }
-
-    private void HandleDialogueClosed()
-    {
-        if (playerController != null)
-            playerController.UnlockMovement();
     }
 
     private void Update()
@@ -66,6 +51,14 @@ public class PlayerInteractor : MonoBehaviour
         {
             if (playerController != null)
                 playerController.LockMovement();
+
+            System.Action onClosed = null;
+            onClosed = () =>
+            {
+                if (playerController != null) playerController.UnlockMovement();
+                dialogueUI.OnDialogueClosed -= onClosed; // Evita repeticions de memòria
+            };
+            dialogueUI.OnDialogueClosed += onClosed;
 
             dialogueUI.StartDialogue(i.Lines);
         }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2f2d4e6dcc58d18498cb3b677a07a084
+guid: 15d7c85b58358194d98a00aab6dff57b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 233978285928738691
-    second: capybarSerios_0
+      213: -8011202738254376441
+    second: think_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: capybarSerios_0
+      name: think_0
       rect:
         serializedVersion: 2
-        x: 20
-        y: 7
-        width: 468
-        height: 505
+        x: 17
+        y: 0
+        width: 425
+        height: 452
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 38fefe9e2024f3300800000000000000
-      internalID: 233978285928738691
+      spriteID: 70216b20e8d72d090800000000000000
+      internalID: -8011202738254376441
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 9dd2777373af0494fb6b844001b0c03c
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      capybarSerios_0: 233978285928738691
+      think_0: -8011202738254376441
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

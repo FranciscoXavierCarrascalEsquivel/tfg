@@ -23,6 +23,7 @@ public class DialogueUI : MonoBehaviour
 
     private Coroutine typingRoutine;
     private Coroutine animRoutine;
+    private Coroutine autoAdvanceRoutine;
 
     private string fullText;
     private bool isOpen;
@@ -135,7 +136,24 @@ public class DialogueUI : MonoBehaviour
         seqIndex = 0;
         inSequence = true;
 
-        ShowInternal(sequence[0], playInAnim: animateIn);
+        if (sequence[0].delayBeforeLine > 0f)
+        {
+            StartCoroutine(FirstLineDelayRoutine(sequence[0], animateIn));
+        }
+        else
+        {
+            ShowInternal(sequence[0], playInAnim: animateIn);
+        }
+    }
+
+    private IEnumerator FirstLineDelayRoutine(Interactable.DialogueLine firstLine, bool animateIn)
+    {
+        isReopening = true; 
+        if (currentPanelGO != null) currentPanelGO.SetActive(false);
+        yield return new WaitForSecondsRealtime(firstLine.delayBeforeLine);
+        isReopening = false;
+        if (currentPanelGO != null) currentPanelGO.SetActive(true);
+        ShowInternal(firstLine, playInAnim: animateIn);
     }
 
     public void Show(string text, Sprite portrait = null, RuntimeAnimatorController portraitAnim = null)
@@ -156,12 +174,36 @@ public class DialogueUI : MonoBehaviour
 
     private void ShowInternal(Interactable.DialogueLine line, bool playInAnim)
     {
+        if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
+
         isOpen = true;
         fullText = line?.text ?? "";
         typedCount = 0;
 
         // Invoca els esdeveniments assignats al arribar d'aquesta línia
         line?.onLineReached?.Invoke();
+
+        // Canvia l'sprite de l'Interactable si la línia de diàleg té aquest camp configurat
+        if (line != null && line.owner != null)
+        {
+            if (line.interactableSpriteChange != null)
+            {
+                var sr = line.owner.GetComponent<SpriteRenderer>();
+                if (sr != null) 
+                {
+                    sr.sprite = line.interactableSpriteChange;
+                    if (line.interactableSpriteChangeSound != null)
+                    {
+                        ItemSoundPlayer.Play(line.interactableSpriteChangeSound);
+                    }
+                }
+            }
+            
+            if (line.setNextInteractionVersion >= 0)
+            {
+                line.owner.SetNextInteractionVersion(line.setNextInteractionVersion);
+            }
+        }
 
         isCurrentOnTop = (line != null && line.showOnTop);
         currentLineVoice = line != null ? line.customVoiceSound : null;
@@ -228,6 +270,8 @@ public class DialogueUI : MonoBehaviour
 
         isTyping = false;
         isSelectingChoice = false;
+        if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
+
         if (choicePanelRT != null) 
         {
             foreach(Transform child in choicePanelRT) Destroy(child.gameObject);
@@ -243,6 +287,7 @@ public class DialogueUI : MonoBehaviour
     public void AdvanceOrSkip()
     {
         if (!isOpen || isReopening || isHiding) return;
+        if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
 
         if (isTyping)
         {
@@ -255,6 +300,14 @@ public class DialogueUI : MonoBehaviour
             if (currentLineChoices != null && currentLineChoices.Length > 0)
             {
                 ShowChoices();
+            }
+            else
+            {
+                var currentLine = sequence != null && inSequence ? sequence[seqIndex] : null;
+                if (currentLine != null && currentLine.autoAdvanceTime > 0f)
+                {
+                    autoAdvanceRoutine = StartCoroutine(AutoAdvanceRoutine(currentLine.autoAdvanceTime));
+                }
             }
             return;
         }
@@ -318,11 +371,22 @@ public class DialogueUI : MonoBehaviour
         if (seqIndex >= 0 && seqIndex < sequence.Length)
         {
             var nextLine = sequence[seqIndex];
-            if (nextLine.forceReopen) StartCoroutine(ReopenRoutine(nextLine));
+            if (nextLine.delayBeforeLine > 0f) StartCoroutine(DelayedShowRoutine(nextLine));
+            else if (nextLine.forceReopen) StartCoroutine(ReopenRoutine(nextLine));
             else ShowInternal(nextLine, false);
             return;
         }
         Hide();
+    }
+
+    private IEnumerator DelayedShowRoutine(Interactable.DialogueLine nextLine)
+    {
+        isReopening = true; 
+        PlayOutForReopen(); 
+        yield return new WaitForSecondsRealtime(animDuration); 
+        yield return new WaitForSecondsRealtime(nextLine.delayBeforeLine); 
+        isReopening = false;
+        ShowInternal(nextLine, playInAnim: true); 
     }
 
     private System.Collections.IEnumerator WaitMenuCloseAndAdvance(int nextIdx)
@@ -393,6 +457,24 @@ public class DialogueUI : MonoBehaviour
         {
             ShowChoices();
         }
+        else
+        {
+            var currentLine = sequence != null && inSequence ? sequence[seqIndex] : null;
+            if (currentLine != null && currentLine.autoAdvanceTime > 0f)
+            {
+                autoAdvanceRoutine = StartCoroutine(AutoAdvanceRoutine(currentLine.autoAdvanceTime));
+            }
+        }
+    }
+
+    private IEnumerator AutoAdvanceRoutine(float time)
+    {
+        yield return new WaitForSecondsRealtime(time);
+        
+        if (isOpen && !isHiding && !isReopening && !isTyping && !isSelectingChoice)
+        {
+            AdvanceOrSkip();
+        }
     }
 
     private void PlayRandomTypingSound()
@@ -451,7 +533,7 @@ public class DialogueUI : MonoBehaviour
         panelRect.SetParent(canvas.transform, false);
 
         panelRect.anchorMin = new Vector2(0.12f, 0.05f);
-        panelRect.anchorMax = new Vector2(0.88f, 0.28f);
+        panelRect.anchorMax = new Vector2(0.88f, 0.35f); // Increased panel height max (from 0.28)
         panelRect.offsetMin = panelRect.offsetMax = Vector2.zero;
         shownPos = panelRect.anchoredPosition; // Guardant la posició 0 default com a shown
 
@@ -488,9 +570,9 @@ public class DialogueUI : MonoBehaviour
         dialogueText = txtGO.AddComponent<TextMeshProUGUI>();
         dialogueText.margin = new Vector4(35f, 30f, 35f, 30f);
         dialogueText.enableWordWrapping = true;
-        dialogueText.fontSizeMax = 50f; dialogueText.fontSizeMin = 24f;
+        dialogueText.fontSizeMax = 80f; dialogueText.fontSizeMin = 40f; // Increased text limits
         dialogueText.enableAutoSizing = true;
-        SetFont(dialogueText, 42f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft);
+        SetFont(dialogueText, 60f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft); // Increased initial font size
 
         // Name Box (Background)
         nameBoxGO = new GameObject("NameBox");
@@ -511,8 +593,8 @@ public class DialogueUI : MonoBehaviour
 
         nameText = nameTextGO.AddComponent<TextMeshProUGUI>();
         nameText.margin = new Vector4(10f, 5f, 10f, 5f);
-        SetFont(nameText, 32f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
-        nameText.enableAutoSizing = true; nameText.fontSizeMin = 18f; nameText.fontSizeMax = 36f;
+        SetFont(nameText, 48f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center); // Increased text base size
+        nameText.enableAutoSizing = true; nameText.fontSizeMin = 30f; nameText.fontSizeMax = 54f; // Increased test limits
 
         // Divider Line
         var divGO = new GameObject("DividerLine");
@@ -526,7 +608,7 @@ public class DialogueUI : MonoBehaviour
         eBoxGO.transform.SetParent(panelRect, false);
         var eRT = eBoxGO.AddComponent<RectTransform>();
         eRT.anchorMin = new Vector2(1f, 0f); eRT.anchorMax = new Vector2(1f, 0f);
-        eRT.sizeDelta = new Vector2(36f, 36f);
+        eRT.sizeDelta = new Vector2(48f, 48f); // Increased key size (from 36x36)
         eRT.pivot = new Vector2(1f, 0f);
         eRT.anchoredPosition = new Vector2(-20f, 15f);
 
@@ -567,7 +649,7 @@ public class DialogueUI : MonoBehaviour
         elRT.offsetMin = elRT.offsetMax = Vector2.zero;
 
         var eTextComp = eLetterGO.AddComponent<TextMeshProUGUI>();
-        SetFont(eTextComp, 26f, new Color(0.05f, 0.05f, 0.05f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
+        SetFont(eTextComp, 36f, new Color(0.05f, 0.05f, 0.05f, 1f), FontStyles.Bold, TextAlignmentOptions.Center); // Increased text
         eTextComp.text = "E";
         eTextComp.margin = new Vector4(2f, 2f, 0f, 0f);
 
@@ -599,7 +681,7 @@ public class DialogueUI : MonoBehaviour
             btnGO.transform.SetParent(choicePanelRT, false);
             var bRT = btnGO.AddComponent<RectTransform>();
             var le = btnGO.AddComponent<LayoutElement>();
-            le.minHeight = 64f;
+            le.minHeight = 85f; // Increased height of choices (from 64f)
 
             var img = btnGO.AddComponent<Image>();
             img.color = new Color(0.1f, 0.1f, 0.2f, 0.95f);
@@ -614,7 +696,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = new Vector2(10f, 5f); tRT.offsetMax = new Vector2(-10f, -5f);
             
             var txt = txtGO.AddComponent<TextMeshProUGUI>();
-            SetFont(txt, 40f, Color.white, FontStyles.Bold, TextAlignmentOptions.Right);
+            SetFont(txt, 55f, Color.white, FontStyles.Bold, TextAlignmentOptions.Right); // Increased text
             txt.text = currentLineChoices[i].text;
             
             choiceTexts.Add(txt);
@@ -701,7 +783,7 @@ public class DialogueUI : MonoBehaviour
         else
         {
             panelRect.anchorMin = new Vector2(0.12f, 0.05f);
-            panelRect.anchorMax = new Vector2(0.88f, 0.27f);
+            panelRect.anchorMax = new Vector2(0.88f, 0.34f); // Increased panel proportion (from 0.27f)
             if (choicePanelRT != null)
             {
                 choicePanelRT.anchorMin = new Vector2(1f, 1f);
@@ -746,7 +828,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(0f, 1f); nbRT.anchorMax = new Vector2(0f, 1f);
-            nbRT.sizeDelta = new Vector2(240f, 56f);
+            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
             nbRT.pivot = new Vector2(0f, 0f);
             nbRT.anchoredPosition = new Vector2(15f, 8f);
         }
@@ -759,7 +841,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(1f, 1f); nbRT.anchorMax = new Vector2(1f, 1f);
-            nbRT.sizeDelta = new Vector2(240f, 56f);
+            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
             nbRT.pivot = new Vector2(1f, 0f);
             nbRT.anchoredPosition = new Vector2(-10f, 8f);
 
@@ -780,7 +862,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(0f, 1f); nbRT.anchorMax = new Vector2(0f, 1f);
-            nbRT.sizeDelta = new Vector2(240f, 56f);
+            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
             nbRT.pivot = new Vector2(0f, 0f);
             nbRT.anchoredPosition = new Vector2(10f, 8f);
 

@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 2f50383912bcea346b41b166ae7296f2
+guid: 2e7c0dd8201442841a0027ffea89ede9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8361232319640231066
-    second: capyvarSuspirant_0
-  - first:
-      213: 1408679083481704931
-    second: capyvarSuspirant_1
-  - first:
-      213: -7403779049347826642
-    second: capyvarSuspirant_2
-  - first:
-      213: -929273619083448187
-    second: capyvarSuspirant_3
+      213: -3536576362103274770
+    second: neutre_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -122,89 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: capyvarSuspirant_0
+      name: neutre_0
       rect:
         serializedVersion: 2
-        x: 20
+        x: 17
         y: 0
-        width: 442
-        height: 509
+        width: 411
+        height: 455
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6632457418fe6fb80800000000000000
-      internalID: -8361232319640231066
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: capyvarSuspirant_1
-      rect:
-        serializedVersion: 2
-        x: 417
-        y: 142
-        width: 51
-        height: 44
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3e92375b922ac8310800000000000000
-      internalID: 1408679083481704931
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: capyvarSuspirant_2
-      rect:
-        serializedVersion: 2
-        x: 423
-        y: 101
-        width: 22
-        height: 34
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e2cb4287e2e704990800000000000000
-      internalID: -7403779049347826642
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: capyvarSuspirant_3
-      rect:
-        serializedVersion: 2
-        x: 447
-        y: 101
-        width: 23
-        height: 34
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 580b363219e8a13f0800000000000000
-      internalID: -929273619083448187
+      spriteID: ee28ac7498e8beec0800000000000000
+      internalID: -3536576362103274770
       vertices: []
       indices: 
       edges: []
@@ -213,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: fc578a9b0b1be9d4b9cf57a1edc43d7d
     internalID: 0
     vertices: []
     indices: 
@@ -223,10 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      capyvarSuspirant_0: -8361232319640231066
-      capyvarSuspirant_1: 1408679083481704931
-      capyvarSuspirant_2: -7403779049347826642
-      capyvarSuspirant_3: -929273619083448187
+      neutre_0: -3536576362103274770
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
