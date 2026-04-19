@@ -1,0 +1,450 @@
+fileFormatVersion: 2
+guid: 30583472c31b13a4fa31f9eda2ff49d4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7805046858642634944
+    second: rataInmunda-removebg-preview_0
+  - first:
+      213: 5019456793113728430
+    second: rataInmunda-removebg-preview_1
+  - first:
+      213: 214321507411130102
+    second: rataInmunda-removebg-preview_2
+  - first:
+      213: 5081010036947181164
+    second: rataInmunda-removebg-preview_3
+  - first:
+      213: -2785805607703370744
+    second: rataInmunda-removebg-preview_4
+  - first:
+      213: -3630749759526680378
+    second: rataInmunda-removebg-preview_5
+  - first:
+      213: 1811654233625814138
+    second: rataInmunda-removebg-preview_6
+  - first:
+      213: 5518156666899492098
+    second: rataInmunda-removebg-preview_7
+  - first:
+      213: 5278400140234609235
+    second: rataInmunda-removebg-preview_8
+  - first:
+      213: 4591959940134885237
+    second: rataInmunda-removebg-preview_9
+  - first:
+      213: 2113667744896823457
+    second: rataInmunda-removebg-preview_10
+  - first:
+      213: -7358699289175750624
+    second: rataInmunda-removebg-preview_11
+  - first:
+      213: 5624497748446694194
+    second: rataInmunda-removebg-preview_12
+  - first:
+      213: -662696489084528891
+    second: rataInmunda-removebg-preview_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 382
+        width: 86
+        height: 114
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 22, y: 2, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 047c3572c37eea390800000000000000
+      internalID: -7805046858642634944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_1
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 382
+        width: 65
+        height: 113
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 15, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea517feeb51b8a540800000000000000
+      internalID: 5019456793113728430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_2
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 380
+        width: 66
+        height: 115
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f677f4864c69f200800000000000000
+      internalID: 214321507411130102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_3
+      rect:
+        serializedVersion: 2
+        x: 407
+        y: 382
+        width: 64
+        height: 111
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6e5e6055bf538640800000000000000
+      internalID: 5081010036947181164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_4
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 253
+        width: 75
+        height: 112
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 804ac834f84d659d0800000000000000
+      internalID: -2785805607703370744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_5
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 253
+        width: 73
+        height: 112
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c8c31b845cfc9dc0800000000000000
+      internalID: -3630749759526680378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_6
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 254
+        width: 74
+        height: 111
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a74691b4de9442910800000000000000
+      internalID: 1811654233625814138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_7
+      rect:
+        serializedVersion: 2
+        x: 390
+        y: 254
+        width: 81
+        height: 109
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20d6f79804e649c40800000000000000
+      internalID: 5518156666899492098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_8
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 122
+        width: 85
+        height: 114
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3525e0d16f4a04940800000000000000
+      internalID: 5278400140234609235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_10
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 123
+        width: 83
+        height: 112
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a0b6c38d91455d10800000000000000
+      internalID: 2113667744896823457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_12
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 121
+        width: 93
+        height: 117
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23b462007ea3e0e40800000000000000
+      internalID: 5624497748446694194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rataInmunda-removebg-preview_13
+      rect:
+        serializedVersion: 2
+        x: 382
+        y: 124
+        width: 96
+        height: 112
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 507d736ed01adc6f0800000000000000
+      internalID: -662696489084528891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 255a204f9f734a048b48594f947bb73d
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rataInmunda-removebg-preview_0: -7805046858642634944
+      rataInmunda-removebg-preview_1: 5019456793113728430
+      rataInmunda-removebg-preview_10: 2113667744896823457
+      rataInmunda-removebg-preview_11: -7358699289175750624
+      rataInmunda-removebg-preview_12: 5624497748446694194
+      rataInmunda-removebg-preview_13: -662696489084528891
+      rataInmunda-removebg-preview_2: 214321507411130102
+      rataInmunda-removebg-preview_3: 5081010036947181164
+      rataInmunda-removebg-preview_4: -2785805607703370744
+      rataInmunda-removebg-preview_5: -3630749759526680378
+      rataInmunda-removebg-preview_6: 1811654233625814138
+      rataInmunda-removebg-preview_7: 5518156666899492098
+      rataInmunda-removebg-preview_8: 5278400140234609235
+      rataInmunda-removebg-preview_9: 4591959940134885237
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
