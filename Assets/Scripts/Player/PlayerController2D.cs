@@ -9,6 +9,15 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float runSpeed = 8f;        // Velocitat quan el jugador corre.
     [SerializeField] private KeyCode runKey = KeyCode.LeftShift; // Tecla per córrer.
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip walkSound;
+    [SerializeField] private float walkSoundInterval = 0.6f;
+    [SerializeField] private AudioClip wallCollisionSound;
+    [SerializeField] private float wallCollisionSoundInterval = 0.4f;
+
+    private float walkSoundTimer;
+    private float wallSoundTimer;
+
     [Header("Random Encounters")]
     [SerializeField] private CombatLoader combatLoader;
     [SerializeField] private float encounterChancePerStep = 0.05f; // Probabilitat de trobar enemic cada metre recorregut
@@ -49,6 +58,11 @@ public class PlayerController2D : MonoBehaviour
 
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
+
+#if UNITY_EDITOR
+        if (walkSound == null) walkSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/step.wav");
+        if (wallCollisionSound == null) wallCollisionSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/bump.wav");
+#endif
     }
 
     // Bloqueig/desbloqueig
@@ -135,6 +149,30 @@ public class PlayerController2D : MonoBehaviour
 
         // Animació ON si: hi ha input I no estem bloquejats
         bool showMovingAnim = isMovingInput && !isStuck;
+
+        // --- GESTIÓ D'ÀUDIO DE MOVIMENT ---
+        if (walkSoundTimer > 0f) walkSoundTimer -= Time.deltaTime;
+        if (wallSoundTimer > 0f) wallSoundTimer -= Time.deltaTime;
+
+        if (isMovingInput)
+        {
+            if (isStuck)
+            {
+                if (wallSoundTimer <= 0f && wallCollisionSound != null)
+                {
+                    ItemSoundPlayer.Play(wallCollisionSound);
+                    wallSoundTimer = wallCollisionSoundInterval;
+                }
+            }
+            else
+            {
+                if (walkSoundTimer <= 0f && walkSound != null)
+                {
+                    ItemSoundPlayer.Play(walkSound);
+                    walkSoundTimer = isRunning ? walkSoundInterval * 0.65f : walkSoundInterval;
+                }
+            }
+        }
 
         // --- SISTEMA DE COMBAT ALEATORI PER DISTÀNCIA ---
         if (!disableEncounters && showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)

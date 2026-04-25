@@ -179,7 +179,13 @@ public class CombatLoader : MonoBehaviour
         }
 
         // 5) Ara sí, desactiva scripts del món
-        foreach (var s in worldScriptsToDisable) if (s) s.enabled = false;
+        if (worldScriptsToDisable != null)
+        {
+            foreach (var s in worldScriptsToDisable) 
+            {
+                if (s != null && s.gameObject != null) s.enabled = false;
+            }
+        }
 
         // 6) Inicia combat de debò on els menús llisquen
         if (cm != null) yield return cm.BeginRoutine(encounter, this);
@@ -229,7 +235,13 @@ public class CombatLoader : MonoBehaviour
             Destroy(overlayToDestroy.gameObject);
         }
 
-        foreach (var s in worldScriptsToDisable) if (s) s.enabled = true;
+        if (worldScriptsToDisable != null)
+        {
+            foreach (var s in worldScriptsToDisable) 
+            {
+                if (s != null && s.gameObject != null) s.enabled = true;
+            }
+        }
         
         // Assegurem que la càmera estigui exactament on toca abans d'alliberar el jugador
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
