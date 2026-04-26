@@ -156,7 +156,7 @@ public class VictoryPanelUI : MonoBehaviour
         titleTxt.enableAutoSizing = true;
         titleTxt.fontSizeMin = 40f;
         titleTxt.fontSizeMax = 90f;
-        titleTxt.text = "*  VICTORIA!  *";
+        titleTxt.text = "*  VICTORY!  *";
 
         // ── Contorn pixel (4 costats) + cantonades quadrades ─────────
         float brd = 8f;
@@ -167,7 +167,7 @@ public class VictoryPanelUI : MonoBehaviour
         // Partim de sota la capçalera amb espaiat més compacte
         float currentY = cardH / 2f - headerH - 70f;
 
-        goldValueText = MakeIconRow(card, coinSprite, "Or", $"+0 G ({totalGold - goldEarned} G)",
+        goldValueText = MakeIconRow(card, coinSprite, "Gold", $"+0 G ({totalGold - goldEarned} G)",
                                     new Color(1f, 0.90f, 0.15f), currentY);
         currentY -= 100f;
 
@@ -176,14 +176,14 @@ public class VictoryPanelUI : MonoBehaviour
 
         if (items.Count == 0)
         {
-            MakeIconRow(card, bagSprite, "Objectes aconseguits", "-",
+            MakeIconRow(card, bagSprite, "Items acquired", "-",
                         new Color(0.6f, 0.6f, 0.6f), currentY);
             currentY -= 100f;
         }
         else
         {
             // Capçalera separada pels objectes aconseguits
-            MakeIconRow(card, bagSprite, "Objectes aconseguits", "", Color.white, currentY);
+            MakeIconRow(card, bagSprite, "Items acquired", "", Color.white, currentY);
             currentY -= 100f;
 
             var itemCounts = new System.Collections.Generic.Dictionary<string, int>();
@@ -210,7 +210,7 @@ public class VictoryPanelUI : MonoBehaviour
         // Transparència inicial a 0 perquè no es vegi d'entrada, el Blink ho animarà a 1
         SetFont(promptText, 52f, new Color(1f, 1f, 1f, 0f), 
                 FontStyles.Normal, TextAlignmentOptions.Center);
-        promptText.text = "[ PREM E O INTRO PER CONTINUAR ]";
+        promptText.text = "[ PRESS E OR ENTER TO CONTINUE ]";
         
         // Contorn perfecte Natiu al TextMeshPro creant una nova instància del material per no enguarrar l'asset principal
         promptText.fontSharedMaterial = Instantiate(promptText.fontSharedMaterial);

@@ -46,7 +46,7 @@ public class SocialNode
     [Tooltip("Reacci\u00f3 gen\u00e8rica si el jugador fa una acci\u00f3 sense transici\u00f3 definida en aquest node.")]
     public string defaultReactionText = "...";
 
-    [Tooltip("Si \u00e9s cert, entrar a aquest node permet al jugador veure el bot\u00f3 'Demanar Disculpes' a partir d'ara.")]
+    [Tooltip("Si \u00e9s cert, entrar a aquest node permet al jugador veure el bot\u00f3 'Apologize' a partir d'ara.")]
     public bool enableApology = false;
 
     [Tooltip("ID del node al qual anem si el jugador decideix ATACAR (a trav\u00e9s del men\u00fa Atacar) mentre estem en aquest node. Deixa buit per mantenir el flux normal (sense canvi de node social).")]

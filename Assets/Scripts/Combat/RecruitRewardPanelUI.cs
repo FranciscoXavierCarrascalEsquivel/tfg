@@ -161,7 +161,7 @@ public class RecruitRewardPanelUI : MonoBehaviour
         titleRT.offsetMax = Vector2.zero;
         var titleTxt = titleGo.AddComponent<TextMeshProUGUI>();
         SetFont(titleTxt, 54f, new Color(1f, 0.95f, 0.4f), FontStyles.Bold, TextAlignmentOptions.Center);
-        titleTxt.text = $"*  COLLECCIO COMPLETA!  *";
+        titleTxt.text = $"*  COLLECTION COMPLETE!  *";
         
         // Sub-títol (nom enemic)
         var subGo = NewChild("SubTitle", card.transform);
@@ -171,7 +171,7 @@ public class RecruitRewardPanelUI : MonoBehaviour
         subRT.offsetMax = new Vector2(-20f, -headerH);
         var subTxt = subGo.AddComponent<TextMeshProUGUI>();
         SetFont(subTxt, 34f, new Color(0.85f, 0.85f, 0.95f), FontStyles.Normal, TextAlignmentOptions.Center);
-        subTxt.text = $"Has obtingut la recompensa de {enemyName.ToUpper()}";
+        subTxt.text = $"You've obtained {enemyName.ToUpper()}'s reward";
 
         // ── Backlight Llum (Glow) ───────────────────────────────────
         var glowGo = NewChild("Glow", card.transform);
@@ -209,7 +209,7 @@ public class RecruitRewardPanelUI : MonoBehaviour
         descTxt.enableAutoSizing = true;
         descTxt.fontSizeMin = 24f;
         descTxt.fontSizeMax = 44f;
-        descTxt.text = !string.IsNullOrEmpty(rewardText) ? rewardText : "Has obtingut una millora permanent!";
+        descTxt.text = !string.IsNullOrEmpty(rewardText) ? rewardText : "You've gained a permanent upgrade!";
 
         // ── NOU: Botó Interactiu [E] ───
         var eBase = NewChild("E_Prompt", card.transform);

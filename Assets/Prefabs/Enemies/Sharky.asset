@@ -23,8 +23,8 @@ MonoBehaviour:
   socialBT: {fileID: 11400000, guid: dac90fcd0b57bf24aaba6260d18ba0a7, type: 2}
   maxRecruitLimit: 1
   recruitmentRewardSprite: {fileID: 6207838520875497828, guid: 76d45721b4dd2924abbe19ecf1c99188, type: 3}
-  recruitmentRewardDescription: "Recluta a tots els enemics d'aquest tipus per obtenir
-    un 20% m\xE9s de punts de vida."
+  recruitmentRewardDescription: "Recruit all enemies of this kind to increase your
+    max health by 20%."
   recruitmentCompleteMessage: 
   bonusAttackPercent: 20
   bonusHealthPercent: 20
@@ -32,20 +32,19 @@ MonoBehaviour:
   goldRewardMin: 3
   goldRewardMax: 10
   drops:
-  - itemName: Aigueta
+  - itemName: Water
     probability: 150
   - itemName: Energy
     probability: 20
-  - itemName: Gosset
+  - itemName: Hot Dog
     probability: 1
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
   voiceSound: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
   attackReactions:
-  - Awww, m'has fet pupa...
-  - Les besties amb rabia mosseguen mes fort!
+  - Ouch, right in the gills...
+  - Rabid beasts bite way harder!
   healReactions:
-  - "Eyy, aix\xF2 no s'hi val, jo no tinc bra\xE7os per poder treure'm quelcom de
-    l'inventari enmig d'una lluita..."
+  - Hey, no fair! I don't even have hands to grab items out of my pockets...
   fleeFailReactions:
-  - Pero a on vas maquina?
-  - Mala sort, hahaha!
+  - Where do you think you're going, buddy?
+  - Tough luck, hahaha!

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b1d51fcc3adf54790d63653cc8d59f, type: 3}
   m_Name: PDF
   m_EditorClassIdentifier: Assembly-CSharp::ItemProfile
-  itemName: Os
+  itemName: Bone
   itemDescription: A PDF document with the necessary data to travel to next world.
   itemIcon: {fileID: -1689705467738095068, guid: f7c6b10870460874ca7b6a57450046d3, type: 3}
   effectType: 3

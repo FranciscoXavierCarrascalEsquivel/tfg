@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SocialBehaviorTree
   playerActions:
   - Ballar
-  - Plorar
-  - Oferir os
-  - Insultar
-  - Explicar acudit
-  menuHeader: 'Accions disponibles:'
+  - Cry
+  - Offer bone
+  - Insult
+  - Tell a joke
+  menuHeader: 'Available Actions:'
   startNodeId: 0
   friendshipText: Sembles una bona persona, crec que m'he equicovat jutjant-te abans
     de temps... Espero que em perdonis...
@@ -26,7 +26,7 @@ MonoBehaviour:
   friendGoldMax: 6
   nodes:
   - nodeId: 0
-    enemyEntryText: Ei, que fas que no m'ataques?
+    enemyEntryText: Hey, why aren't you attacking me?
     defaultReactionText: ...
     enableApology: 0
     attackNextNodeId: 7
@@ -34,37 +34,37 @@ MonoBehaviour:
     - actionName: Ballar
       playerActionText: Comences a ballar de forma maldestre el primer que se't ve
         al cap. L'enemic sembla curios per saber que es el que estas fent.
-      enemyReactionText: Ei! Que fas? Es alguna mena d'atac especial o que?
+      enemyReactionText: Hey! What's that? Some kind of forbidden technique?
       nextNodeId: 5
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: Et tires al terra i comences a plorar desconsoladament..
         A l'enemic no li sembla importar...
       enemyReactionText: El plor demostra que no ets un guerrer pur de cor... Aixeca't
         i lluita com ha de ser!
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Insultar
+    - actionName: Insult
       playerActionText: Li dius a l'enemic que no te res de muscul... L'enemic sembla
         confos...
-      enemyReactionText: Que es un muscul?
+      enemyReactionText: What's a 'muscle'?
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
         de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
       enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
         donat
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: "Li dius a l'enemic en forma d'acudit que els esquelets no
         surten de festa perqu\xE8 no tenen cos per aguantar-ho. Es posa a riure."
-      enemyReactionText: HAHAHAHA, quin bon acudit HAHAHA
+      enemyReactionText: MUAHAHAHA! That's a rib-tickler! Literally!
       nextNodeId: 1
       requiredItem: {fileID: 0}
   - nodeId: 1
-    enemyEntryText: HAHAHA, em pixaria a sobre... si pogues HAHAHA
+    enemyEntryText: HAHAHA, I'd drop dead if I wasn't already! HAHAHA!
     defaultReactionText: ...
     enableApology: 0
     attackNextNodeId: 7
@@ -76,26 +76,26 @@ MonoBehaviour:
         talent!
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: "Comen\xE7es a plorar despres d'haver fet l'acudit. L'enemic
         s'extranya..."
-      enemyReactionText: Ei... tot be? Potser no era un acudit i m'he equivocat...
+      enemyReactionText: Yo... everything good at home?Potser no era un acudit i m'he equivocat...
         Ho sento...
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
         de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
       enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
         donat
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Insultar
+    - actionName: Insult
       playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: Que es un muscul? No em sona gens ni mica aquesta paraula...
+      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: Li dius en forma d'acudit a l'enemic que el seu menjar preferit
         son les costelles. No pot parar de riure.
       enemyReactionText: HAHAHAHA, clar, perque les costelles son un os de l'esquelet,
@@ -103,38 +103,38 @@ MonoBehaviour:
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 2
-    enemyEntryText: HAHAHAHA, NO PUC PARAR DE RIURE!
+    enemyEntryText: MUAHAHAHA, I CAN'T BREATHE! WAIT, I DONT BREATHE ANYWAY!
     defaultReactionText: ...
     enableApology: 0
     attackNextNodeId: 7
     transitions:
     - actionName: Ballar
-      playerActionText: Balles una mica per rematar l'assumpte. L'enemic queda impresionat.
+      playerActionText: You do a little victory moonwalk. The skeleton is mesmerized.
       enemyReactionText: Ets molt versatil, com un anec! Ho pilles? Perque els anecs
         saben volar, nadar i caminar! HAHAHA
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Comences a plorar  L'enemic es preocupa per tu...
+    - actionName: Cry
+      playerActionText: You start sobbing uncontrollably. The skeleton steps closer.
       enemyReactionText: "Ei... tot b\xE9? Et puc ajudar amb alguna cosa?"
       nextNodeId: 2
       requiredItem: {fileID: 0}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
         de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
       enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
         donat
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Insultar
+    - actionName: Insult
       playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: Que es un muscul? No em sona gens ni mica aquesta paraula...
+      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
       nextNodeId: 2
       requiredItem: {fileID: 0}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: Li preguntes a l'enemic que perque els esquelets no van a
         classe. Abans de poder dir la resposta, ell et talla...
-      enemyReactionText: Oh! Aquesta me la se, perque no tenen cap cap! HAHAHAHA
+      enemyReactionText: Oh! I know this one! Because their hearts aren't in it! HAHAHAHA!
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
   - nodeId: 5
@@ -150,24 +150,24 @@ MonoBehaviour:
         Ho faig b\xE9?"
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Comences a plorar despres de ballar. L'enemic esta confos
-      enemyReactionText: "Ei... tot be? T'has tor\xE7at el tormell quan ballaves?"
+    - actionName: Cry
+      playerActionText: You burst into tears mid-dance. The skeleton stands in awkward silence.
+      enemyReactionText: "Yo... everything good at home?T'has tor\xE7at el tormell quan ballaves?"
       nextNodeId: 5
       requiredItem: {fileID: 0}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
         de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
       enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
         donat!
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Insultar
+    - actionName: Insult
       playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: Que es un muscul? No em sona gens ni mica aquesta paraula...
+      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
       nextNodeId: 5
       requiredItem: {fileID: 0}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: Li dius en forma d'acudit a l'enemic que el seu menjar preferit
         son les costelles. No pot parar de riure.
       enemyReactionText: HAHAHAHA, clar, perque les costelles son un os de l'esquelet,
@@ -175,7 +175,7 @@ MonoBehaviour:
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 6
-    enemyEntryText: Que tal, em moc be?
+    enemyEntryText: How's my form? Do I got the moves like Jagger?
     defaultReactionText: ...
     enableApology: 0
     attackNextNodeId: 7
@@ -186,66 +186,66 @@ MonoBehaviour:
         a tu!
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: "Comen\xE7es a plorar. L'enemic es preocupa per tu..."
-      enemyReactionText: 'Ei... tot be? '
+      enemyReactionText: 'Yo... everything good at home?'
       nextNodeId: 6
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
         de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
       enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
         donat!
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
-    - actionName: Insultar
+    - actionName: Insult
       playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: Que es un muscul? No em sona gens ni mica aquesta paraula...
+      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: Li preguntes a l'enemic que perque els esquelets no van a
         classe. Abans de poder dir la resposta, ell respon...
-      enemyReactionText: Oh! Aquesta me la se, perque no tenen cap cap! HAHAHAHA
+      enemyReactionText: Oh! I know this one! Because their hearts aren't in it! HAHAHAHA!
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
   - nodeId: 7
-    enemyEntryText: 'Tranquil Skell, nomes es una esgarrinxada... '
+    enemyEntryText: 'It's just a scratch, keep it together...'
     defaultReactionText: ...
     enableApology: 1
     attackNextNodeId: 7
     transitions:
     - actionName: Ballar
-      playerActionText: Balles. L'enemic desconfia de les teves accions.
-      enemyReactionText: Acabare amb tu!
+      playerActionText: You inexplicably start dancing. He narrows his eye sockets suspiciously.
+      enemyReactionText: I'm going to turn you into a pile of dust!
       nextNodeId: 7
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Plores. L'enemic desconfia de les teves accions.
-      enemyReactionText: Acabare amb tu!
+    - actionName: Cry
+      playerActionText: You cry crocodile tears. He's not buying it.
+      enemyReactionText: I'm going to turn you into a pile of dust!
       nextNodeId: 7
       requiredItem: {fileID: 0}
-    - actionName: Oferir os
+    - actionName: Offer bone
       playerActionText: Li ofereixes un os a mode de disculpes a l'enemic. Sembla
         que ho accepta.
       enemyReactionText: Ho agraeixo, encara que fa un moment m'has intentat matar...
         pero, perdonable...
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
-    - actionName: Insultar
-      playerActionText: Insultes al creador de l'enemic. No sembla afectar-li.
-      enemyReactionText: M'ho esperava venint de tu.
+    - actionName: Insult
+      playerActionText: You roast his creator. He seems completely unfazed.
+      enemyReactionText: Didn't expect any less from a chaotic meat machine like you.
       nextNodeId: 7
       requiredItem: {fileID: 0}
-    - actionName: Explicar acudit
+    - actionName: Tell a joke
       playerActionText: Intentes deixar anar l'acudit mes divertit del mon, pero
         no se t'acudeix res...
-      enemyReactionText: Oh vaja... quina mala sort, un torn de regal per a mi!
+      enemyReactionText: Oh wow... tough crowd! Guess it's my turn to attack!
       nextNodeId: 7
       requiredItem: {fileID: 0}
-    - actionName: Demanar Disculpes
+    - actionName: Apologize
       playerActionText: Demanes perdo pels teus actes agresius. L'enemic ho enten
         pero tampoc baixa la guardia.
-      enemyReactionText: Entenc.. be, no passa res, pero ara a lluitar!
+      enemyReactionText: I get it... no hard feelings, BUT I'M STILL GONNA CRUSH YOU!
       nextNodeId: 0
       requiredItem: {fileID: 0}

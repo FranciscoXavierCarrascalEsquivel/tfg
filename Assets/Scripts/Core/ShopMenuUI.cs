@@ -169,11 +169,11 @@ public class ShopMenuUI : MonoBehaviour
         
         var buyRT = StretchChild(titleRT, "Buy", 0f, 0f, 0.5f, 1f);
         buyTabBg = buyRT.gameObject.AddComponent<Image>();
-        buyTabTxt = TxtFill(buyRT, "COMPRAR", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        buyTabTxt = TxtFill(buyRT, "BUY", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
         
         var sellRT = StretchChild(titleRT, "Sell", 0.5f, 0f, 1f, 1f);
         sellTabBg = sellRT.gameObject.AddComponent<Image>();
-        sellTabTxt = TxtFill(sellRT, "VENDRE", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        sellTabTxt = TxtFill(sellRT, "SELL", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // Tab indicator simulation
         var indGO = new GameObject("TabKey");
@@ -283,20 +283,21 @@ public class ShopMenuUI : MonoBehaviour
         capTxt    = capRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(capTxt, 26f, new Color(0.5f, 0.5f, 0.5f), FontStyles.Normal, TextAlignmentOptions.Center);
         capTxt.text = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
+        capTxt.text = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
 
         // ─── Zones fixes des del BOTTOM ──────────────────────────────
         float fromBottom = 0f;
 
         // Hint
         var hintRT = BotZone(rightPanel, "Hint", ref fromBottom, H_HINT);
-        TxtFill(hintRT, "FLETXES / WASD  navegar    |    E / INTRO  comprar/vendre    |    TAB  canviar de botiga    |    ESC  tancar",
+        TxtFill(hintRT, "ARROWS / WASD  navigate    |    E / ENTER  buy/sell    |    TAB  switch tab    |    ESC  close",
                 20f, new Color(0.40f, 0.40f, 0.40f), FontStyles.Normal, TextAlignmentOptions.Center);
 
         // EXIT
         var exitRT = BotZone(rightPanel, "Exit", ref fromBottom, H_EXIT, 3f);
         exitBg     = exitRT.gameObject.AddComponent<Image>();
         exitBg.color = new Color(0.12f, 0.22f, 0.38f, 1f);
-        exitTxt   = TxtFill(exitRT, "    [ SORTIR ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
+        exitTxt   = TxtFill(exitRT, "    [ EXIT ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
 
         var escGO = new GameObject("EscKey");
         var escBtnRT = escGO.AddComponent<RectTransform>();
@@ -471,13 +472,13 @@ public class ShopMenuUI : MonoBehaviour
     private void RefreshTabs()
     {
         bool isBuy = (currentMode == ShopMode.Buy);
-        buyTabBg.color = isBuy ? new Color(0.15f, 0.28f, 0.44f, 1f) : new Color(0.06f, 0.10f, 0.18f, 1f);
-        buyTabTxt.color = isBuy ? new Color(0.2f, 0.92f, 1f) : new Color(0.4f, 0.4f, 0.4f);
-        buyTabTxt.text = isBuy ? "COMPRAR" : "       COMPRAR";
+        buyTabBg.color = isBuy ? new Color(0.18f, 0.10f, 0.34f, 1f) : new Color(0.09f, 0.05f, 0.17f, 1f);
+        buyTabTxt.color = isBuy ? new Color(1f, 0.92f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
+        buyTabTxt.text = isBuy ? "BUY" : "       BUY";
         
-        sellTabBg.color = !isBuy ? new Color(0.44f, 0.15f, 0.15f, 1f) : new Color(0.18f, 0.06f, 0.06f, 1f);
-        sellTabTxt.color = !isBuy ? new Color(1f, 0.4f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
-        sellTabTxt.text = !isBuy ? "VENDRE" : "       VENDRE";
+        sellTabBg.color = !isBuy ? new Color(0.34f, 0.10f, 0.18f, 1f) : new Color(0.17f, 0.05f, 0.09f, 1f);
+        sellTabTxt.color = !isBuy ? new Color(1f, 0.5f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
+        sellTabTxt.text = !isBuy ? "SELL" : "       SELL";
 
         if (tabKeyBtnRT != null)
         {
@@ -599,7 +600,7 @@ public class ShopMenuUI : MonoBehaviour
         }
         var e = entries[selIdx];
         detNameTxt.text = currentMode == ShopMode.Sell ? $"{e.idName}  <color=#AAAAAA>x{e.count}</color>" : e.idName;
-        detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(sense ItemProfile)";
+        detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(no ItemProfile)";
         
         int p = 0;
         if (e.profile != null)
@@ -782,10 +783,10 @@ public class ShopMenuUI : MonoBehaviour
                 else if (x==size-3 && y==0) corner = true;
                 else if (x==0 && y>=size-3) corner = true;
                 else if (x==1 && y>=size-2) corner = true;
-                else if (x==2 && y==size-1) corner = true;
+                else if (x==2 && y>=size-1) corner = true;
                 else if (x==size-1 && y>=size-3) corner = true;
                 else if (x==size-2 && y>=size-2) corner = true;
-                else if (x==size-3 && y==size-1) corner = true;
+                else if (x==size-3 && y>=size-1) corner = true;
 
                 tex.SetPixel(x, y, corner ? c : w);
             }
@@ -850,7 +851,7 @@ public class ShopMenuUI : MonoBehaviour
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopInventoryFullMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("L'INVENTARI ESTÀ PLE!"));
+                errorAnim = StartCoroutine(ShowErrorAnim("INVENTORY IS FULL!"));
                 return;
             }
 
@@ -859,7 +860,7 @@ public class ShopMenuUI : MonoBehaviour
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopCantAffordMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("NO TENS PROU OR!"));
+                errorAnim = StartCoroutine(ShowErrorAnim("NOT ENOUGH GOLD!"));
                 return;
             }
 
@@ -880,12 +881,12 @@ public class ShopMenuUI : MonoBehaviour
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopCantAffordMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("NO S'HA POGUT VENDRE L'OBJECTE."));
+                errorAnim = StartCoroutine(ShowErrorAnim("COULD NOT SELL THE ITEM."));
             }
         }
 
         goldTxt.text  = $"{inv.Gold}";
-        capTxt.text   = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
+        capTxt.text   = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
         BuildEntries(inv);
         StartCoroutine(AdjustGrid());
         RefreshDetail(); RefreshHighlights();

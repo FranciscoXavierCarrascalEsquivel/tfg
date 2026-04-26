@@ -13,90 +13,90 @@ MonoBehaviour:
   m_Name: BGSharky
   m_EditorClassIdentifier: Assembly-CSharp::SocialBehaviorTree
   playerActions:
-  - Demanar anecdota
-  - Plorar
-  - Alagar
-  - Espantar
-  - Fer-se el mort
-  menuHeader: 'Accions possibles:'
+  - Ask for a story
+  - Cry
+  - Flatter
+  - Scare
+  - Play dead
+  menuHeader: 'Available Actions:'
   startNodeId: 0
-  friendshipText: Glup, glup, glup! *s'inclina mostrant respecte*
+  friendshipText: *Bows respectfully* Glup, glup, glup!
   friendGoldMin: 7
   friendGoldMax: 10
   nodes:
   - nodeId: 0
-    enemyEntryText: Glup! (Ataca!)
+    enemyEntryText: Glup! (Prepare to be filleted!)
     defaultReactionText: Glup, glup...
     enableApology: 0
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
+    - actionName: Ask for a story
       playerActionText: 'Li demanes a l''enemic si es que et pot explicar alguna
         anecdota interessant. '
       enemyReactionText: Que et penses, que aixo es el bar del poble? Acabare amb
         tu!
       nextNodeId: 
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: Plores suplicant pietat... De sobte, l'enemic se'n adona
         i reacciona.
-      enemyReactionText: Uaaau! Ets un generador infinit d'aigua?
+      enemyReactionText: Whoa! Are you an infinite water generator? That's kinda rad.
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: Li dius a l'enemic que el seu estil es molt guai, que t'agrada
         el seus abdominals i el seu estil futurista. Es posa vermell com un tomaquet.
       enemyReactionText: 'Glup! Glup! Glup! (Aiii! Para! Que mai m''han dit aquestes
         coses tan boniques!) '
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l'enemic.
       enemyReactionText: Glup? Glup (Que et penses que soc, una mosca? Soc un tauro
         amb abdominals).
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
-      enemyReactionText: Glup (Ja em conec aquest truc).
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
+      enemyReactionText: Glup (Nice try, I invented that trick).
       nextNodeId: 0
       requiredItem: {fileID: 0}
   - nodeId: 1
-    enemyEntryText: Glup... (Suficient...)
+    enemyEntryText: Glup... (Alright, that's enough...)
     defaultReactionText: Glup, glup...
     enableApology: 0
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
+    - actionName: Ask for a story
       playerActionText: 'Li demanes a l''enemic si es que et pot explicar quelcom
         sobre com ha pogut a arribar a tenir aquest increible fisic. '
       enemyReactionText: Glup! Glup, glup, glup. (Oh! Doncs mira, tot es basa en
         una bona dieta i esport constant, pero sobretot molta forca de voluntat)
       nextNodeId: 2
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: Plores suplicant pietat... L'enemic ni se'n adona ja que
         esta centrat fent una serie de crunch abdominal.
-      enemyReactionText: Glup, glup, glup,... (Nou, deu, onze,...)
+      enemyReactionText: Glup, glup... (nine, ten, eleven...)
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: Intentes alagar mes a l'enemic, pero te'n adones de que ja
         s'ho has dit tot abans...
-      enemyReactionText: Glup? (Alguna cosa a dir?)
+      enemyReactionText: Glup? (Got anything else?)
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: 'Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l''enemic. Es pensa que l''estas intentant ajudar a alleugerir
         la seva vermellor. '
       enemyReactionText: "Glup! (Gr\xE0cies)."
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
-      enemyReactionText: Glup?? (Que estas fent?)
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
+      enemyReactionText: Glup?? (Bruh, what in the ocean are you doing?)
       nextNodeId: 0
       requiredItem: {fileID: 0}
   - nodeId: 2
@@ -106,35 +106,35 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
-      playerActionText: Li demanes a l'enemic si es que et pot explicar alguna anecdota.
+    - actionName: Ask for a story
+      playerActionText: You ask the shark for another story.
       enemyReactionText: Glup... (Ho faria, pero la veritat es que no tinc res mes
         a explicar)
       nextNodeId: 2
       requiredItem: {fileID: 0}
-    - actionName: Plorar
+    - actionName: Cry
       playerActionText: Plores per la forta forca de voluntat que ha tingut l'enemic
         per aconseguir el fisic que molta gent desitjaria.
       enemyReactionText: Glup... (Ningu mai s'havia sentit tan orgullos per quelcom
         que hagi fet jo...)
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: Intentes alagar mes a l'enemic, pero te'n adones de que ja
         s'ho has dit tot abans...
-      enemyReactionText: Glup? (Alguna cosa a dir?)
+      enemyReactionText: Glup? (Got anything else?)
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: 'Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l''enemic. Es pensa que l''estas intentant ajudar a alleugerir
         la seva vermellor. '
       enemyReactionText: "Glup! (Gr\xE0cies)"
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
-      enemyReactionText: Glup?? (Que estas fent?)
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
+      enemyReactionText: Glup?? (Bruh, what in the ocean are you doing?)
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 4
@@ -144,107 +144,107 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
+    - actionName: Ask for a story
       playerActionText: Li demanes a l'enemic si es que et pot explicar alguna anecdota
         per animar-te, ja que estas trist
       enemyReactionText: Glup! Glup (El que calgui per animar al dispensador d'aigua!
         Vaig perdre la meva aleta dorsal original en una aposta).
       nextNodeId: 5
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: "Mentres t'asseques les llagrimes, li dius a l'enemic que
         admira molt el seu f\xEDsic."
-      enemyReactionText: Glup... (Uau, aixo no m'ho esperava, moltes gracies...)
+      enemyReactionText: Glup... (Wow... that hit me right in the feels. Thanks, bro.)
       nextNodeId: 1
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Intentes plorar mes, pero ja estas sec...
-      enemyReactionText: Glup? (Aleshores, no es infinit?)
+    - actionName: Cry
+      playerActionText: You try to cry more, but you are out of tears.
+      enemyReactionText: Glup? (Wait, so you're not an infinite water glitch?)
       nextNodeId: 4
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: 'Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l''enemic. '
-      enemyReactionText: Glup? (Que estas fent amb la ma?)
+      enemyReactionText: Glup? (What's with the funny hand waving?)
       nextNodeId: 4
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
       enemyReactionText: Glup? (Que estas fent?)
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 5
-    enemyEntryText: Glup... (mai ningu s'havia preocupat per coneixer la meva historia...)
+    enemyEntryText: Glup... (Nobody ever cared enough to ask about my past...)
     defaultReactionText: Glup, glup...
     enableApology: 0
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
+    - actionName: Ask for a story
       playerActionText: Li demanes a l'enemic si es que et pot explicar com ha aconseguit
         aquest fisic tan bo
-      enemyReactionText: Glup, glup, glup... (Dieta, esforc i dedicacio)
+      enemyReactionText: Glup, glup... (Blood, sweat, tears, and lots of plankton.)
       nextNodeId: 2
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: Alagues la valentia de l'enemic per apostar una part del
         seu cos (encara que no sigui lo recomenable).
-      enemyReactionText: Glup... (Uau, aixo no m'ho esperava, moltes gracies...)
+      enemyReactionText: Glup... (Wow... that hit me right in the feels. Thanks, bro.)
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Intentes plorar mes, pero ja estas sec...
-      enemyReactionText: Glup? (Aleshores, no es infinit?)
+    - actionName: Cry
+      playerActionText: You try to cry more, but you are out of tears.
+      enemyReactionText: Glup? (Wait, so you're not an infinite water glitch?)
       nextNodeId: 4
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: 'Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l''enemic. '
-      enemyReactionText: Glup? (Que estas fent amb la ma?)
+      enemyReactionText: Glup? (What's with the funny hand waving?)
       nextNodeId: 4
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
       enemyReactionText: Glup? (Que estas fent?)
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 6
-    enemyEntryText: Gluup... (Aguantaa...)
+    enemyEntryText: Gluup... (Hold the line...)
     defaultReactionText: Glup, glup...
     enableApology: 1
     attackNextNodeId: 6
     transitions:
-    - actionName: Demanar anecdota
+    - actionName: Ask for a story
       playerActionText: Glup?! (Em colpeges i despres em demanes que t'expliqui la
         meva vida?)
-      enemyReactionText: Glup, glup, glup... (Dieta, esforc i dedicacio)
+      enemyReactionText: Glup, glup... (Blood, sweat, tears, and lots of plankton.)
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Alagar
+    - actionName: Flatter
       playerActionText: Alagues la robustesa de l'oponent per soportar el cop que
         li acabes de fer. No sembla gaire content.
-      enemyReactionText: Glup? (Soc el teu ninot de proves o que?)
+      enemyReactionText: Glup? (What am I, a crash test dummy?)
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Plorar
-      playerActionText: Plores, per arrepentiment pel que has fet...
+    - actionName: Cry
+      playerActionText: You cry, deeply regretting the violence...
       enemyReactionText: Glup...glup? (T'ha sabut greu... o sigui que potser no ets
         dolent del tot?)
       nextNodeId: 0
       requiredItem: {fileID: 0}
-    - actionName: Espantar
+    - actionName: Scare
       playerActionText: 'Mous la teva ma oberta de costat en costat, per intentar
         allunyar a l''enemic. '
       enemyReactionText: Glup? (Creus que aconseguiras quelcom movent la ma d'aquesta
         manera?)
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Fer-se el mort
-      playerActionText: Et tires dramaticament al terra per fingir la teva mort.
-      enemyReactionText: Glup, glup (Se que ara estas fingint, pero aviat sera veritat)
+    - actionName: Play dead
+      playerActionText: You dramatically flop to the floor, playing dead.
+      enemyReactionText: Glup! (Keep playing dead, soon you won't have to act!)
       nextNodeId: 6
       requiredItem: {fileID: 0}
-    - actionName: Demanar Disculpes
-      playerActionText: Et disculpes per l'agresivitat mostrada fa uns segons.
+    - actionName: Apologize
+      playerActionText: You apologize for your sudden outburst of violence.
       enemyReactionText: Glup, glup (D'acord, pero a mi que m'expliques, estem enmig
         d'una lluita)
       nextNodeId: 0

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5b1d51fcc3adf54790d63653cc8d59f, type: 3}
-  m_Name: Aigueta
+  m_Name: Water
   m_EditorClassIdentifier: Assembly-CSharp::ItemProfile
-  itemName: Aigueta
+  itemName: Water
   itemDescription: 'A fresh water bottle from Comic Sans Fountain. It heals 25hp. '
   itemIcon: {fileID: -7644904310294725508, guid: e4a0866dfb0b13742af2ec16dad2195b, type: 3}
   effectType: 0

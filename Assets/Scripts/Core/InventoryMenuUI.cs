@@ -99,11 +99,11 @@ public class InventoryMenuUI : MonoBehaviour
         
         var itemsRT = StretchChild(titleRT, "Items", 0f, 0f, 0.5f, 1f);
         itemsTabBg = itemsRT.gameObject.AddComponent<Image>();
-        itemsTabTxt = TxtFill(itemsRT, "OBJECTES", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        itemsTabTxt = TxtFill(itemsRT, "ITEMS", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
         
         var recruitsRT = StretchChild(titleRT, "Recruits", 0.5f, 0f, 1f, 1f);
         recruitsTabBg = recruitsRT.gameObject.AddComponent<Image>();
-        recruitsTabTxt = TxtFill(recruitsRT, "RECLUTATS", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        recruitsTabTxt = TxtFill(recruitsRT, "RECRUITED", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         var indGO = new GameObject("TabKey");
         tabKeyBtnRT = indGO.AddComponent<RectTransform>();
@@ -197,21 +197,21 @@ public class InventoryMenuUI : MonoBehaviour
         capTxt    = capRT.gameObject.AddComponent<TextMeshProUGUI>();
         topOffsetWithDetAndStats = fromTop;
         SetFont(capTxt, 26f, new Color(0.5f, 0.5f, 0.5f), FontStyles.Normal, TextAlignmentOptions.Center);
-        capTxt.text = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
+        capTxt.text = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
 
         // ─── Zones fixes des del BOTTOM ──────────────────────────────
         float fromBottom = 0f;
 
         // Hint
         var hintRT = BotZone(card, "Hint", ref fromBottom, H_HINT);
-        TxtFill(hintRT, "FLETXES / WASD investigar  |  E / INTRO usar  |  TAB pestanya  |  ESC tancar",
+        TxtFill(hintRT, "ARROWS / WASD inspect  |  E / ENTER use  |  TAB switch tab  |  ESC close",
                 20f, new Color(0.40f, 0.40f, 0.40f), FontStyles.Normal, TextAlignmentOptions.Center);
 
         // EXIT
         var exitRT = BotZone(card, "Exit", ref fromBottom, H_EXIT, 3f);
         exitBg     = exitRT.gameObject.AddComponent<Image>();
         exitBg.color = new Color(0.22f, 0.12f, 0.38f, 1f);
-        exitTxt   = TxtFill(exitRT, "    [ SORTIR ]", 38f, new Color(1f, 0.92f, 0.2f), FontStyles.Bold, TextAlignmentOptions.Center);
+        exitTxt   = TxtFill(exitRT, "    [ EXIT ]", 38f, new Color(1f, 0.92f, 0.2f), FontStyles.Bold, TextAlignmentOptions.Center);
 
         var escGO = new GameObject("EscKey");
         var escBtnRT = escGO.AddComponent<RectTransform>();
@@ -436,11 +436,11 @@ public class InventoryMenuUI : MonoBehaviour
         bool isItems = (currentMode == InventoryMode.Items);
         itemsTabBg.color = isItems ? new Color(0.18f, 0.10f, 0.34f, 1f) : new Color(0.09f, 0.05f, 0.17f, 1f);
         itemsTabTxt.color = isItems ? new Color(1f, 0.92f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
-        itemsTabTxt.text = isItems ? "OBJECTES" : "           OBJECTES"; // Extra espais
+        itemsTabTxt.text = isItems ? "ITEMS" : "           ITEMS"; // Extra espais
         
         recruitsTabBg.color = !isItems ? new Color(0.34f, 0.10f, 0.18f, 1f) : new Color(0.17f, 0.05f, 0.09f, 1f);
         recruitsTabTxt.color = !isItems ? new Color(1f, 0.5f, 0.2f) : new Color(0.4f, 0.4f, 0.4f);
-        recruitsTabTxt.text = !isItems ? "RECLUTATS" : "           RECLUTATS"; // Extra espais
+        recruitsTabTxt.text = !isItems ? "RECRUITED" : "           RECRUITED"; // Extra espais
 
         if (tabKeyBtnRT != null)
         {
@@ -639,16 +639,16 @@ public class InventoryMenuUI : MonoBehaviour
         
         if (currentMode == InventoryMode.Items)
         {
-            detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(sense ItemProfile)";
+            detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(no ItemProfile)";
             if (e.profile?.itemIcon != null) { detIconImg.sprite = e.profile.itemIcon; detIconImg.color = Color.white; }
             else detIconImg.color = new Color(1f, 1f, 1f, 0f);
         }
         else
         {
-            detDescTxt.text = "Enemic reclutat a base de conversar.\nAmistat completada.";
+            detDescTxt.text = "Enemy recruited through pacifism.\nFriendship finalized.";
             if (e.enemyProfile != null)
             {
-                detDescTxt.text += $"\n({e.count} / {e.enemyProfile.maxRecruitLimit} disponibles reclutats)";
+                detDescTxt.text += $"\n({e.count} / {e.enemyProfile.maxRecruitLimit} recruited)";
                 if (e.enemyProfile.enemyPortrait != null) { detIconImg.sprite = e.enemyProfile.enemyPortrait; detIconImg.color = Color.white; }
                 else detIconImg.color = new Color(1f, 1f, 1f, 0f);
             }
@@ -751,13 +751,13 @@ public class InventoryMenuUI : MonoBehaviour
                 if (currentMode == InventoryMode.Items)
                 {
                     if (entries[selIdx].profile != null && entries[selIdx].profile.effectType == ItemEffectType.KeyItem)
-                        errorAnim = StartCoroutine(ShowErrorAnim("AQUEST ÉS UN OBJECTE CLAU, ES FA SERVIR AUTOMÀTICAMENT."));
+                        errorAnim = StartCoroutine(ShowErrorAnim("THIS IS A KEY ITEM, IT IS USED AUTOMATICALLY."));
                     else
-                        errorAnim = StartCoroutine(ShowErrorAnim("AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT."));
+                        errorAnim = StartCoroutine(ShowErrorAnim("THIS ITEM CAN ONLY BE USED IN COMBAT."));
                 }
                 else
                 {
-                    errorAnim = StartCoroutine(ShowErrorAnim("ELS ENEMICS RECLUTATS NO ES PODEN UTILITZAR."));
+                    errorAnim = StartCoroutine(ShowErrorAnim("RECRUITED ENEMIES CANNOT BE USED."));
                 }
             }
             else
@@ -769,7 +769,7 @@ public class InventoryMenuUI : MonoBehaviour
     }
 
     private Coroutine errorAnim;
-    private IEnumerator ShowErrorAnim(string msg = "AQUEST OBJECTE NOMÉS ES POT USAR EN COMBAT.")
+    private IEnumerator ShowErrorAnim(string msg = "THIS ITEM CAN ONLY BE USED IN COMBAT.")
     {
         detDescTxt.color = new Color(1f, 0.3f, 0.3f);
         detDescTxt.text = msg;
@@ -835,7 +835,7 @@ public class InventoryMenuUI : MonoBehaviour
 
         hpTxt.text   = $"♥  {inv.CurrentHP} / {inv.MaxHP} HP";
         goldTxt.text  = $"{inv.Gold} G       ";
-        capTxt.text   = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
+        capTxt.text   = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
         BuildEntries(inv);
         selIdx = Mathf.Clamp(selIdx, -1, entries.Count - 1);
         StartCoroutine(AdjustGrid());

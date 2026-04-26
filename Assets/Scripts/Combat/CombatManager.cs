@@ -1667,7 +1667,7 @@ public class CombatManager : MonoBehaviour
         System.Collections.Generic.List<string> displayedActions = new System.Collections.Generic.List<string>(bt.playerActions);
         if (currentNode != null && currentNode.enableApology)
         {
-            displayedActions.Add("Demanar Disculpes");
+            displayedActions.Add("Apologize");
         }
 
         // Construïm el panell d'accions (PANEL LATERAL ESQUERRA)
@@ -1738,8 +1738,8 @@ public class CombatManager : MonoBehaviour
             btnImg.sprite = GetRoundedSprite();
             btnImg.type = Image.Type.Sliced;
             
-            // Color base depenent de si és "Demanar Disculpes"
-            if (actionName == "Demanar Disculpes")
+            // Color base depenent de si és "Apologize"
+            if (actionName == "Apologize")
                 btnImg.color = new Color(0.1f, 0.35f, 0.15f, 1f); // Verd fosc
             else
                 btnImg.color = new Color(0.18f, 0.18f, 0.32f, 1f); // Blau fosc estàndard
@@ -1775,7 +1775,7 @@ public class CombatManager : MonoBehaviour
             for (int i = 0; i < actionCount; i++)
             {
                 bool isSelected = (i == keyboardIndex);
-                if (displayedActions[i] == "Demanar Disculpes")
+                if (displayedActions[i] == "Apologize")
                 {
                     btnImages[i].color = isSelected ? new Color(0.2f, 0.6f, 0.25f, 1f) : new Color(0.1f, 0.35f, 0.15f, 1f);
                 }
