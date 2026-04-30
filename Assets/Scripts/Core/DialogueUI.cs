@@ -43,6 +43,12 @@ public class DialogueUI : MonoBehaviour
     private GameObject nameBoxGO;
     private CanvasGroup eBtnGroup;
     private RectTransform eTextRT;
+    private CanvasGroup fBtnGroup;
+    private RectTransform fTextRT;
+    private RectTransform fContainerRT;
+    private float skipHoldTime;
+    private const float SkipHoldRequired = 0.5f;
+    private Vector3[] panelCorners = new Vector3[4]; // reused buffer
     private RectTransform dividerRT;
     private RectTransform portRT;
     private Image panelBgImg;
@@ -74,33 +80,80 @@ public class DialogueUI : MonoBehaviour
 
     private void Update()
     {
-        if (eBtnGroup != null && eTextRT != null)
+        if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
-            if (isOpen && !isHiding && !isReopening && currentPanelGO.activeSelf && !isTyping)
+            // F Button (Skip) Logic
+            if (Input.GetKey(KeyCode.F))
             {
-                if (isSelectingChoice) { eBtnGroup.alpha = 0f; }
-                else
+                skipHoldTime += Time.unscaledDeltaTime;
+                if (fTextRT != null) fTextRT.anchoredPosition = Vector2.zero; // Press down visually
+                
+                if (skipHoldTime >= SkipHoldRequired)
+                {
+                    skipHoldTime = 0f;
+                    Hide();
+                    return;
+                }
+            }
+            else
+            {
+                skipHoldTime = 0f;
+                float fCycle = Time.unscaledTime * 1.5f + 0.5f; 
+                bool fIsPressed = (fCycle % 1f) > 0.7f;
+                if (fTextRT != null) fTextRT.anchoredPosition = fIsPressed ? Vector2.zero : new Vector2(0f, 4f);
+            }
+
+            if (fBtnGroup != null) fBtnGroup.alpha = 1f;
+
+            // E Button Logic
+            if (eBtnGroup != null && eTextRT != null)
+            {
+                if (!isTyping && !isSelectingChoice)
                 {
                     eBtnGroup.alpha = 1f;
                     float cycle = Time.unscaledTime * 1.5f;
                     bool isPressed = (cycle % 1f) > 0.7f;
                     eTextRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
                 }
+                else
+                {
+                    eBtnGroup.alpha = 0f;
+                }
             }
-            else
-            {
-                eBtnGroup.alpha = 0f;
-            }
+        }
+        else
+        {
+            if (eBtnGroup != null) eBtnGroup.alpha = 0f;
+            if (fBtnGroup != null) fBtnGroup.alpha = 0f;
+            skipHoldTime = 0f;
         }
 
         if (isSelectingChoice && choiceTexts.Count > 0)
         {
+            bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+            bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
             bool up = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
             bool down = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
             bool moved = false;
 
-            if (up) { selectedChoiceIdx--; if (selectedChoiceIdx < 0) selectedChoiceIdx = choiceTexts.Count - 1; moved = true; }
-            if (down) { selectedChoiceIdx++; if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx = 0; moved = true; }
+            int cols = 4;
+
+            if (left) { selectedChoiceIdx--; if (selectedChoiceIdx < 0) selectedChoiceIdx = choiceTexts.Count - 1; moved = true; }
+            if (right) { selectedChoiceIdx++; if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx = 0; moved = true; }
+
+            if (up) 
+            { 
+                if (selectedChoiceIdx >= cols) selectedChoiceIdx -= cols; 
+                else selectedChoiceIdx = (choiceTexts.Count - 1) - ((choiceTexts.Count - 1) % cols) + selectedChoiceIdx;
+                if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx = choiceTexts.Count - 1;
+                moved = true; 
+            }
+            if (down) 
+            { 
+                selectedChoiceIdx += cols; 
+                if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx %= cols; 
+                moved = true; 
+            }
 
             if (moved) 
             {
@@ -110,6 +163,15 @@ public class DialogueUI : MonoBehaviour
                     ItemSoundPlayer.Play(PlayerInventory.Instance.navSound);
                 }
             }
+        }
+
+        // Track F container to follow the panel position (including animations)
+        if (fContainerRT != null && panelRect != null)
+        {
+            panelRect.GetWorldCorners(panelCorners); // 0=bottom-left, 1=top-left, 2=top-right, 3=bottom-right
+            // Position below the bottom-left corner of the panel
+            Vector3 bottomLeft = panelCorners[0];
+            fContainerRT.position = new Vector3(bottomLeft.x, bottomLeft.y - 10f, bottomLeft.z);
         }
     }
 
@@ -653,16 +715,84 @@ public class DialogueUI : MonoBehaviour
         eTextComp.text = "E";
         eTextComp.margin = new Vector4(2f, 2f, 0f, 0f);
 
+        // Button F Indicator (Skip) — parented to canvas, not panel, so it sits outside the box
+        var fContainerGO = new GameObject("F_Container");
+        fContainerGO.transform.SetParent(canvas.transform, false);
+        fContainerRT = fContainerGO.AddComponent<RectTransform>();
+        fContainerRT.sizeDelta = new Vector2(250f, 48f);
+        fContainerRT.pivot = new Vector2(0f, 1f); // top-left pivot so we can place it just below the panel
+        // Position will be set dynamically in LayoutUI
+        var fcRT = fContainerRT;
+
+        fBtnGroup = fContainerGO.AddComponent<CanvasGroup>();
+        fBtnGroup.alpha = 0f;
+
+        var fBoxGO = new GameObject("F_Button");
+        fBoxGO.transform.SetParent(fContainerGO.transform, false);
+        var fRT = fBoxGO.AddComponent<RectTransform>();
+        fRT.anchorMin = new Vector2(0f, 0.5f); fRT.anchorMax = new Vector2(0f, 0.5f);
+        fRT.sizeDelta = new Vector2(48f, 48f);
+        fRT.pivot = new Vector2(0f, 0.5f);
+        fRT.anchoredPosition = new Vector2(0f, 0f);
+
+        var fBase = new GameObject("Base");
+        fBase.transform.SetParent(fRT, false);
+        var fBaseRT = fBase.AddComponent<RectTransform>();
+        fBaseRT.anchorMin = Vector2.zero; fBaseRT.anchorMax = Vector2.one;
+        fBaseRT.offsetMin = fBaseRT.offsetMax = Vector2.zero;
+        var fbImg = fBase.AddComponent<Image>();
+        fbImg.color = new Color(0.2f, 0.2f, 0.2f, 1f); 
+        var fbOl = fBase.AddComponent<Outline>();
+        fbOl.effectColor = new Color(0.05f, 0.05f, 0.05f, 1f);
+        fbOl.effectDistance = new Vector2(2f, -2f);
+
+        var fTop = new GameObject("Top");
+        fTop.transform.SetParent(fRT, false);
+        fTextRT = fTop.AddComponent<RectTransform>(); 
+        fTextRT.anchorMin = Vector2.zero; fTextRT.anchorMax = Vector2.one;
+        fTextRT.offsetMin = fTextRT.offsetMax = Vector2.zero;
+        fTextRT.anchoredPosition = new Vector2(0f, 4f); 
+
+        var ftImg = fTop.AddComponent<Image>();
+        ftImg.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+        var ftOl = fTop.AddComponent<Outline>();
+        ftOl.effectColor = new Color(0.05f, 0.05f, 0.05f, 1f);
+        ftOl.effectDistance = new Vector2(2f, -2f);
+
+        var fLetterGO = new GameObject("Letter");
+        fLetterGO.transform.SetParent(fTextRT, false);
+        var flRT = fLetterGO.AddComponent<RectTransform>();
+        flRT.anchorMin = Vector2.zero; flRT.anchorMax = Vector2.one;
+        flRT.offsetMin = flRT.offsetMax = Vector2.zero;
+
+        var fTextComp = fLetterGO.AddComponent<TextMeshProUGUI>();
+        SetFont(fTextComp, 36f, new Color(0.05f, 0.05f, 0.05f, 1f), FontStyles.Bold, TextAlignmentOptions.Center); 
+        fTextComp.text = "F";
+        fTextComp.margin = new Vector4(2f, 2f, 0f, 0f);
+
+        var skipTextGO = new GameObject("SkipText");
+        skipTextGO.transform.SetParent(fContainerGO.transform, false);
+        var stRT = skipTextGO.AddComponent<RectTransform>();
+        stRT.anchorMin = new Vector2(0f, 0.5f); stRT.anchorMax = new Vector2(0f, 0.5f);
+        stRT.sizeDelta = new Vector2(200f, 48f);
+        stRT.pivot = new Vector2(0f, 0.5f);
+        stRT.anchoredPosition = new Vector2(60f, 0f); 
+
+        var stComp = skipTextGO.AddComponent<TextMeshProUGUI>();
+        SetFont(stComp, 26f, new Color(0.8f, 0.8f, 0.8f, 1f), FontStyles.Bold, TextAlignmentOptions.Left);
+        stComp.text = "Hold to skip";
+
         // Branching Choices Box
         var chGO = new GameObject("ChoicePanel");
         chGO.transform.SetParent(panelRect, false);
         choicePanelRT = chGO.AddComponent<RectTransform>();
-        choicePanelRT.pivot = new Vector2(1f, 0f); // Baix Dreta
-        var chVLG = chGO.AddComponent<VerticalLayoutGroup>();
-        chVLG.childAlignment = TextAnchor.LowerRight;
-        chVLG.spacing = 10f;
-        chVLG.childForceExpandHeight = false;
-        chVLG.childForceExpandWidth = true;
+        choicePanelRT.pivot = new Vector2(0.5f, 0f);
+        var chGLG = chGO.AddComponent<GridLayoutGroup>();
+        chGLG.childAlignment = TextAnchor.LowerCenter;
+        chGLG.spacing = new Vector2(10f, 10f);
+        chGLG.cellSize = new Vector2(350f, 85f);
+        chGLG.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        chGLG.constraintCount = 4;
 
         currentPanelGO.SetActive(false);
     }
@@ -696,7 +826,10 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = new Vector2(10f, 5f); tRT.offsetMax = new Vector2(-10f, -5f);
             
             var txt = txtGO.AddComponent<TextMeshProUGUI>();
-            SetFont(txt, 55f, Color.white, FontStyles.Bold, TextAlignmentOptions.Right); // Increased text
+            SetFont(txt, 45f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center); // Adjusted for grid
+            txt.enableAutoSizing = true;
+            txt.fontSizeMin = 24f;
+            txt.fontSizeMax = 55f;
             txt.text = currentLineChoices[i].text;
             
             choiceTexts.Add(txt);
@@ -774,11 +907,15 @@ public class DialogueUI : MonoBehaviour
             panelRect.anchorMax = new Vector2(0.88f, 0.92f);
             if (choicePanelRT != null)
             {
-                choicePanelRT.anchorMin = new Vector2(1f, 0f);
+                choicePanelRT.anchorMin = new Vector2(0f, 0f);
                 choicePanelRT.anchorMax = new Vector2(1f, 0f);
-                choicePanelRT.anchoredPosition = new Vector2(0f, -60f); // Salten per sota de la conversa si està dalt
-                choicePanelRT.sizeDelta = new Vector2(400f, 20f);
+                choicePanelRT.pivot = new Vector2(0.5f, 1f); // Grow downwards
+                var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
+                if (glg != null) glg.childAlignment = TextAnchor.UpperCenter;
+                choicePanelRT.anchoredPosition = new Vector2(0f, -20f); // Just below
+                choicePanelRT.sizeDelta = new Vector2(0f, 20f); // Stretch width
             }
+
         }
         else
         {
@@ -786,11 +923,15 @@ public class DialogueUI : MonoBehaviour
             panelRect.anchorMax = new Vector2(0.88f, 0.34f); // Increased panel proportion (from 0.27f)
             if (choicePanelRT != null)
             {
-                choicePanelRT.anchorMin = new Vector2(1f, 1f);
+                choicePanelRT.anchorMin = new Vector2(0f, 1f);
                 choicePanelRT.anchorMax = new Vector2(1f, 1f);
-                choicePanelRT.anchoredPosition = new Vector2(0f, 60f); // Salten per dalt de la conversa si està baix
-                choicePanelRT.sizeDelta = new Vector2(400f, 20f);
+                choicePanelRT.pivot = new Vector2(0.5f, 0f); // Grow upwards
+                var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
+                if (glg != null) glg.childAlignment = TextAnchor.LowerCenter;
+                choicePanelRT.anchoredPosition = new Vector2(0f, 20f); // Just above
+                choicePanelRT.sizeDelta = new Vector2(0f, 20f); // Stretch width
             }
+
         }
         
         panelRect.offsetMin = Vector2.zero;
@@ -921,7 +1062,7 @@ public class DialogueUI : MonoBehaviour
     private IEnumerator AnimateIn()
     {
         panelGroup.alpha = 1f;
-        float slideDist = 350f;
+        float slideDist = 800f;
         Vector2 offset = new Vector2(0f, isCurrentOnTop ? slideDist : -slideDist);
         panelRect.anchoredPosition = shownPos + offset;
         panelRect.localScale = Vector3.one;
@@ -946,7 +1087,7 @@ public class DialogueUI : MonoBehaviour
     {
         panelGroup.alpha = 1f;
         Vector2 startPos = panelRect.anchoredPosition;
-        float slideDist = 350f;
+        float slideDist = 800f;
         Vector2 offset = new Vector2(0f, isCurrentOnTop ? slideDist : -slideDist);
         Vector2 endPos = shownPos + offset;
 
@@ -980,7 +1121,7 @@ public class DialogueUI : MonoBehaviour
     {
         if (panelRect != null) 
         {
-            float slideDist = 350f;
+            float slideDist = 800f;
             Vector2 offset = new Vector2(0f, isCurrentOnTop ? slideDist : -slideDist);
             panelRect.anchoredPosition = shownPos + offset;
             panelRect.localScale = Vector3.one;
