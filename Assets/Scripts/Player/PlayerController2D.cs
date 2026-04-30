@@ -38,7 +38,7 @@ public class PlayerController2D : MonoBehaviour
     
     private Vector2 lastPos;
     private float timeSinceLastMove;
-    private const float MOVEMENT_TIMEOUT = 0.05f; // Temps sense moviment real abans de considerar que estem parats
+    private const float MOVEMENT_TIMEOUT = 0.15f; // Temps sense moviment real abans de considerar que estem parats
     
     private float distanceWalkedSinceEncounter = 3f; // Gràcia inicial en començar l'escena (3 metres)
     private float encounterSuppressionTimer = 0f;    // Temps de gràcia forçat per factors externs
@@ -136,9 +136,13 @@ public class PlayerController2D : MonoBehaviour
         {
             timeSinceLastMove = 0f;
         }
-        else
+        else if (isMovingInput)
         {
             timeSinceLastMove += Time.deltaTime;
+        }
+        else
+        {
+            timeSinceLastMove = 0f;
         }
 
         // Recuperem la posició actual per al següent frame
@@ -169,7 +173,7 @@ public class PlayerController2D : MonoBehaviour
                 if (walkSoundTimer <= 0f && walkSound != null)
                 {
                     ItemSoundPlayer.Play(walkSound);
-                    walkSoundTimer = isRunning ? walkSoundInterval * 0.65f : walkSoundInterval;
+                    walkSoundTimer = isRunning ? walkSoundInterval * 0.8f : walkSoundInterval;
                 }
             }
         }
