@@ -107,6 +107,10 @@ public class Interactable : MonoBehaviour
     [SerializeField] private DialogueLine[] lines;
 
     private int interactionCount = 0;
+    private bool everInteracted = false;
+
+    /// <summary>Cert si el jugador ha interactuat almenys una vegada amb aquest objecte (no es reseteja mai).</summary>
+    public bool HasBeenInteracted => everInteracted;
 
     public void SetNextInteractionVersion(int versionIndex)
     {
@@ -127,7 +131,6 @@ public class Interactable : MonoBehaviour
         if (versions != null && versions.Length > 0)
         {
             int idx = Mathf.Min(interactionCount, versions.Length - 1);
-            interactionCount++;
             linesToReturn = versions[idx]?.lines ?? new DialogueLine[0];
         }
         // Fallback: l'antic camp lines
@@ -148,6 +151,10 @@ public class Interactable : MonoBehaviour
                 }
             };
         }
+
+        // Incrementem sempre, independentment del camí usat
+        interactionCount++;
+        everInteracted = true;
 
         if (linesToReturn != null)
         {

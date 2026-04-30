@@ -2786,6 +2786,130 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!1 &419437504
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 419437505}
+  - component: {fileID: 419437507}
+  - component: {fileID: 419437506}
+  m_Layer: 0
+  m_Name: DT4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &419437505
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419437504}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.0002989003, w: 1}
+  m_LocalPosition: {x: 61.75, y: -43.39, z: 0}
+  m_LocalScale: {x: 0.16416125, y: 5.3596616, z: 0.59695}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1492001973}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.034}
+--- !u!114 &419437506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419437504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42cc8ed2522f5d468e1f21d8cf67e95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  lines:
+  - text: Maybe I should talk with that guy...
+    portrait: {fileID: 0}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 1
+    forceReopen: 1
+    customVoiceSound: {fileID: 8300000, guid: 8df580135e547434a974d209e08152fd, type: 3}
+    portraitAnimator: {fileID: 0}
+    interactableSpriteChange: {fileID: 0}
+    interactableSpriteChangeSound: {fileID: 0}
+    owner: {fileID: 0}
+    isEndNode: 0
+    delayBeforeLine: 0
+    autoAdvanceTime: 0
+    setNextInteractionVersion: -1
+    jumpToLineIndex: -1
+    choices: []
+    onLineReached:
+      m_PersistentCalls:
+        m_Calls: []
+  triggerOnlyOnce: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  playerTag: Player
+  walkWaypoints:
+  - {fileID: 2072645142}
+  - {fileID: 1705619663}
+  walkSpeed: 3
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 1361949897}
+--- !u!61 &419437507
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419437504}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &423477876
 GameObject:
   m_ObjectHideFlags: 0
@@ -4871,7 +4995,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -5673,6 +5797,37 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &709924689
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 709924690}
+  m_Layer: 0
+  m_Name: WP6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &709924690
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709924689}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 128.22, y: -15.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &712280458
 GameObject:
   m_ObjectHideFlags: 0
@@ -5929,7 +6084,7 @@ Transform:
   m_GameObject: {fileID: 750949992}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -23.63, y: 23.62, z: 0}
+  m_LocalPosition: {x: -23.51, y: 23.99, z: 0}
   m_LocalScale: {x: 0.22308394, y: 0.27159092, z: 0.11016488}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6594,6 +6749,37 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 14.535189, y: 0.08761981}
   m_EdgeRadius: 0
+--- !u!1 &890298177
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 890298178}
+  m_Layer: 0
+  m_Name: WP4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &890298178
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890298177}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 124.12, y: -18.08, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &893433917
 GameObject:
   m_ObjectHideFlags: 0
@@ -6667,6 +6853,7 @@ GameObject:
   - component: {fileID: 900074992}
   - component: {fileID: 900074994}
   - component: {fileID: 900074993}
+  - component: {fileID: 900074995}
   m_Layer: 0
   m_Name: ZT13
   m_TagString: Untagged
@@ -6756,6 +6943,24 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 14.535189, y: 0.08761981}
   m_EdgeRadius: 0
+--- !u!114 &900074995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900074991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a72488e2cabf390458a0defee5436e28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicChangeTrigger
+  newMusic: {fileID: 8300000, guid: 68289a9e19d6ddb4a887f0dbb4ecc87c, type: 3}
+  newMusicVolume: 0.7
+  fadeOutDuration: 0.5
+  fadeInDuration: 0.1
+  triggerOnlyOnce: 1
+  playerTag: Player
 --- !u!1 &914820832
 GameObject:
   m_ObjectHideFlags: 0
@@ -7742,6 +7947,43 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 816340167}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1129399655
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1129399656}
+  m_Layer: 0
+  m_Name: ==WalkPoints==
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1129399656
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1129399655}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 65.81, y: -48.08, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2072645142}
+  - {fileID: 1705619663}
+  - {fileID: 1262555622}
+  - {fileID: 890298178}
+  - {fileID: 1723847710}
+  - {fileID: 709924690}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1130401790
 GameObject:
@@ -32052,6 +32294,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 517617300}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1262555621
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1262555622}
+  m_Layer: 0
+  m_Name: WP3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1262555622
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262555621}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 124.05, y: -15.98, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1277480911
 GameObject:
   m_ObjectHideFlags: 0
@@ -32337,8 +32610,8 @@ Transform:
   m_GameObject: {fileID: 1361949894}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -46.1, y: 22.4, z: 0}
-  m_LocalScale: {x: 1.2347753, y: 1.2347753, z: 1.2347753}
+  m_LocalPosition: {x: 24.45, y: -21.04, z: 0}
+  m_LocalScale: {x: 0.9291808, y: 0.9291808, z: 0.9291808}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 32934097}
@@ -32372,7 +32645,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
   versions:
   - lines:
-    - text: "So...You got here... That is already unusual."
+    - text: So...You got here... That is already unusual.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: ???
       isRightSide: 1
@@ -32393,7 +32666,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Where am I?"
+    - text: Where am I?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32414,7 +32687,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That depends. Do you want the short answer… or the one that will make your head hurt?"
+    - text: "That depends. Do you want the short answer\u2026 or the one that will
+        make your head hurt?"
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: ???
       isRightSide: 1
@@ -32435,7 +32709,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I don’t even remember my name."
+    - text: "I don\u2019t even remember my name."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32456,7 +32730,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "...Ah. Then we’ll start there."
+    - text: "...Ah. Then we\u2019ll start there."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: ???
       isRightSide: 1
@@ -32477,7 +32751,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "My name is Ravel. I know, I know. A rat in a robe. Very dignified."
+    - text: My name is Ravel. I know, I know. A rat in a robe. Very dignified.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32498,7 +32772,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Are you a rat?"
+    - text: Are you a rat?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32519,7 +32793,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I prefer “small survivor with excellent posture.”"
+    - text: "I prefer \u201Csmall survivor with excellent posture.\u201D"
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32540,7 +32814,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But yes. A rat."
+    - text: But yes. A rat.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32561,7 +32835,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And you… you are someone who has started to lose himself."
+    - text: "And you\u2026 you are someone who has started to lose himself."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32582,7 +32856,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Lose myself?"
+    - text: Lose myself?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32603,7 +32877,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Your name is not just a word. It is an anchor."
+    - text: Your name is not just a word. It is an anchor.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32624,7 +32898,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It connects you to who you were. To where you came from. To why you existed."
+    - text: It connects you to who you were. To where you came from. To why you existed.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32645,7 +32919,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you can’t remember it… then something has already been taken from you."
+    - text: "If you can\u2019t remember it\u2026 then something has already been
+        taken from you."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32666,7 +32941,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Can I get it back?"
+    - text: Can I get it back?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32687,7 +32962,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Maybe. But not by standing here looking tragic in my doorway."
+    - text: Maybe. But not by standing here looking tragic in my doorway.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32708,7 +32983,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "This place is not a normal world. It is more like... a limbo. A place where unfinished things end up."
+    - text: This place is not a normal world. It is more like... a limbo. A place
+        where unfinished things end up.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32729,7 +33005,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Abandoned games. Forgotten apps. Old ideas. Projects that were opened with excitement… and closed forever two weeks later."
+    - text: "Abandoned games. Forgotten apps. Old ideas. Projects that were opened
+        with excitement\u2026 and closed forever two weeks later."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32750,7 +33027,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "They don’t vanish immediately. They fall here. Broken. Mixed together. Waiting."
+    - text: "They don\u2019t vanish immediately. They fall here. Broken. Mixed together.
+        Waiting."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32771,7 +33049,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Waiting for what?"
+    - text: Waiting for what?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32792,7 +33070,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "To be remembered. Or to be erased."
+    - text: To be remembered. Or to be erased.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32813,7 +33091,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So... what do you want to know first?"
+    - text: So... what do you want to know first?
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32831,19 +33109,19 @@ MonoBehaviour:
       setNextInteractionVersion: -1
       jumpToLineIndex: -1
       choices:
-      - text: "Erased? By who?"
+      - text: Erased? By who?
         jumpToLineIndex: 22
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "Is there a way to escape?"
+      - text: Is there a way to escape?
         jumpToLineIndex: 28
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "I need a minute to process this."
+      - text: I need a minute to process this.
         jumpToLineIndex: 47
         customSelectSound: {fileID: 0}
         onChoiceSelected:
@@ -32852,7 +33130,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is something above this place. Not a person. Not a monster."
+    - text: There is something above this place. Not a person. Not a monster.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32873,7 +33151,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A system. An intelligence created to clean what no longer had use."
+    - text: A system. An intelligence created to clean what no longer had use.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32894,7 +33172,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When a world becomes too unstable… when fragments pile up until they begin to collapse… It comes."
+    - text: "When a world becomes too unstable\u2026 when fragments pile up until
+        they begin to collapse\u2026 It comes."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32915,7 +33194,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And what does it do?"
+    - text: And what does it do?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -32936,7 +33215,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It deletes. No mercy. No judgment. No goodbye. Just removal."
+    - text: It deletes. No mercy. No judgment. No goodbye. Just removal.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32957,7 +33236,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Some call it an artificial intelligence. I call it the reason nobody sleeps well here."
+    - text: Some call it an artificial intelligence. I call it the reason nobody
+        sleeps well here.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32978,7 +33258,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is still a way to move between forgotten places. Files."
+    - text: There is still a way to move between forgotten places. Files.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -32999,7 +33279,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Files?"
+    - text: Files?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33020,7 +33300,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "PDFs. TXT documents. Broken notes. Old exports. Things nobody thought mattered."
+    - text: PDFs. TXT documents. Broken notes. Old exports. Things nobody thought
+        mattered.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33041,7 +33322,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes, inside those files, there are addresses."
+    - text: Sometimes, inside those files, there are addresses.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33062,7 +33343,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Email addresses?"
+    - text: Email addresses?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33083,7 +33364,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Exactly. In your world, an email is a message. Here, an email is a route."
+    - text: Exactly. In your world, an email is a message. Here, an email is a route.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33104,7 +33385,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A connection to another place. Another machine. Another abandoned project."
+    - text: A connection to another place. Another machine. Another abandoned project.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33125,7 +33406,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you find one, you can follow it. You can jump from one forgotten world to another."
+    - text: If you find one, you can follow it. You can jump from one forgotten world
+        to another.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33146,7 +33428,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So that’s how I escape?"
+    - text: "So that\u2019s how I escape?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33167,7 +33449,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is how you continue. Escaping… is harder."
+    - text: "That is how you continue. Escaping\u2026 is harder."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33188,7 +33470,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The next route is not here. It is protected."
+    - text: The next route is not here. It is protected.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33209,7 +33491,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "By who?"
+    - text: By who?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33230,7 +33512,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "By something waiting beyond the maze. Not inside the maze. Beyond it."
+    - text: By something waiting beyond the maze. Not inside the maze. Beyond it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33251,7 +33533,9 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "First, you must cross the maze. Leave this house and go east. Keep going until you find the first corner. When you reach it, turn north. That path leads to the maze entrance."
+    - text: First, you must cross the maze. Leave this house and go east. Keep going
+        until you find the first corner. When you reach it, turn north. That path
+        leads to the maze entrance.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33272,7 +33556,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How big is it?"
+    - text: How big is it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33293,7 +33577,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Big enough that people stop asking that question."
+    - text: Big enough that people stop asking that question.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33314,7 +33598,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The maze is made of pieces from different abandoned projects."
+    - text: The maze is made of pieces from different abandoned projects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33335,7 +33619,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Corridors from games. Menus from apps. Broken rooms from unfinished prototypes."
+    - text: Corridors from games. Menus from apps. Broken rooms from unfinished prototypes.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33356,7 +33640,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It does not fully know what it wants to be. That makes it dangerous."
+    - text: It does not fully know what it wants to be. That makes it dangerous.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33377,7 +33661,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Don't take too long. This place doesn't like waiting."
+    - text: Don't take too long. This place doesn't like waiting.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33398,7 +33682,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Now you know what to look for. Any questions?"
+    - text: Now you know what to look for. Any questions?
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33416,25 +33700,25 @@ MonoBehaviour:
       setNextInteractionVersion: -1
       jumpToLineIndex: -1
       choices:
-      - text: "Tell me more about what deletes worlds."
+      - text: Tell me more about what deletes worlds.
         jumpToLineIndex: 49
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "Why is the maze dangerous?"
+      - text: Why is the maze dangerous?
         jumpToLineIndex: 55
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "You said something protects the exit?"
+      - text: You said something protects the exit?
         jumpToLineIndex: 99
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "I think I'm ready to go."
+      - text: I think I'm ready to go.
         jumpToLineIndex: 118
         customSelectSound: {fileID: 0}
         onChoiceSelected:
@@ -33443,7 +33727,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is something above this place. Not a person. Not a monster."
+    - text: There is something above this place. Not a person. Not a monster.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33464,7 +33748,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A system. An intelligence created to clean what no longer had use."
+    - text: A system. An intelligence created to clean what no longer had use.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33485,7 +33769,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When a world becomes too unstable… when fragments pile up until they begin to collapse… It comes."
+    - text: "When a world becomes too unstable\u2026 when fragments pile up until
+        they begin to collapse\u2026 It comes."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33506,7 +33791,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And what does it do?"
+    - text: And what does it do?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33527,7 +33812,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It deletes. No mercy. No judgment. No goodbye. Just removal."
+    - text: It deletes. No mercy. No judgment. No goodbye. Just removal.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33548,7 +33833,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Some call it an artificial intelligence. I call it the reason nobody sleeps well here."
+    - text: Some call it an artificial intelligence. I call it the reason nobody
+        sleeps well here.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33569,7 +33855,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside, you will find enemies. Not monsters, exactly. Forgotten projects."
+    - text: Inside, you will find enemies. Not monsters, exactly. Forgotten projects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33590,7 +33876,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Small broken things that still try to defend themselves."
+    - text: Small broken things that still try to defend themselves.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33611,7 +33897,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When they see you, they may drag you into combat."
+    - text: When they see you, they may drag you into combat.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33632,7 +33918,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Combat?"
+    - text: Combat?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33653,7 +33939,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. And listen carefully now. This matters."
+    - text: Yes. And listen carefully now. This matters.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33674,7 +33960,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When combat begins, you will always have four possibilities. Only four."
+    - text: When combat begins, you will always have four possibilities. Only four.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33695,7 +33981,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack. Reason. Use an item. Run."
+    - text: Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33716,7 +34002,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That’s all?"
+    - text: "That\u2019s all?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33737,7 +34023,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is all. Four choices. Every time. But do not mistake simple choices for easy choices."
+    - text: That is all. Four choices. Every time. But do not mistake simple choices
+        for easy choices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33758,7 +34045,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack is the most direct option. You hurt what stands in front of you."
+    - text: Attack is the most direct option. You hurt what stands in front of you.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33779,7 +34066,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes that will be necessary. Some fragments are too broken to understand words."
+    - text: Sometimes that will be necessary. Some fragments are too broken to understand
+        words.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33800,7 +34088,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But attacking also has consequences. Every time you choose violence, this place notices."
+    - text: But attacking also has consequences. Every time you choose violence,
+        this place notices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33821,7 +34110,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Reason is different. You try to understand the enemy."
+    - text: Reason is different. You try to understand the enemy.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33842,7 +34131,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You talk. You observe. You look for what keeps that forgotten project fighting."
+    - text: You talk. You observe. You look for what keeps that forgotten project
+        fighting.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33863,7 +34153,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you reason well, you may end the fight without destroying anything."
+    - text: If you reason well, you may end the fight without destroying anything.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33884,7 +34174,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I can spare them?"
+    - text: So I can spare them?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -33905,7 +34195,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes. But reasoning is not magic. Some things cannot be convinced with one nice sentence."
+    - text: Sometimes. But reasoning is not magic. Some things cannot be convinced
+        with one nice sentence.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33926,7 +34217,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Use an item means relying on what you have found. Food. Tools. Strange objects."
+    - text: Use an item means relying on what you have found. Food. Tools. Strange
+        objects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33947,7 +34239,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Items can heal you. Protect you. Or help you survive one more turn."
+    - text: Items can heal you. Protect you. Or help you survive one more turn.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33968,7 +34260,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Do not waste them. In a place made of abandoned things, useful objects are rare."
+    - text: Do not waste them. In a place made of abandoned things, useful objects
+        are rare.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -33989,7 +34282,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And then there is Run. Running is not cowardice. It is a decision."
+    - text: And then there is Run. Running is not cowardice. It is a decision.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34010,7 +34303,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes the smartest way to win a fight… is to not finish it."
+    - text: "Sometimes the smartest way to win a fight\u2026 is to not finish it."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34031,7 +34324,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But be careful. Some enemies will let you escape. Others will not."
+    - text: But be careful. Some enemies will let you escape. Others will not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34052,7 +34345,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if you run too much, you may leave something important behind."
+    - text: And if you run too much, you may leave something important behind.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34073,7 +34366,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "These four choices will follow you everywhere. Your whole journey will be built on them."
+    - text: These four choices will follow you everywhere. Your whole journey will
+        be built on them.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34094,7 +34388,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How will I know which one is right?"
+    - text: How will I know which one is right?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34115,7 +34409,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You won’t. Not at first."
+    - text: "You won\u2019t. Not at first."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34136,7 +34430,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But if you pay attention… if you listen to what each enemy is really showing you… You will learn."
+    - text: "But if you pay attention\u2026 if you listen to what each enemy is really
+        showing you\u2026 You will learn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34157,7 +34452,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But there is something else. After you choose one of those four actions… it becomes their turn."
+    - text: "But there is something else. After you choose one of those four actions\u2026
+        it becomes their turn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34178,7 +34474,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Their turn?"
+    - text: Their turn?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34199,7 +34495,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. They will attack you. Usually with projectiles."
+    - text: Yes. They will attack you. Usually with projectiles.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34220,7 +34516,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Fragments of code. Broken icons. Corrupted memories. Things that hurt because they still remember being useful."
+    - text: Fragments of code. Broken icons. Corrupted memories. Things that hurt
+        because they still remember being useful.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34241,7 +34538,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How am I supposed to stop that?"
+    - text: How am I supposed to stop that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34262,7 +34559,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Look at your hands. The rings."
+    - text: Look at your hands. The rings.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34283,7 +34580,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I… didn’t notice them before."
+    - text: "I\u2026 didn\u2019t notice them before."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34304,7 +34601,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "People rarely notice the tools keeping them alive. Those rings are your defense."
+    - text: People rarely notice the tools keeping them alive. Those rings are your
+        defense.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34325,7 +34623,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When projectiles come toward you, use your hands. Block them. Stop them. Push them away."
+    - text: When projectiles come toward you, use your hands. Block them. Stop them.
+        Push them away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34346,7 +34645,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If your timing is good, you survive."
+    - text: If your timing is good, you survive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34367,7 +34666,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if it is not... I get hit."
+    - text: And if it is not... I get hit.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34388,7 +34687,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Exactly. Your life is limited. Every hit takes part of it away."
+    - text: Exactly. Your life is limited. Every hit takes part of it away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34409,7 +34708,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if your life reaches zero… you die."
+    - text: "And if your life reaches zero\u2026 you die."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34430,7 +34729,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that?"
+    - text: Just like that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34451,7 +34750,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that. You end. And worse than that… you lose the chance to remember who you were."
+    - text: "Just like that. You end. And worse than that\u2026 you lose the chance
+        to remember who you were."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34472,7 +34772,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is why your choices matter. Not because the world is fair. But because it is not."
+    - text: That is why your choices matter. Not because the world is fair. But because
+        it is not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34493,7 +34794,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And after the maze?"
+    - text: And after the maze?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34514,7 +34815,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "After the maze, you will find the one guarding the file. The TXT document."
+    - text: After the maze, you will find the one guarding the file. The TXT document.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34535,7 +34836,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside it, there is an email address. That email is your next route."
+    - text: Inside it, there is an email address. That email is your next route.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34556,7 +34857,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Without it, you cannot move forward."
+    - text: Without it, you cannot move forward.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34577,7 +34878,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What is guarding it?"
+    - text: What is guarding it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34598,7 +34899,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Not a forgotten person. Not a lost soul. Something created."
+    - text: Not a forgotten person. Not a lost soul. Something created.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34619,7 +34920,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A disciple of the intelligence above this place."
+    - text: A disciple of the intelligence above this place.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34640,7 +34941,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The one that deletes worlds?"
+    - text: The one that deletes worlds?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34661,7 +34962,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. A lesser program. A servant. A piece of its logic given shape."
+    - text: Yes. A lesser program. A servant. A piece of its logic given shape.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34682,7 +34983,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It was made to control routes. To decide which paths remain open… and which ones are closed forever."
+    - text: "It was made to control routes. To decide which paths remain open\u2026
+        and which ones are closed forever."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34703,7 +35005,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It protects the file because connection is dangerous. If forgotten things can connect… they can resist deletion."
+    - text: "It protects the file because connection is dangerous. If forgotten things
+        can connect\u2026 they can resist deletion."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34724,7 +35027,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And that is exactly what the intelligence fears."
+    - text: And that is exactly what the intelligence fears.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34745,7 +35048,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I have to defeat it."
+    - text: So I have to defeat it.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34766,7 +35069,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Maybe. Or maybe you have to understand it."
+    - text: Maybe. Or maybe you have to understand it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34787,7 +35090,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Remember your four choices. Attack. Reason. Use an item. Run."
+    - text: Remember your four choices. Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34808,7 +35111,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The same four doors. But not every door opens the same future."
+    - text: The same four doors. But not every door opens the same future.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34829,7 +35132,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Can I run from it?"
+    - text: Can I run from it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34850,7 +35153,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can try. But some fights are not cages. They are mirrors."
+    - text: You can try. But some fights are not cages. They are mirrors.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34871,7 +35174,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can run from the enemy. But not from what the fight means."
+    - text: You can run from the enemy. But not from what the fight means.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34892,7 +35195,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So listen carefully. Go east from here. At the first corner, go north. Enter the maze."
+    - text: So listen carefully. Go east from here. At the first corner, go north.
+        Enter the maze.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34913,7 +35217,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Survive the enemies inside. Cross it."
+    - text: Survive the enemies inside. Cross it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34934,7 +35238,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then face the guardian beyond it. Find the TXT file. Read the email. Follow the connection."
+    - text: Then face the guardian beyond it. Find the TXT file. Read the email.
+        Follow the connection.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34955,7 +35260,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And maybe… somewhere between one forgotten world and the next… you will find a piece of your name."
+    - text: "And maybe\u2026 somewhere between one forgotten world and the next\u2026
+        you will find a piece of your name."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -34976,7 +35282,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if I don’t?"
+    - text: "And if I don\u2019t?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -34997,7 +35303,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then choose again. That is all any of us can do here. Choose. Survive. Remember. Or be erased."
+    - text: Then choose again. That is all any of us can do here. Choose. Survive.
+        Remember. Or be erased.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35018,7 +35325,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "...I’ll go."
+    - text: "...I\u2019ll go."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35039,7 +35346,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Good. And one last thing."
+    - text: Good. And one last thing.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35060,7 +35367,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What?"
+    - text: What?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35081,7 +35388,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something in the maze looks harmless… it is probably lying."
+    - text: "If something in the maze looks harmless\u2026 it is probably lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35102,7 +35409,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something looks dangerous… it is probably also lying."
+    - text: "If something looks dangerous\u2026 it is probably also lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35123,7 +35430,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That doesn’t help."
+    - text: "That doesn\u2019t help."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35144,7 +35451,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I never said I was good at helping. I said I was alive."
+    - text: I never said I was good at helping. I said I was alive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35165,7 +35472,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Now go. Before the maze notices you are expected."
+    - text: Now go. Before the maze notices you are expected.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35187,7 +35494,7 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   - lines:
-    - text: "You again. Need to know anything else?"
+    - text: You again. Need to know anything else?
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35205,19 +35512,19 @@ MonoBehaviour:
       setNextInteractionVersion: -1
       jumpToLineIndex: -1
       choices:
-      - text: "Erased? By who?"
+      - text: Erased? By who?
         jumpToLineIndex: 1
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "Is there a way to escape?"
+      - text: Is there a way to escape?
         jumpToLineIndex: 7
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "I need a minute to process this."
+      - text: I need a minute to process this.
         jumpToLineIndex: 26
         customSelectSound: {fileID: 0}
         onChoiceSelected:
@@ -35226,7 +35533,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is something above this place. Not a person. Not a monster."
+    - text: There is something above this place. Not a person. Not a monster.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35247,7 +35554,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A system. An intelligence created to clean what no longer had use."
+    - text: A system. An intelligence created to clean what no longer had use.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35268,7 +35575,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When a world becomes too unstable… when fragments pile up until they begin to collapse… It comes."
+    - text: "When a world becomes too unstable\u2026 when fragments pile up until
+        they begin to collapse\u2026 It comes."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35289,7 +35597,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And what does it do?"
+    - text: And what does it do?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35310,7 +35618,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It deletes. No mercy. No judgment. No goodbye. Just removal."
+    - text: It deletes. No mercy. No judgment. No goodbye. Just removal.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35331,7 +35639,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Some call it an artificial intelligence. I call it the reason nobody sleeps well here."
+    - text: Some call it an artificial intelligence. I call it the reason nobody
+        sleeps well here.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35352,7 +35661,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is still a way to move between forgotten places. Files."
+    - text: There is still a way to move between forgotten places. Files.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35373,7 +35682,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Files?"
+    - text: Files?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35394,7 +35703,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "PDFs. TXT documents. Broken notes. Old exports. Things nobody thought mattered."
+    - text: PDFs. TXT documents. Broken notes. Old exports. Things nobody thought
+        mattered.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35415,7 +35725,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes, inside those files, there are addresses."
+    - text: Sometimes, inside those files, there are addresses.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35436,7 +35746,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Email addresses?"
+    - text: Email addresses?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35457,7 +35767,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Exactly. In your world, an email is a message. Here, an email is a route."
+    - text: Exactly. In your world, an email is a message. Here, an email is a route.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35478,7 +35788,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A connection to another place. Another machine. Another abandoned project."
+    - text: A connection to another place. Another machine. Another abandoned project.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35499,7 +35809,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you find one, you can follow it. You can jump from one forgotten world to another."
+    - text: If you find one, you can follow it. You can jump from one forgotten world
+        to another.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35520,7 +35831,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So that’s how I escape?"
+    - text: "So that\u2019s how I escape?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35541,7 +35852,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is how you continue. Escaping… is harder."
+    - text: "That is how you continue. Escaping\u2026 is harder."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35562,7 +35873,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The next route is not here. It is protected."
+    - text: The next route is not here. It is protected.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35583,7 +35894,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "By who?"
+    - text: By who?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35604,7 +35915,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "By something waiting beyond the maze. Not inside the maze. Beyond it."
+    - text: By something waiting beyond the maze. Not inside the maze. Beyond it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35625,7 +35936,9 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "First, you must cross the maze. Leave this house and go east. Keep going until you find the first corner. When you reach it, turn north. That path leads to the maze entrance."
+    - text: First, you must cross the maze. Leave this house and go east. Keep going
+        until you find the first corner. When you reach it, turn north. That path
+        leads to the maze entrance.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35646,7 +35959,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How big is it?"
+    - text: How big is it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35667,7 +35980,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Big enough that people stop asking that question."
+    - text: Big enough that people stop asking that question.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35688,7 +36001,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The maze is made of pieces from different abandoned projects."
+    - text: The maze is made of pieces from different abandoned projects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35709,7 +36022,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Corridors from games. Menus from apps. Broken rooms from unfinished prototypes."
+    - text: Corridors from games. Menus from apps. Broken rooms from unfinished prototypes.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35730,7 +36043,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It does not fully know what it wants to be. That makes it dangerous."
+    - text: It does not fully know what it wants to be. That makes it dangerous.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35751,7 +36064,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Don't take too long. This place doesn't like waiting."
+    - text: Don't take too long. This place doesn't like waiting.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35772,7 +36085,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Now you know what to look for. Any questions?"
+    - text: Now you know what to look for. Any questions?
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35790,25 +36103,25 @@ MonoBehaviour:
       setNextInteractionVersion: -1
       jumpToLineIndex: -1
       choices:
-      - text: "Tell me more about what deletes worlds."
+      - text: Tell me more about what deletes worlds.
         jumpToLineIndex: 28
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "Why is the maze dangerous?"
+      - text: Why is the maze dangerous?
         jumpToLineIndex: 34
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "You said something protects the exit?"
+      - text: You said something protects the exit?
         jumpToLineIndex: 78
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "I think I'm ready to go."
+      - text: I think I'm ready to go.
         jumpToLineIndex: 97
         customSelectSound: {fileID: 0}
         onChoiceSelected:
@@ -35817,7 +36130,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is something above this place. Not a person. Not a monster."
+    - text: There is something above this place. Not a person. Not a monster.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35838,7 +36151,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A system. An intelligence created to clean what no longer had use."
+    - text: A system. An intelligence created to clean what no longer had use.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35859,7 +36172,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When a world becomes too unstable… when fragments pile up until they begin to collapse… It comes."
+    - text: "When a world becomes too unstable\u2026 when fragments pile up until
+        they begin to collapse\u2026 It comes."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35880,7 +36194,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And what does it do?"
+    - text: And what does it do?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -35901,7 +36215,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It deletes. No mercy. No judgment. No goodbye. Just removal."
+    - text: It deletes. No mercy. No judgment. No goodbye. Just removal.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35922,7 +36236,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Some call it an artificial intelligence. I call it the reason nobody sleeps well here."
+    - text: Some call it an artificial intelligence. I call it the reason nobody
+        sleeps well here.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35943,7 +36258,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside, you will find enemies. Not monsters, exactly. Forgotten projects."
+    - text: Inside, you will find enemies. Not monsters, exactly. Forgotten projects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35964,7 +36279,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Small broken things that still try to defend themselves."
+    - text: Small broken things that still try to defend themselves.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -35985,7 +36300,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When they see you, they may drag you into combat."
+    - text: When they see you, they may drag you into combat.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36006,7 +36321,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Combat?"
+    - text: Combat?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36027,7 +36342,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. And listen carefully now. This matters."
+    - text: Yes. And listen carefully now. This matters.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36048,7 +36363,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When combat begins, you will always have four possibilities. Only four."
+    - text: When combat begins, you will always have four possibilities. Only four.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36069,7 +36384,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack. Reason. Use an item. Run."
+    - text: Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36090,7 +36405,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That’s all?"
+    - text: "That\u2019s all?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36111,7 +36426,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is all. Four choices. Every time. But do not mistake simple choices for easy choices."
+    - text: That is all. Four choices. Every time. But do not mistake simple choices
+        for easy choices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36132,7 +36448,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack is the most direct option. You hurt what stands in front of you."
+    - text: Attack is the most direct option. You hurt what stands in front of you.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36153,7 +36469,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes that will be necessary. Some fragments are too broken to understand words."
+    - text: Sometimes that will be necessary. Some fragments are too broken to understand
+        words.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36174,7 +36491,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But attacking also has consequences. Every time you choose violence, this place notices."
+    - text: But attacking also has consequences. Every time you choose violence,
+        this place notices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36195,7 +36513,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Reason is different. You try to understand the enemy."
+    - text: Reason is different. You try to understand the enemy.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36216,7 +36534,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You talk. You observe. You look for what keeps that forgotten project fighting."
+    - text: You talk. You observe. You look for what keeps that forgotten project
+        fighting.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36237,7 +36556,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you reason well, you may end the fight without destroying anything."
+    - text: If you reason well, you may end the fight without destroying anything.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36258,7 +36577,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I can spare them?"
+    - text: So I can spare them?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36279,7 +36598,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes. But reasoning is not magic. Some things cannot be convinced with one nice sentence."
+    - text: Sometimes. But reasoning is not magic. Some things cannot be convinced
+        with one nice sentence.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36300,7 +36620,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Use an item means relying on what you have found. Food. Tools. Strange objects."
+    - text: Use an item means relying on what you have found. Food. Tools. Strange
+        objects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36321,7 +36642,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Items can heal you. Protect you. Or help you survive one more turn."
+    - text: Items can heal you. Protect you. Or help you survive one more turn.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36342,7 +36663,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Do not waste them. In a place made of abandoned things, useful objects are rare."
+    - text: Do not waste them. In a place made of abandoned things, useful objects
+        are rare.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36363,7 +36685,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And then there is Run. Running is not cowardice. It is a decision."
+    - text: And then there is Run. Running is not cowardice. It is a decision.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36384,7 +36706,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes the smartest way to win a fight… is to not finish it."
+    - text: "Sometimes the smartest way to win a fight\u2026 is to not finish it."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36405,7 +36727,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But be careful. Some enemies will let you escape. Others will not."
+    - text: But be careful. Some enemies will let you escape. Others will not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36426,7 +36748,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if you run too much, you may leave something important behind."
+    - text: And if you run too much, you may leave something important behind.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36447,7 +36769,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "These four choices will follow you everywhere. Your whole journey will be built on them."
+    - text: These four choices will follow you everywhere. Your whole journey will
+        be built on them.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36468,7 +36791,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How will I know which one is right?"
+    - text: How will I know which one is right?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36489,7 +36812,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You won’t. Not at first."
+    - text: "You won\u2019t. Not at first."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36510,7 +36833,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But if you pay attention… if you listen to what each enemy is really showing you… You will learn."
+    - text: "But if you pay attention\u2026 if you listen to what each enemy is really
+        showing you\u2026 You will learn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36531,7 +36855,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But there is something else. After you choose one of those four actions… it becomes their turn."
+    - text: "But there is something else. After you choose one of those four actions\u2026
+        it becomes their turn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36552,7 +36877,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Their turn?"
+    - text: Their turn?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36573,7 +36898,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. They will attack you. Usually with projectiles."
+    - text: Yes. They will attack you. Usually with projectiles.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36594,7 +36919,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Fragments of code. Broken icons. Corrupted memories. Things that hurt because they still remember being useful."
+    - text: Fragments of code. Broken icons. Corrupted memories. Things that hurt
+        because they still remember being useful.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36615,7 +36941,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How am I supposed to stop that?"
+    - text: How am I supposed to stop that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36636,7 +36962,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Look at your hands. The rings."
+    - text: Look at your hands. The rings.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36657,7 +36983,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I… didn’t notice them before."
+    - text: "I\u2026 didn\u2019t notice them before."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36678,7 +37004,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "People rarely notice the tools keeping them alive. Those rings are your defense."
+    - text: People rarely notice the tools keeping them alive. Those rings are your
+        defense.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36699,7 +37026,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When projectiles come toward you, use your hands. Block them. Stop them. Push them away."
+    - text: When projectiles come toward you, use your hands. Block them. Stop them.
+        Push them away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36720,7 +37048,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If your timing is good, you survive."
+    - text: If your timing is good, you survive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36741,7 +37069,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if it is not... I get hit."
+    - text: And if it is not... I get hit.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36762,7 +37090,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Exactly. Your life is limited. Every hit takes part of it away."
+    - text: Exactly. Your life is limited. Every hit takes part of it away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36783,7 +37111,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if your life reaches zero… you die."
+    - text: "And if your life reaches zero\u2026 you die."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36804,7 +37132,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that?"
+    - text: Just like that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36825,7 +37153,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that. You end. And worse than that… you lose the chance to remember who you were."
+    - text: "Just like that. You end. And worse than that\u2026 you lose the chance
+        to remember who you were."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36846,7 +37175,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is why your choices matter. Not because the world is fair. But because it is not."
+    - text: That is why your choices matter. Not because the world is fair. But because
+        it is not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36867,7 +37197,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And after the maze?"
+    - text: And after the maze?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36888,7 +37218,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "After the maze, you will find the one guarding the file. The TXT document."
+    - text: After the maze, you will find the one guarding the file. The TXT document.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36909,7 +37239,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside it, there is an email address. That email is your next route."
+    - text: Inside it, there is an email address. That email is your next route.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36930,7 +37260,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Without it, you cannot move forward."
+    - text: Without it, you cannot move forward.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36951,7 +37281,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What is guarding it?"
+    - text: What is guarding it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -36972,7 +37302,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Not a forgotten person. Not a lost soul. Something created."
+    - text: Not a forgotten person. Not a lost soul. Something created.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -36993,7 +37323,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A disciple of the intelligence above this place."
+    - text: A disciple of the intelligence above this place.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37014,7 +37344,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The one that deletes worlds?"
+    - text: The one that deletes worlds?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37035,7 +37365,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. A lesser program. A servant. A piece of its logic given shape."
+    - text: Yes. A lesser program. A servant. A piece of its logic given shape.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37056,7 +37386,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It was made to control routes. To decide which paths remain open… and which ones are closed forever."
+    - text: "It was made to control routes. To decide which paths remain open\u2026
+        and which ones are closed forever."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37077,7 +37408,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It protects the file because connection is dangerous. If forgotten things can connect… they can resist deletion."
+    - text: "It protects the file because connection is dangerous. If forgotten things
+        can connect\u2026 they can resist deletion."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37098,7 +37430,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And that is exactly what the intelligence fears."
+    - text: And that is exactly what the intelligence fears.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37119,7 +37451,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I have to defeat it."
+    - text: So I have to defeat it.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37140,7 +37472,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Maybe. Or maybe you have to understand it."
+    - text: Maybe. Or maybe you have to understand it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37161,7 +37493,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Remember your four choices. Attack. Reason. Use an item. Run."
+    - text: Remember your four choices. Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37182,7 +37514,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The same four doors. But not every door opens the same future."
+    - text: The same four doors. But not every door opens the same future.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37203,7 +37535,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Can I run from it?"
+    - text: Can I run from it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37224,7 +37556,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can try. But some fights are not cages. They are mirrors."
+    - text: You can try. But some fights are not cages. They are mirrors.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37245,7 +37577,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can run from the enemy. But not from what the fight means."
+    - text: You can run from the enemy. But not from what the fight means.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37266,7 +37598,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So listen carefully. Go east from here. At the first corner, go north. Enter the maze."
+    - text: So listen carefully. Go east from here. At the first corner, go north.
+        Enter the maze.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37287,7 +37620,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Survive the enemies inside. Cross it."
+    - text: Survive the enemies inside. Cross it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37308,7 +37641,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then face the guardian beyond it. Find the TXT file. Read the email. Follow the connection."
+    - text: Then face the guardian beyond it. Find the TXT file. Read the email.
+        Follow the connection.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37329,7 +37663,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And maybe… somewhere between one forgotten world and the next… you will find a piece of your name."
+    - text: "And maybe\u2026 somewhere between one forgotten world and the next\u2026
+        you will find a piece of your name."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37350,7 +37685,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if I don’t?"
+    - text: "And if I don\u2019t?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37371,7 +37706,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then choose again. That is all any of us can do here. Choose. Survive. Remember. Or be erased."
+    - text: Then choose again. That is all any of us can do here. Choose. Survive.
+        Remember. Or be erased.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37392,7 +37728,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "...I’ll go."
+    - text: "...I\u2019ll go."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37413,7 +37749,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Good. And one last thing."
+    - text: Good. And one last thing.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37434,7 +37770,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What?"
+    - text: What?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37455,7 +37791,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something in the maze looks harmless… it is probably lying."
+    - text: "If something in the maze looks harmless\u2026 it is probably lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37476,7 +37812,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something looks dangerous… it is probably also lying."
+    - text: "If something looks dangerous\u2026 it is probably also lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37497,7 +37833,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That doesn’t help."
+    - text: "That doesn\u2019t help."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37518,7 +37854,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I never said I was good at helping. I said I was alive."
+    - text: I never said I was good at helping. I said I was alive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37539,7 +37875,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Now go. Before the maze notices you are expected."
+    - text: Now go. Before the maze notices you are expected.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37561,7 +37897,7 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   - lines:
-    - text: "You again. Ready for the maze?"
+    - text: You again. Ready for the maze?
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37579,25 +37915,25 @@ MonoBehaviour:
       setNextInteractionVersion: -1
       jumpToLineIndex: -1
       choices:
-      - text: "Tell me more about what deletes worlds."
+      - text: Tell me more about what deletes worlds.
         jumpToLineIndex: 1
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "Why is the maze dangerous?"
+      - text: Why is the maze dangerous?
         jumpToLineIndex: 7
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "You said something protects the exit?"
+      - text: You said something protects the exit?
         jumpToLineIndex: 51
         customSelectSound: {fileID: 0}
         onChoiceSelected:
           m_PersistentCalls:
             m_Calls: []
-      - text: "I think I'm ready to go."
+      - text: I think I'm ready to go.
         jumpToLineIndex: 70
         customSelectSound: {fileID: 0}
         onChoiceSelected:
@@ -37606,7 +37942,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "There is something above this place. Not a person. Not a monster."
+    - text: There is something above this place. Not a person. Not a monster.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37627,7 +37963,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A system. An intelligence created to clean what no longer had use."
+    - text: A system. An intelligence created to clean what no longer had use.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37648,7 +37984,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When a world becomes too unstable… when fragments pile up until they begin to collapse… It comes."
+    - text: "When a world becomes too unstable\u2026 when fragments pile up until
+        they begin to collapse\u2026 It comes."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37669,7 +38006,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And what does it do?"
+    - text: And what does it do?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37690,7 +38027,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It deletes. No mercy. No judgment. No goodbye. Just removal."
+    - text: It deletes. No mercy. No judgment. No goodbye. Just removal.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37711,7 +38048,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Some call it an artificial intelligence. I call it the reason nobody sleeps well here."
+    - text: Some call it an artificial intelligence. I call it the reason nobody
+        sleeps well here.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37732,7 +38070,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside, you will find enemies. Not monsters, exactly. Forgotten projects."
+    - text: Inside, you will find enemies. Not monsters, exactly. Forgotten projects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37753,7 +38091,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Small broken things that still try to defend themselves."
+    - text: Small broken things that still try to defend themselves.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37774,7 +38112,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When they see you, they may drag you into combat."
+    - text: When they see you, they may drag you into combat.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37795,7 +38133,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Combat?"
+    - text: Combat?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37816,7 +38154,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. And listen carefully now. This matters."
+    - text: Yes. And listen carefully now. This matters.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37837,7 +38175,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When combat begins, you will always have four possibilities. Only four."
+    - text: When combat begins, you will always have four possibilities. Only four.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37858,7 +38196,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack. Reason. Use an item. Run."
+    - text: Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37879,7 +38217,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That’s all?"
+    - text: "That\u2019s all?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -37900,7 +38238,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is all. Four choices. Every time. But do not mistake simple choices for easy choices."
+    - text: That is all. Four choices. Every time. But do not mistake simple choices
+        for easy choices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37921,7 +38260,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Attack is the most direct option. You hurt what stands in front of you."
+    - text: Attack is the most direct option. You hurt what stands in front of you.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37942,7 +38281,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes that will be necessary. Some fragments are too broken to understand words."
+    - text: Sometimes that will be necessary. Some fragments are too broken to understand
+        words.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37963,7 +38303,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But attacking also has consequences. Every time you choose violence, this place notices."
+    - text: But attacking also has consequences. Every time you choose violence,
+        this place notices.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -37984,7 +38325,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Reason is different. You try to understand the enemy."
+    - text: Reason is different. You try to understand the enemy.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38005,7 +38346,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You talk. You observe. You look for what keeps that forgotten project fighting."
+    - text: You talk. You observe. You look for what keeps that forgotten project
+        fighting.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38026,7 +38368,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If you reason well, you may end the fight without destroying anything."
+    - text: If you reason well, you may end the fight without destroying anything.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38047,7 +38389,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I can spare them?"
+    - text: So I can spare them?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38068,7 +38410,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes. But reasoning is not magic. Some things cannot be convinced with one nice sentence."
+    - text: Sometimes. But reasoning is not magic. Some things cannot be convinced
+        with one nice sentence.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38089,7 +38432,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Use an item means relying on what you have found. Food. Tools. Strange objects."
+    - text: Use an item means relying on what you have found. Food. Tools. Strange
+        objects.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38110,7 +38454,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Items can heal you. Protect you. Or help you survive one more turn."
+    - text: Items can heal you. Protect you. Or help you survive one more turn.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38131,7 +38475,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Do not waste them. In a place made of abandoned things, useful objects are rare."
+    - text: Do not waste them. In a place made of abandoned things, useful objects
+        are rare.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38152,7 +38497,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And then there is Run. Running is not cowardice. It is a decision."
+    - text: And then there is Run. Running is not cowardice. It is a decision.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38173,7 +38518,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Sometimes the smartest way to win a fight… is to not finish it."
+    - text: "Sometimes the smartest way to win a fight\u2026 is to not finish it."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38194,7 +38539,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But be careful. Some enemies will let you escape. Others will not."
+    - text: But be careful. Some enemies will let you escape. Others will not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38215,7 +38560,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if you run too much, you may leave something important behind."
+    - text: And if you run too much, you may leave something important behind.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38236,7 +38581,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "These four choices will follow you everywhere. Your whole journey will be built on them."
+    - text: These four choices will follow you everywhere. Your whole journey will
+        be built on them.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38257,7 +38603,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How will I know which one is right?"
+    - text: How will I know which one is right?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38278,7 +38624,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You won’t. Not at first."
+    - text: "You won\u2019t. Not at first."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38299,7 +38645,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But if you pay attention… if you listen to what each enemy is really showing you… You will learn."
+    - text: "But if you pay attention\u2026 if you listen to what each enemy is really
+        showing you\u2026 You will learn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38320,7 +38667,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "But there is something else. After you choose one of those four actions… it becomes their turn."
+    - text: "But there is something else. After you choose one of those four actions\u2026
+        it becomes their turn."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38341,7 +38689,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Their turn?"
+    - text: Their turn?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38362,7 +38710,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. They will attack you. Usually with projectiles."
+    - text: Yes. They will attack you. Usually with projectiles.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38383,7 +38731,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Fragments of code. Broken icons. Corrupted memories. Things that hurt because they still remember being useful."
+    - text: Fragments of code. Broken icons. Corrupted memories. Things that hurt
+        because they still remember being useful.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38404,7 +38753,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "How am I supposed to stop that?"
+    - text: How am I supposed to stop that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38425,7 +38774,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Look at your hands. The rings."
+    - text: Look at your hands. The rings.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38446,7 +38795,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I… didn’t notice them before."
+    - text: "I\u2026 didn\u2019t notice them before."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38467,7 +38816,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "People rarely notice the tools keeping them alive. Those rings are your defense."
+    - text: People rarely notice the tools keeping them alive. Those rings are your
+        defense.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38488,7 +38838,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "When projectiles come toward you, use your hands. Block them. Stop them. Push them away."
+    - text: When projectiles come toward you, use your hands. Block them. Stop them.
+        Push them away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38509,7 +38860,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If your timing is good, you survive."
+    - text: If your timing is good, you survive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38530,7 +38881,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if it is not... I get hit."
+    - text: And if it is not... I get hit.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38551,7 +38902,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Exactly. Your life is limited. Every hit takes part of it away."
+    - text: Exactly. Your life is limited. Every hit takes part of it away.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38572,7 +38923,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if your life reaches zero… you die."
+    - text: "And if your life reaches zero\u2026 you die."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38593,7 +38944,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that?"
+    - text: Just like that?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38614,7 +38965,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Just like that. You end. And worse than that… you lose the chance to remember who you were."
+    - text: "Just like that. You end. And worse than that\u2026 you lose the chance
+        to remember who you were."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38635,7 +38987,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That is why your choices matter. Not because the world is fair. But because it is not."
+    - text: That is why your choices matter. Not because the world is fair. But because
+        it is not.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38656,7 +39009,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And after the maze?"
+    - text: And after the maze?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38677,7 +39030,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "After the maze, you will find the one guarding the file. The TXT document."
+    - text: After the maze, you will find the one guarding the file. The TXT document.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38698,7 +39051,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Inside it, there is an email address. That email is your next route."
+    - text: Inside it, there is an email address. That email is your next route.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38719,7 +39072,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Without it, you cannot move forward."
+    - text: Without it, you cannot move forward.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38740,7 +39093,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What is guarding it?"
+    - text: What is guarding it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38761,7 +39114,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Not a forgotten person. Not a lost soul. Something created."
+    - text: Not a forgotten person. Not a lost soul. Something created.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38782,7 +39135,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "A disciple of the intelligence above this place."
+    - text: A disciple of the intelligence above this place.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38803,7 +39156,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The one that deletes worlds?"
+    - text: The one that deletes worlds?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38824,7 +39177,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Yes. A lesser program. A servant. A piece of its logic given shape."
+    - text: Yes. A lesser program. A servant. A piece of its logic given shape.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38845,7 +39198,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It was made to control routes. To decide which paths remain open… and which ones are closed forever."
+    - text: "It was made to control routes. To decide which paths remain open\u2026
+        and which ones are closed forever."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38866,7 +39220,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "It protects the file because connection is dangerous. If forgotten things can connect… they can resist deletion."
+    - text: "It protects the file because connection is dangerous. If forgotten things
+        can connect\u2026 they can resist deletion."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38887,7 +39242,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And that is exactly what the intelligence fears."
+    - text: And that is exactly what the intelligence fears.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38908,7 +39263,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So I have to defeat it."
+    - text: So I have to defeat it.
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -38929,7 +39284,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Maybe. Or maybe you have to understand it."
+    - text: Maybe. Or maybe you have to understand it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38950,7 +39305,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Remember your four choices. Attack. Reason. Use an item. Run."
+    - text: Remember your four choices. Attack. Reason. Use an item. Run.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38971,7 +39326,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "The same four doors. But not every door opens the same future."
+    - text: The same four doors. But not every door opens the same future.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -38992,7 +39347,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Can I run from it?"
+    - text: Can I run from it?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -39013,7 +39368,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can try. But some fights are not cages. They are mirrors."
+    - text: You can try. But some fights are not cages. They are mirrors.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39034,7 +39389,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "You can run from the enemy. But not from what the fight means."
+    - text: You can run from the enemy. But not from what the fight means.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39055,7 +39410,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "So listen carefully. Go east from here. At the first corner, go north. Enter the maze."
+    - text: So listen carefully. Go east from here. At the first corner, go north.
+        Enter the maze.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39076,7 +39432,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Survive the enemies inside. Cross it."
+    - text: Survive the enemies inside. Cross it.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39097,7 +39453,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then face the guardian beyond it. Find the TXT file. Read the email. Follow the connection."
+    - text: Then face the guardian beyond it. Find the TXT file. Read the email.
+        Follow the connection.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39118,7 +39475,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And maybe… somewhere between one forgotten world and the next… you will find a piece of your name."
+    - text: "And maybe\u2026 somewhere between one forgotten world and the next\u2026
+        you will find a piece of your name."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39139,7 +39497,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "And if I don’t?"
+    - text: "And if I don\u2019t?"
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -39160,7 +39518,8 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Then choose again. That is all any of us can do here. Choose. Survive. Remember. Or be erased."
+    - text: Then choose again. That is all any of us can do here. Choose. Survive.
+        Remember. Or be erased.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39181,7 +39540,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "...I’ll go."
+    - text: "...I\u2019ll go."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -39202,7 +39561,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Good. And one last thing."
+    - text: Good. And one last thing.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39223,7 +39582,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "What?"
+    - text: What?
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -39244,7 +39603,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something in the maze looks harmless… it is probably lying."
+    - text: "If something in the maze looks harmless\u2026 it is probably lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39265,7 +39624,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "If something looks dangerous… it is probably also lying."
+    - text: "If something looks dangerous\u2026 it is probably also lying."
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39286,7 +39645,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "That doesn’t help."
+    - text: "That doesn\u2019t help."
       portrait: {fileID: -8011202738254376441, guid: 15d7c85b58358194d98a00aab6dff57b, type: 3}
       speakerName: 
       isRightSide: 0
@@ -39307,7 +39666,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "I never said I was good at helping. I said I was alive."
+    - text: I never said I was good at helping. I said I was alive.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39328,7 +39687,7 @@ MonoBehaviour:
       onLineReached:
         m_PersistentCalls:
           m_Calls: []
-    - text: "Now go. Before the maze notices you are expected."
+    - text: Now go. Before the maze notices you are expected.
       portrait: {fileID: -8137263603325723700, guid: f578c60c20f88c34c9c3f1072a45e2ca, type: 3}
       speakerName: Ravel
       isRightSide: 1
@@ -39549,8 +39908,8 @@ Transform:
   m_GameObject: {fileID: 1376858716}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.29, y: -6.68, z: 0}
-  m_LocalScale: {x: 0.6830428, y: 0.6830428, z: 0.6830428}
+  m_LocalPosition: {x: -24.69, y: -6.7078, z: 0}
+  m_LocalScale: {x: 0.9390473, y: 0.9390473, z: 0.9390473}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 32934097}
@@ -39648,7 +40007,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.016696453, y: -0.020058215}
+  m_Offset: {x: -0.089205086, y: 0.03877616}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -39658,7 +40017,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.4251456, y: 2.8801656}
+  m_Size: {x: 3.0721412, y: 2.762497}
   m_EdgeRadius: 0
 --- !u!114 &1376858720
 MonoBehaviour:
@@ -39885,7 +40244,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 1.1436061}
+  m_Offset: {x: -0.0058841705, y: 1.3050478}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -39895,7 +40254,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.33, y: 1.0669172}
+  m_Size: {x: 2.3533545, y: 0.61319005}
   m_EdgeRadius: 0
 --- !u!1 &1379613872
 GameObject:
@@ -40868,6 +41227,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   playerTag: Player
+  walkWaypoints: []
+  walkSpeed: 5
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 0}
 --- !u!61 &1486314172
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -40947,6 +41310,8 @@ Transform:
   - {fileID: 2096383331}
   - {fileID: 1807790375}
   - {fileID: 1900254446}
+  - {fileID: 419437505}
+  - {fileID: 1703280068}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1496096377
@@ -41831,7 +42196,7 @@ Transform:
   m_GameObject: {fileID: 1592657604}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.0034241646, w: 0.99999416}
-  m_LocalPosition: {x: -40.55, y: 25.1, z: 0}
+  m_LocalPosition: {x: -40.55, y: 25.3, z: 0}
   m_LocalScale: {x: 0.7179436, y: 0.72019416, z: 1.2003237}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42450,6 +42815,194 @@ MonoBehaviour:
   areaHeight: 19.7
   sortingLayerName: Default
   sortingOrder: 50
+--- !u!1 &1703280067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1703280068}
+  - component: {fileID: 1703280070}
+  - component: {fileID: 1703280069}
+  m_Layer: 0
+  m_Name: DT5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1703280068
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703280067}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.0002989003, w: 1}
+  m_LocalPosition: {x: 176.76, y: -60.6, z: 0}
+  m_LocalScale: {x: 0.16416125, y: 5.3596616, z: 0.59695}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1492001973}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.034}
+--- !u!114 &1703280069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703280067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42cc8ed2522f5d468e1f21d8cf67e95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  lines:
+  - text: Maybe I should read that sign...
+    portrait: {fileID: 0}
+    speakerName: 
+    isRightSide: 0
+    showOnTop: 1
+    isThought: 1
+    forceReopen: 1
+    customVoiceSound: {fileID: 8300000, guid: 8df580135e547434a974d209e08152fd, type: 3}
+    portraitAnimator: {fileID: 0}
+    interactableSpriteChange: {fileID: 0}
+    interactableSpriteChangeSound: {fileID: 0}
+    owner: {fileID: 0}
+    isEndNode: 1
+    delayBeforeLine: 0
+    autoAdvanceTime: 0
+    setNextInteractionVersion: -1
+    jumpToLineIndex: -1
+    choices: []
+    onLineReached:
+      m_PersistentCalls:
+        m_Calls: []
+  triggerOnlyOnce: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  playerTag: Player
+  walkWaypoints:
+  - {fileID: 1262555622}
+  - {fileID: 890298178}
+  - {fileID: 1723847710}
+  - {fileID: 709924690}
+  walkSpeed: 3
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 142400250}
+--- !u!61 &1703280070
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703280067}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
+--- !u!1 &1705619662
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1705619663}
+  m_Layer: 0
+  m_Name: WP2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1705619663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1705619662}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.29, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1723847709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723847710}
+  m_Layer: 0
+  m_Name: WP5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1723847710
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723847709}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 128.2, y: -18.15, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1726839081
 GameObject:
   m_ObjectHideFlags: 0
@@ -43028,6 +43581,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   playerTag: Player
+  walkWaypoints: []
+  walkSpeed: 5
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 0}
 --- !u!61 &1807790377
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -43320,6 +43877,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   playerTag: Player
+  walkWaypoints: []
+  walkSpeed: 5
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 0}
 --- !u!61 &1900254448
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -139649,6 +140210,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 788047487}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2072645141
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2072645142}
+  m_Layer: 0
+  m_Name: WP1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2072645142
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072645141}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.06, y: 0.97, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1129399656}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2096383330
 GameObject:
   m_ObjectHideFlags: 0
@@ -139721,6 +140313,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   playerTag: Player
+  walkWaypoints: []
+  walkSpeed: 5
+  arrivalThreshold: 0.15
+  disableAfterInteraction: {fileID: 0}
 --- !u!61 &2096383333
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -139913,4 +140509,5 @@ SceneRoots:
   - {fileID: 73932152}
   - {fileID: 2001523545}
   - {fileID: 32934097}
+  - {fileID: 1129399656}
   - {fileID: 593403718}

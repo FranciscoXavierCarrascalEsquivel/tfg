@@ -35,6 +35,18 @@ public class PlayerController2D : MonoBehaviour
 
     private bool movementLocked;
     private bool isRunning;
+    private bool isAutoWalking;
+
+    /// <summary>Per permetre que scripts externs (DialogueTrigger) puguin accedir al so i velocitat de caminar.</summary>
+    public AudioClip WalkSound => walkSound;
+    public float WalkSoundInterval => walkSoundInterval;
+    public float WalkSpeed => walkSpeed;
+
+    /// <summary>Indica que un script extern controla l'animació (no sobreescriure des d'Update).</summary>
+    public void SetAutoWalking(bool value) { isAutoWalking = value; }
+
+    /// <summary>Estableix la direcció d'idle del personatge (on mira quan està parat).</summary>
+    public void SetFacingDirection(Vector2 dir) { lastDir = dir; }
     
     private Vector2 lastPos;
     private float timeSinceLastMove;
@@ -101,8 +113,11 @@ public class PlayerController2D : MonoBehaviour
 
         if (movementLocked)
         {
-            anim.SetBool(IsMovingHash, false);
-            anim.SetFloat(SpeedMulHash, 1f);
+            if (!isAutoWalking)
+            {
+                anim.SetBool(IsMovingHash, false);
+                anim.SetFloat(SpeedMulHash, 1f);
+            }
             
             // Actualitzem lastPos encara que estiguem bloquejats per evitar salts de distància al desbloquejar
             lastPos = rb.position; 

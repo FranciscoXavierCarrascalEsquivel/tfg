@@ -188,4 +188,35 @@ public class TriggerMusicLoopSection2D : MonoBehaviour
         // srcB.Stop();
         // overlapStartedThisCycle = false;
     }
+
+    /// <summary>Atura immediatament tota la música del loop.</summary>
+    public void StopAll()
+    {
+        activeFlag = false;
+        srcA.Stop();
+        srcB.Stop();
+        overlapStartedThisCycle = false;
+    }
+
+    /// <summary>Fa un fade out progressiu i després atura la música.</summary>
+    public System.Collections.IEnumerator FadeOutAndStop(float duration)
+    {
+        float startVolA = srcA.volume;
+        float startVolB = srcB.volume;
+        float t = 0f;
+
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float ratio = Mathf.Clamp01(t / duration);
+            srcA.volume = Mathf.Lerp(startVolA, 0f, ratio);
+            srcB.volume = Mathf.Lerp(startVolB, 0f, ratio);
+            yield return null;
+        }
+
+        StopAll();
+        // Restaurem volums originals per si es torna a fer servir
+        srcA.volume = startVolA;
+        srcB.volume = startVolB;
+    }
 }

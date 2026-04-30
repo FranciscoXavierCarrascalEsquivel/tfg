@@ -64,6 +64,19 @@ public class SceneMusic : MonoBehaviour
         audioSource.Stop();
     }
 
+    /// <summary>
+    /// Canvia el clip de música i el volum objectiu. No comença a reproduir — crida FadeInAndResume() després.
+    /// </summary>
+    public void ChangeClip(AudioClip clip, float targetVolume = -1f)
+    {
+        audioSource.Stop();
+        musicClip = clip;
+        audioSource.clip = clip;
+        if (targetVolume >= 0f) volume = Mathf.Clamp01(targetVolume);
+        audioSource.volume = 0f;
+        audioSource.Play();
+    }
+
     public void SetVolume(float newVolume)
     {
         volume = Mathf.Clamp01(newVolume);
