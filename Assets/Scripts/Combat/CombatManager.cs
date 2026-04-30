@@ -452,7 +452,7 @@ public class CombatManager : MonoBehaviour
         ShowTurnMenu(true);
 
         // Configura noms
-        if (playerNameText != null) playerNameText.text = "FRANC";
+        if (playerNameText != null) playerNameText.text = "Me";
         if (enemyNameText != null) enemyNameText.text = finalEnemyName;
 
         // Dispara les animacions d'entrada tipus Slide UI per tota la resta de text/panells
@@ -2010,12 +2010,7 @@ public class CombatManager : MonoBehaviour
         if (Random.value <= fleeChance)
         {
             // Fugida exitosa
-            Debug.Log("Fugida exitosa!");
-            if (playerNameText != null) playerNameText.text = "FUGINT...";
-            
-            if (moveMenuSound && audioSource) audioSource.PlayOneShot(moveMenuSound);
-
-            yield return new WaitForSeconds(1f);
+            yield return ShowPlayerActionDialogue("You try to run away...\n\nAnd you make it!");
             
             state = State.End;
             loader.EndCombat();
@@ -2023,11 +2018,8 @@ public class CombatManager : MonoBehaviour
         else
         {
             // Falla
-            Debug.Log("Has fallat al fugir!");
-            if (playerNameText != null) playerNameText.text = "FUGIDA FRACASSADA!";
+            yield return ShowPlayerActionDialogue("You try to run away...\n\nBut you can't escape!");
             
-            // Restaura nom i passa torn a l'enemic
-            if (playerNameText != null) playerNameText.text = "FRANC";
             EndPlayerTurn("FLEE_FAIL");
         }
     }
@@ -2237,6 +2229,7 @@ public class CombatManager : MonoBehaviour
         var dialogGO = new GameObject("CombatDialogueUI");
         dialogGO.transform.SetParent(canvas.transform, false);
         var dialogUI = dialogGO.AddComponent<DialogueUI>();
+        dialogUI.canSkip = false;
 
         // Personalització de la veu: Prioritat al de l'enemic, fallback al global del combat
         AudioClip voice = (overrideVoice != null) ? overrideVoice : playerActionVoice;

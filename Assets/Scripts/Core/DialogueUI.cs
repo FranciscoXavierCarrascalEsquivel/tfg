@@ -17,9 +17,10 @@ public class DialogueUI : MonoBehaviour
     [Range(0f, 1f)][SerializeField] private float volume = 0.8f;
 
     [Header("Panel Animation")]
-    [SerializeField] private float animDuration = 0.15f; 
+    [SerializeField] private float animDuration = 0.4f; 
     [SerializeField] private float slidePixels = 40f;    
     [SerializeField] private bool animateOnShow = true;  
+    public bool canSkip = true;
 
     private Coroutine typingRoutine;
     private Coroutine animRoutine;
@@ -83,27 +84,34 @@ public class DialogueUI : MonoBehaviour
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // F Button (Skip) Logic
-            if (Input.GetKey(KeyCode.F))
+            if (canSkip)
             {
-                skipHoldTime += Time.unscaledDeltaTime;
-                if (fTextRT != null) fTextRT.anchoredPosition = Vector2.zero; // Press down visually
-                
-                if (skipHoldTime >= SkipHoldRequired)
+                if (Input.GetKey(KeyCode.F))
+                {
+                    skipHoldTime += Time.unscaledDeltaTime;
+                    if (fTextRT != null) fTextRT.anchoredPosition = Vector2.zero; // Press down visually
+                    
+                    if (skipHoldTime >= SkipHoldRequired)
+                    {
+                        skipHoldTime = 0f;
+                        Hide();
+                        return;
+                    }
+                }
+                else
                 {
                     skipHoldTime = 0f;
-                    Hide();
-                    return;
+                    float fCycle = Time.unscaledTime * 1.5f + 0.5f; 
+                    bool fIsPressed = (fCycle % 1f) > 0.7f;
+                    if (fTextRT != null) fTextRT.anchoredPosition = fIsPressed ? Vector2.zero : new Vector2(0f, 4f);
                 }
+
+                if (fBtnGroup != null) fBtnGroup.alpha = 1f;
             }
             else
             {
-                skipHoldTime = 0f;
-                float fCycle = Time.unscaledTime * 1.5f + 0.5f; 
-                bool fIsPressed = (fCycle % 1f) > 0.7f;
-                if (fTextRT != null) fTextRT.anchoredPosition = fIsPressed ? Vector2.zero : new Vector2(0f, 4f);
+                if (fBtnGroup != null) fBtnGroup.alpha = 0f;
             }
-
-            if (fBtnGroup != null) fBtnGroup.alpha = 1f;
 
             // E Button Logic
             if (eBtnGroup != null && eTextRT != null)
