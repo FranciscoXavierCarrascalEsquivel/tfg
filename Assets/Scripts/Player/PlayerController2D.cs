@@ -78,6 +78,7 @@ public class PlayerController2D : MonoBehaviour
     }
 
     // Bloqueig/desbloqueig
+    public bool IsMovementLocked => movementLocked;
     public void LockMovement()
     {
         movementLocked = true;

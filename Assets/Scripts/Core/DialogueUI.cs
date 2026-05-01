@@ -18,7 +18,6 @@ public class DialogueUI : MonoBehaviour
 
     [Header("Panel Animation")]
     [SerializeField] private float animDuration = 0.4f; 
-    [SerializeField] private float slidePixels = 40f;    
     [SerializeField] private bool animateOnShow = true;  
     public bool canSkip = true;
 
@@ -28,6 +27,7 @@ public class DialogueUI : MonoBehaviour
 
     private string fullText;
     private bool isOpen;
+    public bool IsOpen => isOpen;
     private bool isTyping;
     private int typedCount;
 
@@ -183,7 +183,6 @@ public class DialogueUI : MonoBehaviour
         }
     }
 
-    public bool IsOpen => isOpen;
     public bool IsTyping => isTyping;
 
     public void SetTypingSound(AudioClip clip, int every = 2)
@@ -639,7 +638,7 @@ public class DialogueUI : MonoBehaviour
         
         dialogueText = txtGO.AddComponent<TextMeshProUGUI>();
         dialogueText.margin = new Vector4(35f, 30f, 35f, 30f);
-        dialogueText.enableWordWrapping = true;
+        dialogueText.textWrappingMode = TextWrappingModes.Normal;
         dialogueText.fontSizeMax = 80f; dialogueText.fontSizeMin = 40f; // Increased text limits
         dialogueText.enableAutoSizing = true;
         SetFont(dialogueText, 60f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft); // Increased initial font size

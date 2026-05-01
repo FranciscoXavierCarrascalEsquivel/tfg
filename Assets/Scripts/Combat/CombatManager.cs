@@ -278,7 +278,7 @@ public class CombatManager : MonoBehaviour
         enemyDialogTxt.fontStyle = TMPro.FontStyles.Bold;
         enemyDialogTxt.alignment = TMPro.TextAlignmentOptions.Center;
         enemyDialogTxt.margin = new Vector4(20f, 20f, 20f, 20f);
-        enemyDialogTxt.enableWordWrapping = true;
+        enemyDialogTxt.textWrappingMode = TMPro.TextWrappingModes.Normal;
         enemyDialogTxt.enableAutoSizing = true;
         enemyDialogTxt.fontSizeMin = 18f;
         enemyDialogTxt.fontSizeMax = 32f;
@@ -2270,7 +2270,6 @@ public class CombatManager : MonoBehaviour
         if (enemyBubblePromptCG != null) enemyBubblePromptCG.alpha = 0f;
 
         AudioClip voice = encounter?.enemyProfile?.voiceSound;
-        int voicePlayCount = 0;
         
         // Paràmetres orgànics idèntics a DialogueUI
         float charsPerSecond = 45f;

@@ -358,6 +358,18 @@ public class PlayerInventory : MonoBehaviour
             }
         }
 
+        // Menu de Pausa
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            var dialogUI = FindFirstObjectByType<DialogueUI>();
+            bool isAnyMenuOpen = InventoryMenuUI.IsOpen || ShopMenuUI.IsOpen;
+            
+            if (!isAnyMenuOpen && !PauseMenuUI.IsOpen)
+            {
+                PauseMenuUI.Show();
+            }
+        }
+
         // Test mode: Establir or a 9999
         if (Input.GetKeyDown(KeyCode.F9))
         {

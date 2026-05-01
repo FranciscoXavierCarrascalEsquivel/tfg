@@ -137,7 +137,7 @@ public class ShopMenuUI : MonoBehaviour
 
         dialogTxt = TxtFill(bubbleRT, "", 42f, new Color(0.1f, 0.1f, 0.1f), FontStyles.Bold, TextAlignmentOptions.Justified);
         dialogTxt.margin = new Vector4(25f, 25f, 25f, 25f);
-        dialogTxt.enableWordWrapping = true;
+        dialogTxt.textWrappingMode = TextWrappingModes.Normal;
         dialogTxt.enableAutoSizing = true;
         dialogTxt.fontSizeMin = 24f;
         dialogTxt.fontSizeMax = 48f;
