@@ -151,7 +151,7 @@ public class HealFXUI : MonoBehaviour
         txt.alignment = TextAlignmentOptions.Center;
         txt.color     = new Color(color.r, color.g, color.b, 1f);
         txt.raycastTarget = false;
-        txt.enableWordWrapping = false;
+        txt.textWrappingMode = TextWrappingModes.NoWrap;
         txt.overflowMode = TextOverflowModes.Overflow;
 
         // Contorn negre

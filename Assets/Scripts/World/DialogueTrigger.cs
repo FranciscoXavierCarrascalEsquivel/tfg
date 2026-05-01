@@ -28,6 +28,9 @@ public class DialogueTrigger : MonoBehaviour
 
     private bool hasTriggered;
     private bool permanentlyDisabled;
+    private bool isProcessing;  // True des que es dispara fins que es tanca el diàleg + auto-walk
+    private float cooldownTimer = 0f;
+    private const float COOLDOWN_DURATION = 1.0f;
 
     /// <summary>
     /// Crida aquest mètode des d'un UnityEvent (per exemple, des de l'onLineReached d'un Interactable)
@@ -54,12 +57,21 @@ public class DialogueTrigger : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        TryTrigger(collision);
+        // Només re-disparar si no estem processant ni en cooldown (evita el bug de doble diàleg)
+        if (!isProcessing && cooldownTimer <= 0f)
+            TryTrigger(collision);
+    }
+
+    private void Update()
+    {
+        if (cooldownTimer > 0f)
+            cooldownTimer -= Time.deltaTime;
     }
 
     private void TryTrigger(Collider2D collision)
     {
         if (permanentlyDisabled) return;
+        if (isProcessing) return;  // Ja estem en mig d'un diàleg/auto-walk
 
         // Comprovem si l'Interactable assignat ja ha estat usat
         if (disableAfterInteraction != null && disableAfterInteraction.HasBeenInteracted)
@@ -75,6 +87,7 @@ public class DialogueTrigger : MonoBehaviour
         if (isPlayer)
         {
             hasTriggered = true;
+            isProcessing = true;  // Bloquejar re-entrada fins que tot acabi
             
             var dialogueUI = FindFirstObjectByType<DialogueUI>();
             if (dialogueUI == null)
@@ -102,10 +115,14 @@ public class DialogueTrigger : MonoBehaviour
 
                 if (walkWaypoints != null && walkWaypoints.Length > 0 && playerController != null)
                 {
+                    // L'auto-walk gestiona el desbloqueig i el cooldown al acabar
                     StartCoroutine(AutoWalkRoutine(playerController, playerRb, playerAnim));
                 }
                 else
                 {
+                    // Cooldown + fi de processament
+                    cooldownTimer = COOLDOWN_DURATION;
+                    isProcessing = false;
                     if (playerController != null) playerController.UnlockMovement();
                 }
             };
@@ -199,6 +216,10 @@ public class DialogueTrigger : MonoBehaviour
         // Actualitzem la direcció interna del PlayerController ABANS de desbloquejar
         playerController.SetFacingDirection(lastAnimDir);
         playerController.SetAutoWalking(false);
+        
+        // Cooldown + fi de processament DESPRÉS de l'auto-walk per evitar doble trigger
+        cooldownTimer = COOLDOWN_DURATION;
+        isProcessing = false;
         if (playerController != null) playerController.UnlockMovement();
     }
 }

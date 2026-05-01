@@ -347,7 +347,7 @@ public class SkillCheckUI : MonoBehaviour
             
             // Força la destrucció de qualsevol limitador heretat
             damageText.enableAutoSizing = false;
-            damageText.enableWordWrapping = false; // NOU: Una sola línia sempre
+            damageText.textWrappingMode = TextWrappingModes.NoWrap; // NOU: Una sola línia sempre
             damageText.overflowMode = TMPro.TextOverflowModes.Overflow;
             
             damageText.alignment = TMPro.TextAlignmentOptions.Center;

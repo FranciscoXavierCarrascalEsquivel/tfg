@@ -1,9 +1,19 @@
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
 public class PlayerController2D : MonoBehaviour
 {
+    [Header("Alert & Encounters")]
+    [Tooltip("El jugador a qui apareixerà l'exclamació a sobre.")]
+    public Transform playerTransform;
+    [Tooltip("El so que es reproduirà en aparèixer l'exclamació.")]
+    public AudioClip alertSound;
+
+
     [Header("Movement")]
     [SerializeField] private float walkSpeed = 5f;       // Velocitat quan el jugador camina.
     [SerializeField] private float runSpeed = 8f;        // Velocitat quan el jugador corre.
@@ -259,15 +269,13 @@ public class PlayerController2D : MonoBehaviour
     private void TriggerRandomEncounter()
     {
         Debug.Log("WILD ENCOUNTER TRIGGERED!");
-        LockMovement(); // Parem el jugador instantàniament
+        LockMovement(); 
         
-        // Aturem animacions per seguretat
         anim.SetBool(IsMovingHash, false);
         anim.SetFloat(MoveXHash, 0);
         anim.SetFloat(MoveYHash, 0);
         anim.SetFloat(SpeedMulHash, 1f);
 
-        // Escollim un enemic a l'atzar que encara no hagi assolit el límit
         System.Collections.Generic.List<EnemyProfile> validEnemies = new System.Collections.Generic.List<EnemyProfile>();
         foreach (var enemy in wildEnemies)
         {
@@ -284,11 +292,101 @@ public class PlayerController2D : MonoBehaviour
         }
 
         EnemyProfile chosenEnemy = validEnemies[Random.Range(0, validEnemies.Count)];
-        
         CombatEncounter enc = new CombatEncounter();
         enc.enemyProfile = chosenEnemy;
         
+        StartCoroutine(AlertAndStartCombat(enc));
+    }
+
+    private IEnumerator AlertAndStartCombat(CombatEncounter enc)
+    {
+        // 1) Reproduir so d'alerta
+        if (alertSound != null)
+        {
+            var tempGO = new GameObject("TempAudio");
+            var src = tempGO.AddComponent<AudioSource>();
+            src.clip = alertSound;
+            src.Play();
+            Destroy(tempGO, alertSound.length + 0.1f);
+        }
+
+        // 2) Mostrar exclamació groga
+        yield return ShowAlertEffect();
+
+        // 3) Esperar mig segon (l'efecte ja triga una mica)
+        yield return new WaitForSeconds(0.5f);
+
+        // 4) Començar combat
         combatLoader.StartCombat(enc);
+    }
+
+    private IEnumerator ShowAlertEffect()
+    {
+        // Creem un Canvas Overlay temporal perquè l'exclamació es vegi PER SOBRE de tot
+        var alertGO = new GameObject("AlertCanvas");
+        var canvas = alertGO.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 9999;
+        alertGO.AddComponent<CanvasScaler>();
+
+        // Contenidor del text
+        var txtGO = new GameObject("AlertText");
+        txtGO.transform.SetParent(alertGO.transform, false);
+        var rt = txtGO.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(200f, 120f);
+
+        var txt = txtGO.AddComponent<TextMeshProUGUI>();
+        txt.text = "!";
+        txt.fontSize = 72f;
+        txt.color = new Color(0.95f, 0.8f, 0.15f); // Groc
+        txt.alignment = TextAlignmentOptions.Center;
+        txt.overflowMode = TextOverflowModes.Overflow;
+        txt.enableWordWrapping = false;
+
+        // Font (mateixa que diàlegs)
+        TMP_FontAsset f = null;
+#if UNITY_EDITOR
+        f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
+            ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
+#endif
+        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF");
+        if (f == null) f = Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+        if (f != null) txt.font = f;
+
+        // Outline negre natiu de TMP
+        txt.fontSharedMaterial = Instantiate(txt.fontSharedMaterial);
+        txt.fontSharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.35f);
+        txt.fontSharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 1f));
+
+        txt.ForceMeshUpdate();
+
+        // Convertir posició del jugador al món → posició de pantalla
+        Camera cam = Camera.main;
+        Vector3 worldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 1.5f;
+
+        // Animació pop-in (escala)
+        txtGO.transform.localScale = Vector3.zero;
+        float elapsed = 0f;
+        float dur = 0.15f;
+        while (elapsed < dur)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / dur;
+            float scale = t < 0.7f ? Mathf.Lerp(0f, 1.3f, t / 0.7f) : Mathf.Lerp(1.3f, 1f, (t - 0.7f) / 0.3f);
+            txtGO.transform.localScale = Vector3.one * scale;
+
+            // Seguim la posició del jugador cada frame
+            if (cam != null)
+                rt.position = cam.WorldToScreenPoint(worldPos);
+
+            yield return null;
+        }
+        txtGO.transform.localScale = Vector3.one;
+        if (cam != null)
+            rt.position = cam.WorldToScreenPoint(worldPos);
+
+        yield return new WaitForSeconds(0.3f);
+        Destroy(alertGO);
     }
 
     private void FixedUpdate()

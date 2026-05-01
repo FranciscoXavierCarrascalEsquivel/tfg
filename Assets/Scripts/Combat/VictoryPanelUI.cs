@@ -329,7 +329,7 @@ public class VictoryPanelUI : MonoBehaviour
         lblTxt.enableAutoSizing = true;
         lblTxt.fontSizeMin = 30f;
         lblTxt.fontSizeMax = 64f;
-        lblTxt.enableWordWrapping = false;
+        lblTxt.textWrappingMode = TextWrappingModes.NoWrap;
         lblTxt.text = label;
 
         // Valor NUMÈRIC / NOM OBJECTE
@@ -345,7 +345,7 @@ public class VictoryPanelUI : MonoBehaviour
         valTxt.enableAutoSizing = true;
         valTxt.fontSizeMin = 30f;
         valTxt.fontSizeMax = 64f;
-        valTxt.enableWordWrapping = false;
+        valTxt.textWrappingMode = TextWrappingModes.NoWrap;
         valTxt.text = value;
         return valTxt;
     }
