@@ -6022,6 +6022,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9ad805cb356f354c8c7211ba8fb5320, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController2D
+  playerTransform: {fileID: 712280459}
+  alertSound: {fileID: 8300000, guid: 5b287045f5575174998c3727a74ed579, type: 3}
   walkSpeed: 3
   runSpeed: 5
   runKey: 304
