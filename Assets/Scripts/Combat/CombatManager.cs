@@ -2010,7 +2010,7 @@ public class CombatManager : MonoBehaviour
         if (Random.value <= fleeChance)
         {
             // Fugida exitosa
-            yield return ShowPlayerActionDialogue("You try to run away...\n\nAnd you make it!");
+            yield return ShowPlayerActionDialogue("You try to run away... and you make it!");
             
             state = State.End;
             loader.EndCombat();
@@ -2018,7 +2018,7 @@ public class CombatManager : MonoBehaviour
         else
         {
             // Falla
-            yield return ShowPlayerActionDialogue("You try to run away...\n\nBut you can't escape!");
+            yield return ShowPlayerActionDialogue("You try to run away... but you can't escape!");
             
             EndPlayerTurn("FLEE_FAIL");
         }
@@ -2072,10 +2072,13 @@ public class CombatManager : MonoBehaviour
             playerCurrentHP += profile.effectValue;
             if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
 
-            // Text verd + partícules verdes
+            // Text verd + partícules verdes (barra)
             Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
             HealFXUI.ShowAboveBar(canvasParent, targetImg, $"+{profile.effectValue} HP",
                                   new Color(0.25f, 1f, 0.35f));
+
+            // NOU: Efecte a pantalla completa
+            HealFXUI.ShowHealFullscreen(canvasParent);
         }
         else if (profile.effectType == ItemEffectType.DamageEnemy)
         {
@@ -2115,6 +2118,9 @@ public class CombatManager : MonoBehaviour
             
             speedBuffRoundsLeft = profile.buffDurationRounds;
             HealFXUI.Show(canvasParent, $"VELOC +{profile.effectValue}% ({speedBuffRoundsLeft} TORNS)", new Color(1f, 0.9f, 0.15f));
+            
+            // NOU: Efecte fletxes a pantalla completa
+            HealFXUI.ShowSpeedFullscreen(canvasParent);
         }
         UpdateStatsUI();
         yield return null;
