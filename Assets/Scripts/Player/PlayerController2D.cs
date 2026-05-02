@@ -333,6 +333,9 @@ public class PlayerController2D : MonoBehaviour
         var txtGO = new GameObject("AlertText");
         txtGO.transform.SetParent(alertGO.transform, false);
         var rt = txtGO.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(200f, 120f);
 
         var txt = txtGO.AddComponent<TextMeshProUGUI>();
@@ -362,7 +365,7 @@ public class PlayerController2D : MonoBehaviour
 
         // Convertir posició del jugador al món → posició de pantalla
         Camera cam = Camera.main;
-        Vector3 worldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 1.5f;
+        Vector3 worldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 0.8f;
 
         // Animació pop-in (escala)
         txtGO.transform.localScale = Vector3.zero;
