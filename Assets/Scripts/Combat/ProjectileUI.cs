@@ -104,7 +104,7 @@ public class ProjectileUI : MonoBehaviour
 
         if (rt.anchoredPosition.y < killY)
         {
-            if (cm && !isRed) cm.PlayerTakeDamage(10);
+            if (cm && !isRed && !cm.IsEnded) cm.PlayerTakeDamage(10);
             Destroy(gameObject);
         }
         // Si el projectil marxa fora de la pantalla per dalt o pels costats, NO fa mal, simplement es destrueix (neteja)
@@ -128,8 +128,11 @@ public class ProjectileUI : MonoBehaviour
                 if (isRed)
                 {
                     // Els vermells només resten vida si els toques (parry)
-                    if (cm.DamageSound) cm.PlayLocalSound(cm.DamageSound);
-                    cm.PlayerTakeDamage(10);
+                    if (!cm.IsEnded)
+                    {
+                        if (cm.DamageSound) cm.PlayLocalSound(cm.DamageSound);
+                        cm.PlayerTakeDamage(10);
+                    }
                     Destroy(gameObject); 
                     return; 
                 }

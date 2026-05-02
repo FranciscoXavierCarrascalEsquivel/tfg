@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 
 public class Interactable : MonoBehaviour
 {
@@ -34,8 +35,11 @@ public class Interactable : MonoBehaviour
         [Tooltip("Opcional: si vols retrat animat (Animator Controller)")]
         public RuntimeAnimatorController portraitAnimator;
 
-        [Tooltip("Si vols canviar l'sprite de l'Interactable en aquesta línia de diàleg (opcional)")]
+        [Tooltip("Si vols canviar l'sprite d'un objecte en aquesta línia de diàleg (opcional)")]
         public Sprite interactableSpriteChange;
+
+        [Tooltip("Opcional: A quin SpriteRenderer aplicar el canvi d'sprite? (Si està buit, s'aplicarà al mateix objecte Interactable)")]
+        public SpriteRenderer targetSpriteRenderer;
 
         [Tooltip("Opcional: So a reproduir quan l'Interactable canvia d'sprite")]
         public AudioClip interactableSpriteChangeSound;
@@ -91,6 +95,8 @@ public class Interactable : MonoBehaviour
     {
         [Tooltip("Sequència de línies que es mostraran en aquesta interacció.")]
         public DialogueLine[] lines;
+        public AudioClip voiceOverride;
+        public UnityEvent onLineReached;
     }
 
     [Header("Versions de Diàleg (cada interacció usa la següent; l'ultima es repeteix en bucle)")]

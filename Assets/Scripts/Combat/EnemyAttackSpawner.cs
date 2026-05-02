@@ -64,7 +64,10 @@ public class EnemyAttackSpawner : MonoBehaviour
                 break;
 
             case EnemyAttackPattern.RapidFireRed:
-                yield return RapidFireRedRoutine(duration);
+                yield return RapidFireRedRoutine(duration, false);
+                break;
+            case EnemyAttackPattern.RapidFireRedSpinning:
+                yield return RapidFireRedRoutine(duration, true);
                 break;
 
             case EnemyAttackPattern.RedHomingBarrage:
@@ -392,7 +395,7 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    private IEnumerator RapidFireRedRoutine(float duration)
+    private IEnumerator RapidFireRedRoutine(float duration, bool spinning)
     {
         if (cachedHands == null || cachedHands.Length == 0) 
             cachedHands = FindObjectsByType<ParryZone>(FindObjectsSortMode.None);
@@ -409,7 +412,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                     float x = Random.Range(-240f, 240f);
                     go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
                     
-                    proj.Init(Vector2.down, 500f, 0, 0, false, true);
+                    proj.Init(Vector2.down, 500f, 0, 0, spinning, true);
                     
                     // RapidFire ara també persegueix una de les mans aleatòriament
                     if (cachedHands != null && cachedHands.Length > 0)

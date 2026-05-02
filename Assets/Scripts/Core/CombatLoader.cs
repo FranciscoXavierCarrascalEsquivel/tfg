@@ -77,6 +77,16 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
+    public Coroutine StopBackgroundMusicCoroutine(float fadeDuration = 3f)
+    {
+        if (backgroundAudioSource != null && backgroundAudioSource.isPlaying)
+        {
+            // Fem un fade out progressiu abans de pausar/parar
+            return StartCoroutine(FadeAudio(backgroundAudioSource, backgroundAudioSource.volume, 0f, fadeDuration, true));
+        }
+        return null;
+    }
+
     public void PlayBackgroundMusic(AudioClip clip)
     {
         if (backgroundAudioSource == null) return;
@@ -87,7 +97,29 @@ public class CombatLoader : MonoBehaviour
 
     public void StartCombat(CombatEncounter encounter)
     {
+        if (IsInCombat) 
+        {
+            Debug.LogWarning("CombatLoader: Intent de carregar combat ignorat perque ja n'hi ha un en curs.");
+            return;
+        }
+
+        IsInCombat = true;
         StartCoroutine(StartCombatRoutine(encounter));
+    }
+
+    /// <summary>
+    /// Permet carregar un combat directament des d'un perfil d'enemic (útil per a UnityEvents).
+    /// </summary>
+    public void StartCombatWithProfile(EnemyProfile profile)
+    {
+        if (profile == null) return;
+        
+        CombatEncounter encounter = new CombatEncounter();
+        encounter.enemyProfile = profile;
+        // Valors per defecte si no s'especifiquen a l'encounter
+        encounter.enemyAttackDuration = profile.attackDuration;
+        
+        StartCombat(encounter);
     }
 
     private void LockPlayer(bool isLocked)
@@ -104,6 +136,7 @@ public class CombatLoader : MonoBehaviour
 
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
+        LockPlayer(true);
         IsInCombat = true;
         // Snap camera to target immediately so the snapshot is perfectly centered/clamped
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
@@ -306,6 +339,10 @@ public class CombatLoader : MonoBehaviour
             if (kvp.Key != null) StartCoroutine(FadeAudio(kvp.Key, 0f, kvp.Value, 1f, false));
         }
         pausedAudioSources.Clear();
+        
+        // 7) SI hi ha un diàleg pausat pel combat, demanem que es reprengui ara
+        var dUI = FindFirstObjectByType<DialogueUI>();
+        if (dUI != null) dUI.ResumeAfterCombat();
     }
 
     private Coroutine activeFadeMusicCoroutine;
@@ -400,6 +437,7 @@ public enum EnemyAttackPattern
     RainWithRed,
     RainWithRedSpinning,
     RapidFireRed,
+    RapidFireRedSpinning,
     RedHomingBarrage,
     RedSweepWall
 }

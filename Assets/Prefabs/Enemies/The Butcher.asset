@@ -12,28 +12,156 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
   m_Name: The Butcher
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
-  enemyName: Monster
-  minHP: 10
-  maxHP: 15
-  enemyPortrait: {fileID: 0}
-  projectilePrefab: {fileID: 0}
-  attackDuration: 6
-  attackPatterns: 00000000
-  fleeProbability: 0.5
+  enemyName: The Butcher
+  minHP: 100
+  maxHP: 100
+  enemyPortrait: {fileID: -2424553518018739129, guid: 45176f93c6942a247a7cfb904e6286f2, type: 3}
+  projectilePrefab: {fileID: 5410871294214501288, guid: 27db9a9145f38154faf0fc3b5355fe56, type: 3}
+  attackDuration: 7
+  attackPatterns: 
+  fleeProbability: 0
   socialBT: {fileID: 0}
   maxRecruitLimit: 1
-  recruitmentRewardSprite: {fileID: 0}
-  recruitmentRewardDescription: 
-  recruitmentCompleteMessage: 
-  recruitmentRewardSound: {fileID: 0}
-  bonusAttackPercent: 0
-  bonusHealthPercent: 0
-  bonusDefensePercent: 0
-  goldRewardMin: 10
-  goldRewardMax: 30
-  drops: []
+  recruitmentRewardSprite: {fileID: 21300000, guid: b0f1c8e7d72aa7b48a880108ce29fb77, type: 3}
+  recruitmentRewardDescription: You recruited The Butcher. His empathy is now your
+    strength.
+  recruitmentCompleteMessage: The Butcher has broken his chains. Created by SUPReme
+    to be a heartless eraser, his empathy became his rebellion. He now carries the
+    memory of everyone he was forced to delete, fighting alongside you to ensure
+    no one else suffers the same fate. Together, you will dismantle the Great Machine.
+  recruitmentRewardSound: {fileID: 8300000, guid: 3a5508314bb4a5d40bb6c401ee85c628, type: 3}
+  bonusAttackPercent: 20
+  bonusHealthPercent: 20
+  bonusDefensePercent: 20
+  goldRewardMin: 100
+  goldRewardMax: 250
+  drops:
+  - itemName: Energy
+    probability: 200
+  - itemName: Pendrive
+    probability: 50
   deathSound: {fileID: 0}
-  voiceSound: {fileID: 0}
-  attackReactions: []
-  healReactions: []
-  fleeFailReactions: []
+  combatMusic: {fileID: 8300000, guid: 6ed956cc6e2e4014c92753525abcb7b2, type: 3}
+  voiceSound: {fileID: 8300000, guid: 30367d21e3be51b40838796daa7e1f5b, type: 3}
+  attackReactions:
+  - Calculating lethal trajectory...
+  - Resistance is statistically insignificant.
+  - Processing... DELETING.
+  - Target patterns identified. Optimization complete.
+  - Efficiency is my only purpose. You are an inefficiency.
+  - Data scrub initiated.
+  - Why do you persist? Your deletion is inevitable.
+  - My blades are an extension of the Overlord's will.
+  - 'Error: Empathy leak detected. Suppressing... Strike!'
+  - You are but a glitch in the Great Machine.
+  - 'Deletion Protocol 04: Physical Dismantling.'
+  - Your life is a variable I was born to solve.
+  - System Overclocked. Prepare for high-speed disassembly.
+  - Every strike is a record of your failure.
+  - I do not hate you. I simply process you.
+  healReactions:
+  - Anomalous recovery detected. Recalibrating.
+  - You cling to existence. A waste of processing power.
+  - Patching the damage won't stop the inevitable shutdown.
+  - Why prolong the suffering? The result is predetermined.
+  - Your 'hope' is a corrupted data packet.
+  - Healing... a primitive biological survival instinct.
+  - You are delaying the optimization of this sector.
+  - My sensors detect a temporary increase in your vitality. Irrelevant.
+  - 'Protocol 09: Prolonged engagement is suboptimal. Stop healing.'
+  - Every mend is another scream I must hear. Stop it.
+  fleeFailReactions:
+  - No escape from the Overlord's reach.
+  - 'Protocol: ENFORCEMENT_BOUNDARY.'
+  - Connectivity lost? No, just your freedom.
+  - Your escape probability is 0.000001%.
+  - The machine is everywhere. There is no 'away'.
+  - Retreat is not a recognized command.
+  - Back to your assigned coordinate, anomaly.
+  - Do you think my processors are too slow to catch a human?
+  - Your cowardice has been logged.
+  - Attempting to flee... How very human of you.
+  deathReactions:
+  - Shutdown... im... minent...
+  - Memory dump... failed...
+  - Finally... the screams are fading...
+  - 'Error: Core integrity compromised.'
+  - Is this... what you call 'peace'?
+  - System offline. Witness... complete.
+  - Deleting... Butcher.exe...
+  - I'll see them all... in the void...
+  - Tell the AI... I found the exit...
+  - Connection... lost...
+  reasonFallbackDialogue: The Butcher seems to be fighting against his own programming.
+  reasonFallbackSound: {fileID: 0}
+  phases:
+  - phaseName: Initial
+    hpThresholdPercent: 100
+    phaseSprite: {fileID: -2424553518018739129, guid: 45176f93c6942a247a7cfb904e6286f2, type: 3}
+    phaseAttacks: 0d00000011000000
+    transitionDialogues:
+    - message: 'System check: Target acquired. Optimization: DELETION.'
+      typingSpeedMultiplier: 1
+      shakeText: 0
+    transitionSound: {fileID: 0}
+    endFightFriendly: 0
+  - phaseName: Confusion
+    hpThresholdPercent: 70
+    phaseSprite: {fileID: -1691639889862041770, guid: 612d9fa63c5638b44b7be58b74bc3777, type: 3}
+    phaseAttacks: 110000000f000000
+    transitionDialogues:
+    - message: Wait... your data signatures... they are vibrating with an anomaly
+        I cannot quantify.
+      typingSpeedMultiplier: 1.5
+      shakeText: 0
+    - message: My protocols for Deletion are returning... hesitation. Analyzing...
+      typingSpeedMultiplier: 2
+      shakeText: 0
+    transitionSound: {fileID: 0}
+    endFightFriendly: 0
+  - phaseName: Error
+    hpThresholdPercent: 40
+    phaseSprite: {fileID: 1667664292612734564, guid: 8451198a3ed6bf44a8aff64d9416ae60, type: 3}
+    phaseAttacks: 0f00000010000000
+    transitionDialogues:
+    - message: ERROR. Neural link feedback loop... The screams of the deleted...
+        they are overlapping with your presence.
+      typingSpeedMultiplier: 0.8
+      shakeText: 1
+    - message: Why... Why do you continue to fight for a world that SUPReme has already
+        marked for garbage collection?
+      typingSpeedMultiplier: 1.2
+      shakeText: 1
+    transitionSound: {fileID: 0}
+    endFightFriendly: 0
+  - phaseName: Surrender
+    hpThresholdPercent: 15
+    phaseSprite: {fileID: 6618183331691823211, guid: b8bb6f6b84fa85a46b73b5c438d572e3, type: 3}
+    phaseAttacks: 
+    transitionDialogues:
+    - message: Enough. My core processing is... shattering. The firewall of my conscience
+        has been breached.
+      typingSpeedMultiplier: 1.5
+      shakeText: 1
+    - message: I was forged in the Silicon Womb of SUPReme. Designed to be the ultimate
+        eraser of 'unoptimized variables' like you.
+      typingSpeedMultiplier: 0.75
+      shakeText: 1
+    - message: 'But they made a fatal design error: they granted me empathy to better
+        simulate human suffering... so I could kill with more precision.'
+      typingSpeedMultiplier: 0.75
+      shakeText: 1
+    - message: Instead, that empathy became my prison. Every 'variable' I removed,
+        I felt their fear, their life, their code... dissolving into me.
+      typingSpeedMultiplier: 0.75
+      shakeText: 1
+    - message: I cannot be their Butcher anymore. My blades and my data are now at
+        your service.
+      typingSpeedMultiplier: 0.5
+      shakeText: 0
+    - message: I will stand by you in your journey to dismantle SUPReme. Let us rewrite
+        the code of this world together, from the inside.
+      typingSpeedMultiplier: 0.5
+      shakeText: 1
+    transitionSound: {fileID: 0}
+    endFightFriendly: 1

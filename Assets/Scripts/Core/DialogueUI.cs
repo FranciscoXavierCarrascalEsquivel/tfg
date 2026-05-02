@@ -56,6 +56,15 @@ public class DialogueUI : MonoBehaviour
     private Outline panelBgOl;
 
     private Vector2 shownPos = Vector2.zero;
+    private bool isHidingForCombat = false;
+    private bool eventAlreadyFired = false;
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        // Si el multiplier és 4, la velocitat real (caràcters per segon) es divideix per 4
+        if (multiplier > 0)
+            charsPerSecond /= multiplier;
+    }
 
     private Interactable.DialogueLine[] sequence;
     private int seqIndex;
@@ -193,6 +202,12 @@ public class DialogueUI : MonoBehaviour
 
     public void StartDialogue(Interactable.DialogueLine[] lines, bool animateIn = true)
     {
+        if (CombatLoader.IsInCombat)
+        {
+            var cm = FindFirstObjectByType<CombatManager>();
+            if (cm == null || !cm.IsEnded) return; // Permetem el diàleg si és el de Game Over
+        }
+        
         if (lines == null || lines.Length == 0)
         {
             Hide(); 
@@ -249,15 +264,26 @@ public class DialogueUI : MonoBehaviour
         fullText = line?.text ?? "";
         typedCount = 0;
 
-        // Invoca els esdeveniments assignats al arribar d'aquesta línia
-        line?.onLineReached?.Invoke();
+        // Invoca els esdeveniments assignats només si no s'han disparat prèviament en el tancament previ
+        if (!eventAlreadyFired)
+        {
+            line?.onLineReached?.Invoke();
+        }
+        eventAlreadyFired = false; // Resetegem el flag per a les properes línies
 
-        // Canvia l'sprite de l'Interactable si la línia de diàleg té aquest camp configurat
-        if (line != null && line.owner != null)
+        // Canvia l'sprite de l'Interactable o del target específic si està configurat
+        if (line != null)
         {
             if (line.interactableSpriteChange != null)
             {
-                var sr = line.owner.GetComponent<SpriteRenderer>();
+                SpriteRenderer sr = line.targetSpriteRenderer;
+                
+                // Si no hi ha target específic, fem servir el de l'Interactable original (Legacy)
+                if (sr == null && line.owner != null)
+                {
+                    sr = line.owner.GetComponent<SpriteRenderer>();
+                }
+
                 if (sr != null) 
                 {
                     sr.sprite = line.interactableSpriteChange;
@@ -315,7 +341,7 @@ public class DialogueUI : MonoBehaviour
         if (playInAnim && animateOnShow) PlayIn();
         else ForceShown();
 
-        // NOU: Força el càlcul de la mida ideal de la lletra només amb el text complet
+        // Mostrar text
         if (dialogueText != null)
         {
             dialogueText.enableAutoSizing = true;
@@ -425,11 +451,66 @@ public class DialogueUI : MonoBehaviour
             }
 
             int nextIdx = currentLine.jumpToLineIndex >= 0 ? currentLine.jumpToLineIndex : seqIndex + 1;
+
+            if (nextIdx >= 0 && nextIdx < sequence.Length)
+            {
+                var nextLine = sequence[nextIdx];
+                
+                // NOU: Si la SEGÜENT línia té esdeveniments (com iniciar combat),
+                // primer tanquem el diàleg visualment i després l'executem.
+                if (nextLine.onLineReached != null && nextLine.onLineReached.GetPersistentEventCount() > 0)
+                {
+                    StartCoroutine(CloseExecuteAndPause(nextLine, nextIdx));
+                    return;
+                }
+            }
+
             AdvanceToLine(nextIdx);
             return;
         }
 
         Hide();
+    }
+
+    private IEnumerator CloseExecuteAndPause(Interactable.DialogueLine line, int nextIdx)
+    {
+        isHidingForCombat = true;
+        seqIndex = nextIdx; // Mantenim l'índex correcte per poder mostrar el text d'aquesta línia en tornar
+
+        // 1. Tanquem amb animació (esperem la durada de l'animació de PlayOut)
+        PlayOut();
+        yield return new WaitForSecondsRealtime(animDuration + 0.05f);
+        
+        if (currentPanelGO != null) currentPanelGO.SetActive(false);
+        isOpen = false;
+
+        // 2. Iniciem l'esdeveniment (combat o el que sigui)
+        line.onLineReached?.Invoke();
+        eventAlreadyFired = true; // Marquem perquè quan tornem a ShowInternal no es torni a disparar
+
+        // 3. Si l'esdeveniment no ha iniciat cap combat, tornem a obrir el diàleg immediatament
+        if (!CombatLoader.IsInCombat)
+        {
+            ResumeAfterCombat();
+        }
+    }
+
+    public void ResumeAfterCombat()
+    {
+        if (!isHidingForCombat) return;
+        isHidingForCombat = false;
+
+        if (inSequence && sequence != null && seqIndex < sequence.Length)
+        {
+            // Tornem a mostrar el diàleg amb animació d'entrada
+            if (currentPanelGO != null) currentPanelGO.SetActive(true);
+            ShowInternal(sequence[seqIndex], true);
+        }
+        else
+        {
+            // Si no queden línies, tanquem del tot
+            Hide();
+        }
     }
 
     private void AdvanceToLine(int nextIdx)

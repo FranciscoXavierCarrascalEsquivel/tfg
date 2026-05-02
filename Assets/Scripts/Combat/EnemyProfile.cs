@@ -72,6 +72,16 @@ public class EnemyProfile : ScriptableObject
 }
 
 [System.Serializable]
+public struct PhaseDialogueLine
+{
+    [TextArea(2, 4)]
+    public string message;
+    [Tooltip("Velocitat d'escriptura (1 = normal, 0.5 = r\xE0pid, 2 = lent)")]
+    public float typingSpeedMultiplier;
+    public bool shakeText;
+}
+
+[System.Serializable]
 public struct EnemyPhase
 {
     public string phaseName;
@@ -81,10 +91,10 @@ public struct EnemyPhase
     public Sprite phaseSprite;
     [Tooltip("Atacs especifics d'aquesta fase.")]
     public EnemyAttackPattern[] phaseAttacks;
-    [Tooltip("Missatges que diu l'enemic quan canvia a aquesta fase (es mostren seqüencialment).")]
-    public string[] transitionDialogues;
+    [Tooltip("Missatges que diu l'enemic quan canvia a aquesta fase.")]
+    public PhaseDialogueLine[] transitionDialogues;
     public AudioClip transitionSound;
-    [Tooltip("Si es marca, el combat acabarà pacíficament (reclutant l'enemic) un cop acabin els diàlegs d'entrada d'aquesta fase.")]
+    [Tooltip("Si es marca, el combat acabar\xE0 pac\xEDficament (reclutant l'enemic) un cop acabin els di\xE0legs d'entrada d'aquesta fase.")]
     public bool endFightFriendly;
 }
 

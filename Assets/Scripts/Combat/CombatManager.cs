@@ -33,6 +33,7 @@ public class CombatManager : MonoBehaviour
     private string originalFightText;
 
     private State state;
+    public bool IsEnded => state == State.End;
     private CombatEncounter encounter;
     private CombatLoader loader;
     
@@ -1029,12 +1030,11 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowMultiplePhaseDialogues(string[] messages)
+    private IEnumerator ShowMultiplePhaseDialogues(PhaseDialogueLine[] lines)
     {
-        // isEnemySpeaking es gestiona dins de cada EnemySpeakRoutine
-        foreach (var msg in messages)
+        foreach (var line in lines)
         {
-            yield return EnemySpeakRoutine(msg);
+            yield return EnemySpeakRoutine(line.message, line.typingSpeedMultiplier, line.shakeText);
         }
     }
 
@@ -1129,7 +1129,7 @@ public class CombatManager : MonoBehaviour
 
     public void PlayerTakeDamage(int damage)
     {
-        if (state == State.End) return;
+        if (state == State.End) return; // Evitem dany si ja hem mort o acabat
 
         int finalDamage = damage;
 
@@ -1145,7 +1145,6 @@ public class CombatManager : MonoBehaviour
         }
 
         playerCurrentHP -= finalDamage;
-        if (playerCurrentHP < 0) playerCurrentHP = 0;
         UpdateStatsUI();
 
         if (takeDamageSound) audioSource.PlayOneShot(takeDamageSound);
@@ -1154,10 +1153,21 @@ public class CombatManager : MonoBehaviour
         if (PlayerInventory.Instance != null)
             PlayerInventory.Instance.SetHP(playerCurrentHP);
 
-        if (playerCurrentHP == 0)
+        // Si el jugador mor
+        if (playerCurrentHP <= 0)
         {
+            playerCurrentHP = 0;
             state = State.End;
-            Debug.Log("PLAYER DIED");
+            SetHandsActive(false); // Desactivem les mans i el seu soroll immediatament
+            
+            // Destruïm tots els projectils en pantalla perquè no continuïn fent efectes
+            var activeProjs = FindObjectsByType<ProjectileUI>(FindObjectsSortMode.None);
+            foreach(var p in activeProjs) 
+            {
+                if (p != null) Destroy(p.gameObject);
+            }
+            ProjectileUI.activeProjectiles = 0;
+
             StartCoroutine(GameOverRoutine());
         }
     }
@@ -1179,18 +1189,32 @@ public class CombatManager : MonoBehaviour
         if (loopAudioSource) loopAudioSource.Stop();
         if (voiceAudioSource) voiceAudioSource.Stop();
 
-        // 2. Pantalla negra de cop i espera un total de 3 segons de silenci
+        // 2. Pantalla negra de cop i espera un breu moment de silenci
         img.color = Color.black;
 
-        yield return new WaitForSecondsRealtime(3f);
+        yield return new WaitForSecondsRealtime(1.5f);
 
-        // 3. Música de game over
+        // 3. Música de game over amb fade in
         if (gameOverMusic != null)
         {
             audioSource.clip = gameOverMusic;
             audioSource.loop = true;
-            audioSource.volume = 1f;
+            audioSource.volume = 0f;
             audioSource.Play();
+
+            float musicFadeDuration = 3f;
+            float goMusicFadeElapsed = 0f;
+            while (goMusicFadeElapsed < musicFadeDuration)
+            {
+                goMusicFadeElapsed += Time.unscaledDeltaTime;
+                audioSource.volume = Mathf.Lerp(0f, 1f, goMusicFadeElapsed / musicFadeDuration);
+                yield return null;
+            }
+            audioSource.volume = 1f;
+        }
+        else
+        {
+            yield return new WaitForSecondsRealtime(2f); // Espera si no hi ha música
         }
 
         // 4. Dialeg (tipus overworld)
@@ -1647,7 +1671,8 @@ public class CombatManager : MonoBehaviour
         // Ús del so de veu personalitzat per aquest enemic si està definit
         AudioClip voice = (encounter?.enemyProfile != null) ? encounter.enemyProfile.reasonFallbackSound : null;
         
-        yield return ShowPlayerActionDialogue(text, voice);
+        // El text de Game Over es mostra molt lentament (x4 de temps, o sigui x0.25 de velocitat)
+        yield return ShowPlayerActionDialogue(text, voice, 4.0f);
         EndPlayerTurn(""); // Simplement perdem el torn
     }
 
@@ -2226,7 +2251,7 @@ public class CombatManager : MonoBehaviour
     /// Mostra un diàleg estil overworld a la part inferior del combat
     /// per narrar l'acció del jugador. Espera que el jugador l'avanci amb E/Enter.
     /// </summary>
-    private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null)
+    private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null, float speedMultiplier = 1f)
     {
         // Creem un DialogueUI temporal per al combat
         var canvas = FindFirstObjectByType<Canvas>();
@@ -2236,6 +2261,12 @@ public class CombatManager : MonoBehaviour
         dialogGO.transform.SetParent(canvas.transform, false);
         var dialogUI = dialogGO.AddComponent<DialogueUI>();
         dialogUI.canSkip = false;
+        
+        // Apliquem la velocitat si és diferent a la normal
+        if (speedMultiplier != 1f)
+        {
+            dialogUI.SetSpeedMultiplier(speedMultiplier); 
+        }
 
         // Personalització de la veu: Prioritat al de l'enemic, fallback al global del combat
         AudioClip voice = (overrideVoice != null) ? overrideVoice : playerActionVoice;
@@ -2264,12 +2295,11 @@ public class CombatManager : MonoBehaviour
         if (dialogGO != null) Destroy(dialogGO);
     }
 
-    private IEnumerator EnemySpeakRoutine(string text)
+    private IEnumerator EnemySpeakRoutine(string text, float speedMultiplier = 1f, bool shake = false)
     {
-        if (enemyBubbleRT == null || string.IsNullOrEmpty(text) || voiceAudioSource == null) yield break;
-        
+        if (enemyBubbleRT == null || enemyDialogTxt == null || string.IsNullOrEmpty(text)) yield break;
+
         string cleanText = text.Trim();
-        voiceAudioSource.pitch = 1f;
         isEnemySpeaking = true;
         enemyBubbleRT.gameObject.SetActive(true);
         enemyDialogTxt.text = "";
@@ -2279,7 +2309,7 @@ public class CombatManager : MonoBehaviour
         
         // Paràmetres orgànics idèntics a DialogueUI
         float charsPerSecond = 45f;
-        float delay = 1f / charsPerSecond;
+        float delay = (1f / charsPerSecond) * speedMultiplier;
 
         for (int i = 0; i < cleanText.Length; i++)
         {

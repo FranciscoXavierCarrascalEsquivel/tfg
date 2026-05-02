@@ -52,19 +52,40 @@ public class MusicChangeTrigger : MonoBehaviour
         isTransitioning = true;
 
         // 1) Busquem qualsevol font de música activa i li fem fade out
-        var loopMusic = FindFirstObjectByType<TriggerMusicLoopSection2D>();
-        var sceneMusic = FindFirstObjectByType<SceneMusic>();
-
+        
         Coroutine fadeOutRoutine = null;
 
-        if (loopMusic != null)
+        // A) Busquem si algun ALTRE MusicChangeTrigger està reproduint música
+        var otherTriggers = FindObjectsByType<MusicChangeTrigger>(FindObjectsSortMode.None);
+        foreach (var t in otherTriggers)
         {
-            fadeOutRoutine = StartCoroutine(loopMusic.FadeOutAndStop(fadeOutDuration));
+            if (t != this && t.IsPlaying())
+            {
+                fadeOutRoutine = t.FadeOutAndStop(fadeOutDuration);
+            }
         }
-        else if (sceneMusic != null)
+
+        // B) Si cap altre trigger estava sonant, busquem els reproductors generals
+        var loopMusic = FindFirstObjectByType<TriggerMusicLoopSection2D>();
+        var sceneMusic = FindFirstObjectByType<SceneMusic>();
+        var combatLoader = FindFirstObjectByType<CombatLoader>();
+
+        if (fadeOutRoutine == null)
         {
-            fadeOutRoutine = StartCoroutine(sceneMusic.FadeOutAndPause(fadeOutDuration));
+            if (loopMusic != null)
+            {
+                fadeOutRoutine = StartCoroutine(loopMusic.FadeOutAndStop(fadeOutDuration));
+            }
+            else if (sceneMusic != null)
+            {
+                fadeOutRoutine = StartCoroutine(sceneMusic.FadeOutAndPause(fadeOutDuration));
+            }
+            else if (combatLoader != null)
+            {
+                fadeOutRoutine = combatLoader.StopBackgroundMusicCoroutine(fadeOutDuration);
+            }
         }
+
 
         // Esperem que acabi el fade out
         if (fadeOutRoutine != null)
@@ -91,5 +112,33 @@ public class MusicChangeTrigger : MonoBehaviour
         }
 
         isTransitioning = false;
+    }
+
+    public bool IsPlaying()
+    {
+        return newMusicSource != null && newMusicSource.isPlaying;
+    }
+
+    public Coroutine FadeOutAndStop(float duration)
+    {
+        if (IsPlaying())
+        {
+            return StartCoroutine(FadeOutRoutine(duration));
+        }
+        return null;
+    }
+
+    private IEnumerator FadeOutRoutine(float duration)
+    {
+        float startVol = newMusicSource.volume;
+        float t = 0;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            newMusicSource.volume = Mathf.Lerp(startVol, 0f, t / duration);
+            yield return null;
+        }
+        newMusicSource.volume = 0f;
+        newMusicSource.Stop();
     }
 }
