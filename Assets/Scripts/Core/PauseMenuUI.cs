@@ -34,7 +34,7 @@ public class PauseMenuUI : MonoBehaviour
     {
         if (instance != null) return;
 
-        var canvas = FindFirstObjectByType<Canvas>();
+        var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null)
         {
             var canGO = new GameObject("PauseCanvas");

@@ -50,7 +50,7 @@ public class InventoryMenuUI : MonoBehaviour
     // ── Factory ──────────────────────────────────────────────────────
     public static void Show(bool isCombat, Action<ItemProfile> onItemSelected, Action onClose = null)
     {
-        var canvas = FindFirstObjectByType<Canvas>();
+        var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null) return;
         var go = new GameObject("InventoryMenuUI");
         var rt = go.AddComponent<RectTransform>();

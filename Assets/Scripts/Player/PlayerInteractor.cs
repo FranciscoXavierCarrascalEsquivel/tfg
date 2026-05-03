@@ -38,6 +38,7 @@ public class PlayerInteractor : MonoBehaviour
         if (dialogueUI != null && dialogueUI.IsOpen)
         {
             if (PauseMenuUI.IsOpen) return; // No avançar diàleg en pausa
+            if (!dialogueUI.canAdvance) return; // NO avançar si està bloquejat
             dialogueUI.AdvanceOrSkip();
             return;
         }

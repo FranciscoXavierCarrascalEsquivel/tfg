@@ -28,7 +28,7 @@ public class ControlsUI : MonoBehaviour
 
     private void BuildUI()
     {
-        var canvas = FindFirstObjectByType<Canvas>();
+        var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null) return;
 
         var old = GameObject.Find("ControlsPanel");
@@ -82,7 +82,7 @@ public class ControlsUI : MonoBehaviour
     {
         if (panelGO == null)
         {
-            var canvas = FindFirstObjectByType<Canvas>();
+            var canvas = CanvasHelper.GetMainCanvas();
             if (canvas != null) BuildUI();
             return;
         }

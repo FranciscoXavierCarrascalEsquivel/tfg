@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerminalCutscene
   terminalText: {fileID: 1161905997}
-  introVideoClip: {fileID: 32900000, guid: adcd4da6fc4295a4f8e44ab34f71c1d2, type: 3}
+  introVideoClip: {fileID: 0}
   videoFadeDuration: 0.5
   splashImage: {fileID: 1437094136}
   splashSprite: {fileID: 5806793408762001177, guid: dd100aa92f3b1644fbba75b5f2c17c68, type: 3}
@@ -225,6 +225,7 @@ MonoBehaviour:
   soundEveryNChars: 2
   nextSceneName: Zona_Test
   endPause: 2
+  explosionSound: {fileID: 8300000, guid: 004406a11bb15734a93fc2b97812389a, type: 3}
   glitchStartLineIndex: 13
   glitchIncreasePerLine: 0.05
   glitchMaxIntensity: 1

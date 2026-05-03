@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class DialogueUI : MonoBehaviour
 {
     [Header("Typewriter")]
-    [SerializeField] private float charsPerSecond = 40f;
+    public float charsPerSecond = 40f;
     [SerializeField] private bool skipSpaces = true;
     [SerializeField] private int soundEveryNChars = 2;
 
@@ -20,6 +20,7 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private float animDuration = 0.4f; 
     [SerializeField] private bool animateOnShow = true;  
     public bool canSkip = true;
+    public bool canAdvance = true;
 
     private Coroutine typingRoutine;
     private Coroutine animRoutine;
@@ -38,7 +39,7 @@ public class DialogueUI : MonoBehaviour
     private GameObject currentPanelGO;
     private RectTransform panelRect;
     private CanvasGroup panelGroup;
-    private TextMeshProUGUI dialogueText;
+    public TextMeshProUGUI dialogueText;
     private TextMeshProUGUI nameText;
     private Image portraitImage;
     private Animator portraitAnimator;
@@ -82,6 +83,7 @@ public class DialogueUI : MonoBehaviour
     private int selectedChoiceIdx;
     private RectTransform choicePanelRT;
     private System.Collections.Generic.List<TextMeshProUGUI> choiceTexts = new System.Collections.Generic.List<TextMeshProUGUI>();
+    private System.Collections.Generic.List<Interactable.DialogueChoice> visibleChoices = new System.Collections.Generic.List<Interactable.DialogueChoice>();
 
     private void Awake()
     {
@@ -129,7 +131,7 @@ public class DialogueUI : MonoBehaviour
             // E Button Logic
             if (eBtnGroup != null && eTextRT != null)
             {
-                if (!isTyping && !isSelectingChoice)
+                if (!isTyping && !isSelectingChoice && canAdvance)
                 {
                     eBtnGroup.alpha = 1f;
                     float cycle = Time.unscaledTime * 1.5f;
@@ -369,6 +371,7 @@ public class DialogueUI : MonoBehaviour
         sequence = null;
         seqIndex = 0;
 
+        canAdvance = true; // Reset per evitar bloquejos perpetus
         isTyping = false;
         isSelectingChoice = false;
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
@@ -415,7 +418,7 @@ public class DialogueUI : MonoBehaviour
 
         if (isSelectingChoice)
         {
-            var choice = currentLineChoices[selectedChoiceIdx];
+            var choice = visibleChoices[selectedChoiceIdx];
 
             if (choice.customSelectSound != null)
             {
@@ -426,11 +429,24 @@ public class DialogueUI : MonoBehaviour
                 ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
             }
 
+            // Marcar com a vist si l'interactable ho demana i no és repetible
+            var currentLine = sequence != null && inSequence && seqIndex < sequence.Length ? sequence[seqIndex] : null;
+            bool shouldHideSeen = currentLine != null && currentLine.owner != null && currentLine.owner.HideSeenChoices;
+            
+            if (shouldHideSeen)
+            {
+                if (!choice.repeatable && PlayerInventory.Instance != null)
+                {
+                    PlayerInventory.Instance.MarkChoiceSeen(choice.text);
+                }
+            }
+
             choice.onChoiceSelected?.Invoke();
             
             isSelectingChoice = false;
             foreach(Transform child in choicePanelRT) Destroy(child.gameObject);
             choiceTexts.Clear();
+            visibleChoices.Clear();
             
             int nextIdx = choice.jumpToLineIndex >= 0 ? choice.jumpToLineIndex : seqIndex + 1;
 
@@ -681,12 +697,30 @@ public class DialogueUI : MonoBehaviour
     {
         if (currentPanelGO != null) return;
         
-        var canvas = FindFirstObjectByType<Canvas>();
-        if (canvas == null) return;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        Canvas targetCanvas = null;
+        foreach (var c in canvases)
+        {
+            if (c.name != "EndCanvas" && c.name != "AlertCanvas")
+            {
+                targetCanvas = c;
+                break; // Found a valid canvas
+            }
+        }
+        if (targetCanvas == null && canvases.Length > 0) targetCanvas = canvases[0]; // fallback
+        if (targetCanvas == null) return;
+        
+        var canvas = targetCanvas;
 
         currentPanelGO = new GameObject("DynamicDialoguePanel");
         panelRect = currentPanelGO.AddComponent<RectTransform>();
         panelRect.SetParent(canvas.transform, false);
+
+        // NOU: Forcem que el panell tingui un Canvas propi per sobre de tot
+        Canvas diagCanvas = currentPanelGO.AddComponent<Canvas>();
+        diagCanvas.overrideSorting = true;
+        diagCanvas.sortingOrder = 9999;
+        currentPanelGO.AddComponent<GraphicRaycaster>();
 
         panelRect.anchorMin = new Vector2(0.12f, 0.05f);
         panelRect.anchorMax = new Vector2(0.88f, 0.35f); // Increased panel height max (from 0.28)
@@ -898,14 +932,29 @@ public class DialogueUI : MonoBehaviour
         
         foreach(Transform child in choicePanelRT) Destroy(child.gameObject);
         choiceTexts.Clear();
+        visibleChoices.Clear();
         
+        var inv = PlayerInventory.Instance;
+        var currentLine = sequence != null && inSequence && seqIndex < sequence.Length ? sequence[seqIndex] : null;
+        bool shouldHideSeen = currentLine != null && currentLine.owner != null && currentLine.owner.HideSeenChoices;
+
         for (int i = 0; i < currentLineChoices.Length; i++)
         {
+            var choice = currentLineChoices[i];
+            
+            // Si l'opció ja s'ha vist i no és repetible, i l'interactable ho demana, la ignorem
+            if (shouldHideSeen && inv != null && !choice.repeatable && inv.IsChoiceSeen(choice.text))
+            {
+                continue;
+            }
+
+            visibleChoices.Add(choice);
+
             var btnGO = new GameObject("ChoiceBtn");
             btnGO.transform.SetParent(choicePanelRT, false);
             var bRT = btnGO.AddComponent<RectTransform>();
             var le = btnGO.AddComponent<LayoutElement>();
-            le.minHeight = 85f; // Increased height of choices (from 64f)
+            le.minHeight = 85f; 
 
             var img = btnGO.AddComponent<Image>();
             img.color = new Color(0.1f, 0.1f, 0.2f, 0.95f);
@@ -920,13 +969,20 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = new Vector2(10f, 5f); tRT.offsetMax = new Vector2(-10f, -5f);
             
             var txt = txtGO.AddComponent<TextMeshProUGUI>();
-            SetFont(txt, 45f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center); // Adjusted for grid
+            SetFont(txt, 45f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center); 
             txt.enableAutoSizing = true;
             txt.fontSizeMin = 24f;
             txt.fontSizeMax = 55f;
-            txt.text = currentLineChoices[i].text;
+            txt.text = choice.text;
             
             choiceTexts.Add(txt);
+        }
+
+        // Si per alguna raó no hi ha cap opció visible (error de disseny), tanquem el diàleg
+        if (visibleChoices.Count == 0)
+        {
+            Hide();
+            return;
         }
         
         HighlightChoice();

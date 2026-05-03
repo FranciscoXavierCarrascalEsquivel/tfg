@@ -83,6 +83,21 @@ public class PlayerInventory : MonoBehaviour
     // Recompenses de reclutament ja reclamades (per no aplicar-les dues vegades)
     private HashSet<string> claimedRecruitRewards = new HashSet<string>();
 
+    // Diàlegs ja vistos (opcions de resposta)
+    private HashSet<string> seenChoices = new HashSet<string>();
+
+    public void MarkChoiceSeen(string choiceText)
+    {
+        if (string.IsNullOrEmpty(choiceText)) return;
+        seenChoices.Add(choiceText.Trim());
+    }
+
+    public bool IsChoiceSeen(string choiceText)
+    {
+        if (string.IsNullOrEmpty(choiceText)) return false;
+        return seenChoices.Contains(choiceText.Trim());
+    }
+
     private float escapeHoldTime = 0f;
     private const float EscapeHoldRequired = 0.5f;
 
@@ -315,7 +330,7 @@ public class PlayerInventory : MonoBehaviour
             var menuObert = FindFirstObjectByType<InventoryMenuUI>();
             // Esborrem comprovació simplificada i afegim comprovació manual per Type
             bool isShopOpen = false;
-            foreach (Transform t in FindFirstObjectByType<Canvas>()?.transform)
+            foreach (Transform t in CanvasHelper.GetMainCanvas()?.transform)
             {
                 if (t.name == "ShopMenuUI") isShopOpen = true; // Temporary hack until ShopMenuUI exists fully
             }

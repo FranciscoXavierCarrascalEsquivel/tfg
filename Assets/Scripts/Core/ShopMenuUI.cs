@@ -54,7 +54,7 @@ public class ShopMenuUI : MonoBehaviour
             Debug.LogWarning("No es pot obrir la botiga mentre s'està en combat.");
             return;
         }
-        var canvas = FindFirstObjectByType<Canvas>();
+        var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null) return;
         var go = new GameObject("ShopMenuUI");
         var rt = go.AddComponent<RectTransform>();

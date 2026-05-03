@@ -86,6 +86,9 @@ public class Interactable : MonoBehaviour
         [Tooltip("Opcional: So exclusiu al seleccionar aquesta resposta específica.")]
         public AudioClip customSelectSound;
 
+        [Tooltip("Si és cert, aquesta opció no desapareixerà mai encara que ja l'haguem escollit abans.")]
+        public bool repeatable = false;
+
         [Tooltip("Accions extres a executar quan s'escull aquesta resposta (ex: Iniciar combat, Restar or).")]
         public UnityEvent onChoiceSelected;
     }
@@ -98,6 +101,21 @@ public class Interactable : MonoBehaviour
         public AudioClip voiceOverride;
         public UnityEvent onLineReached;
     }
+
+    [Header("Configuració de Diàleg")]
+    [Tooltip("Si és cert, les opcions de diàleg (choices) que ja hem escollit s'amagaran la propera vegada, excepte si estan marcades com a repetibles.")]
+    [SerializeField] private bool hideSeenChoices = false;
+    public bool HideSeenChoices => hideSeenChoices;
+
+    [Header("Requisit d'Inventari (Opcional)")]
+    [Tooltip("Nom de l'objecte necessari a l'inventari per executar l'acció especial en comptes del diàleg normal.")]
+    public string requiredItemName = "";
+
+    [Tooltip("Si tenim l'objecte, mostrem aquest diàleg en comptes de les Versions normals.")]
+    public DialogueVersion requirementMetVersion;
+
+    [Tooltip("S'executarà automàticament al interactuar si tenim l'objecte a l'inventari.")]
+    public UnityEvent onRequirementMet;
 
     [Header("Versions de Diàleg (cada interacció usa la següent; l'ultima es repeteix en bucle)")]
     [SerializeField] private DialogueVersion[] versions;
@@ -133,8 +151,31 @@ public class Interactable : MonoBehaviour
     public DialogueLine[] GetCurrentLines()
     {
         DialogueLine[] linesToReturn = null;
+        
+        // Comprovar si hi ha un requisit d'objecte i si el tenim
+        bool hasRequiredItem = false;
+        if (!string.IsNullOrEmpty(requiredItemName) && PlayerInventory.Instance != null)
+        {
+            foreach(var item in PlayerInventory.Instance.Items)
+            {
+                if (item == requiredItemName)
+                {
+                    hasRequiredItem = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasRequiredItem)
+        {
+            onRequirementMet?.Invoke();
+            linesToReturn = requirementMetVersion?.lines ?? new DialogueLine[0];
+            
+            // Si estem forçant la versió amb l'objecte, disparem l'event propi si el té
+            requirementMetVersion?.onLineReached?.Invoke();
+        }
         // Si hi ha versions configurades, les fem servir
-        if (versions != null && versions.Length > 0)
+        else if (versions != null && versions.Length > 0)
         {
             int idx = Mathf.Min(interactionCount, versions.Length - 1);
             linesToReturn = versions[idx]?.lines ?? new DialogueLine[0];

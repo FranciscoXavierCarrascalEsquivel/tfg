@@ -65,6 +65,9 @@ public class TerminalCutscene : MonoBehaviour
     [SerializeField] private string nextSceneName = "Zona_Test";
     [SerializeField] private float endPause = 0.8f;
 
+    [Header("Explosion Transition")]
+    [SerializeField] private AudioClip explosionSound;
+
     // ---------------- GLITCH ----------------
     [Header("Glitch (progressiu)")]
     [Tooltip("A partir d'aquest índex de línia (0-based), s'activa el glitch.")]
@@ -336,7 +339,65 @@ public class TerminalCutscene : MonoBehaviour
             yield return new WaitForSeconds(0.25f);
         }
 
+        yield return StartCoroutine(ExplosionFlashRoutine());
         LoadNextScene();
+    }
+
+    IEnumerator ExplosionFlashRoutine()
+    {
+        // Crear un Canvas Overlay per a l'explosió
+        GameObject canvasGO = new GameObject("ExplosionCanvasTransition");
+        DontDestroyOnLoad(canvasGO); // Sobreviu a la càrrega de la nova escena!
+
+        Canvas tempCanvas = canvasGO.AddComponent<Canvas>();
+        tempCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        tempCanvas.sortingOrder = 9999; // Per sobre de tot
+
+        GameObject whiteGO = new GameObject("WhiteFlash");
+        whiteGO.transform.SetParent(canvasGO.transform, false);
+        var img = whiteGO.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0f);
+        var rRT = whiteGO.GetComponent<RectTransform>();
+        rRT.anchorMin = Vector2.zero; rRT.anchorMax = Vector2.one;
+        rRT.offsetMin = Vector2.zero; rRT.offsetMax = Vector2.zero;
+
+        float explosionDuration = 0.5f;
+
+        // Aturem qualsevol so previ de l'ordinador (boot up, glitch, etc.)
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+        }
+
+        // També aturem la música ambient de l'escena per donar impacte a l'explosió
+        var sceneMusic = FindFirstObjectByType<SceneMusic>();
+        if (sceneMusic != null) sceneMusic.StopMusic();
+        
+        var loopMusic = FindFirstObjectByType<TriggerMusicLoopSection2D>();
+        if (loopMusic != null) StartCoroutine(loopMusic.FadeOutAndStop(0.1f));
+
+        if (audioSource != null && explosionSound != null)
+        {
+            audioSource.PlayOneShot(explosionSound);
+            explosionDuration = explosionSound.length;
+        }
+
+        // Fade in ràpid a blanc
+        float flashInDuration = 0.05f;
+        float elapsedF = 0f;
+        while (elapsedF < flashInDuration)
+        {
+            elapsedF += Time.deltaTime;
+            img.color = new Color(1f, 1f, 1f, elapsedF / flashInDuration);
+            yield return null;
+        }
+        img.color = Color.white;
+
+        // Esperem fins que acabi de sonar l'àudio sencer abans de canviar d'escena
+        yield return new WaitForSeconds(Mathf.Max(0.1f, explosionDuration - flashInDuration));
+
+        // Afegim l'script perquè s'encarregui de fer el fade out un cop canviem d'escena
+        canvasGO.AddComponent<WhiteFlashFadeOut>();
     }
 
     IEnumerator TypeLineColored(string line, Color color)
