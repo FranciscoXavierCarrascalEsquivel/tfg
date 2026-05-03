@@ -174,8 +174,16 @@ public class PauseMenuUI : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isConfirming) CancelExit();
-            else Resume();
+            if (isConfirming) 
+            {
+                PlaySelectSound();
+                CancelExit();
+            }
+            else 
+            {
+                PlaySelectSound();
+                Resume();
+            }
             return;
         }
 
@@ -259,6 +267,13 @@ public class PauseMenuUI : MonoBehaviour
 
     public void Resume()
     {
+        StartCoroutine(ResumeRoutine());
+    }
+
+    private IEnumerator ResumeRoutine()
+    {
+        yield return StartCoroutine(OutroAnim());
+        
         Time.timeScale = 1f;
 
         var player = FindFirstObjectByType<PlayerController2D>();
@@ -273,6 +288,24 @@ public class PauseMenuUI : MonoBehaviour
         IsOpen = false;
         instance = null;
         Destroy(gameObject);
+    }
+
+    private IEnumerator OutroAnim()
+    {
+        float elapsed = 0f;
+        float dur = 0.25f;
+        Vector2 start = panelRT.anchoredPosition;
+        Vector2 target = new Vector2(0, -1000f);
+
+        while (elapsed < dur)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / dur;
+            float ease = t * t * t; // Ease In
+            panelRT.anchoredPosition = Vector2.Lerp(start, target, ease);
+            yield return null;
+        }
+        panelRT.anchoredPosition = target;
     }
 
     private IEnumerator ExitToMenuRoutine()

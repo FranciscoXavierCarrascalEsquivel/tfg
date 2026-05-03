@@ -99,6 +99,10 @@ public class PlayerInventory : MonoBehaviour
 
         baseMaxHP = startingMaxHP;
         CurrentHP = startingMaxHP;   // Primera vegada: vida plena
+
+        // Crea el panell de controls
+        if (gameObject.GetComponent<ControlsUI>() == null)
+            gameObject.AddComponent<ControlsUI>();
     }
 
     // ── HP ──────────────────────────────────────────────────────────
@@ -305,8 +309,8 @@ public class PlayerInventory : MonoBehaviour
     // ── Input: Obrir Inventari o Botiga (Fora Combat) ───────────────────────
     private void Update()
     {
-        // Si s'oprimeix 'I' i no hi ha combat actiu (CombatManager) o no està ja obert
-        if (Input.GetKeyDown(KeyCode.I))
+        // Si s'oprimeix 'I' o 'TAB' i no hi ha combat actiu (CombatManager) o no està ja obert
+        if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
         {
             var menuObert = FindFirstObjectByType<InventoryMenuUI>();
             // Esborrem comprovació simplificada i afegim comprovació manual per Type

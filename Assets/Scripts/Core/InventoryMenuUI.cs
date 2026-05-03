@@ -697,7 +697,7 @@ public class InventoryMenuUI : MonoBehaviour
 
         if (close || (use && selIdx == EXIT_IDX)) 
         { 
-            if (use && PlayerInventory.Instance != null) ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
+            if (PlayerInventory.Instance != null) ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
             CloseMenu(); 
             return; 
         }
@@ -878,7 +878,36 @@ public class InventoryMenuUI : MonoBehaviour
         Destroy(go);
     }
 
-    private void CloseMenu() { IsOpen = false; onClose?.Invoke(); Destroy(gameObject); }
+    private void CloseMenu() 
+    { 
+        if (inputBlocked) return;
+        inputBlocked = true; 
+        StartCoroutine(OutroRoutine()); 
+    }
+
+    private IEnumerator OutroRoutine()
+    {
+        Vector2 finalOffsetMin = cardRT_Ref.offsetMin;
+        Vector2 finalOffsetMax = cardRT_Ref.offsetMax;
+        Vector2 targetOffset = new Vector2(0f, -1500f);
+
+        float elapsed = 0f;
+        float dur = 0.3f;
+        while (elapsed < dur)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / dur);
+            float easeIn = t * t * t;
+            
+            cardRT_Ref.offsetMin = Vector2.Lerp(finalOffsetMin, finalOffsetMin + targetOffset, easeIn);
+            cardRT_Ref.offsetMax = Vector2.Lerp(finalOffsetMax, finalOffsetMax + targetOffset, easeIn);
+            yield return null;
+        }
+
+        IsOpen = false; 
+        onClose?.Invoke(); 
+        Destroy(gameObject);
+    }
     private void OnDestroy()  { IsOpen = false; }
 
     // ── Helpers RT ───────────────────────────────────────────────────
