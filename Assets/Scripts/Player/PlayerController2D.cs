@@ -340,7 +340,7 @@ public class PlayerController2D : MonoBehaviour
 
         var txt = txtGO.AddComponent<TextMeshProUGUI>();
         txt.text = "!";
-        txt.fontSize = 72f;
+        txt.fontSize = 110f;
         txt.color = new Color(0.95f, 0.8f, 0.15f); // Groc
         txt.alignment = TextAlignmentOptions.Center;
         txt.overflowMode = TextOverflowModes.Overflow;
@@ -365,7 +365,6 @@ public class PlayerController2D : MonoBehaviour
 
         // Convertir posició del jugador al món → posició de pantalla
         Camera cam = Camera.main;
-        Vector3 worldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 0.8f;
 
         // Animació pop-in (escala)
         txtGO.transform.localScale = Vector3.zero;
@@ -380,15 +379,28 @@ public class PlayerController2D : MonoBehaviour
 
             // Seguim la posició del jugador cada frame
             if (cam != null)
-                rt.position = cam.WorldToScreenPoint(worldPos);
+            {
+                Vector3 currentWorldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 0.8f;
+                rt.position = cam.WorldToScreenPoint(currentWorldPos);
+            }
 
             yield return null;
         }
         txtGO.transform.localScale = Vector3.one;
-        if (cam != null)
-            rt.position = cam.WorldToScreenPoint(worldPos);
 
-        yield return new WaitForSeconds(0.3f);
+        // Espera addicional continuant l'actualització de la posició
+        float waitElapsed = 0f;
+        while (waitElapsed < 0.3f)
+        {
+            waitElapsed += Time.deltaTime;
+            if (cam != null)
+            {
+                Vector3 currentWorldPos = (playerTransform != null ? playerTransform.position : transform.position) + Vector3.up * 0.8f;
+                rt.position = cam.WorldToScreenPoint(currentWorldPos);
+            }
+            yield return null;
+        }
+
         Destroy(alertGO);
     }
 

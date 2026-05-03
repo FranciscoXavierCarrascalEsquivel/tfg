@@ -83,6 +83,9 @@ public class PlayerInventory : MonoBehaviour
     // Recompenses de reclutament ja reclamades (per no aplicar-les dues vegades)
     private HashSet<string> claimedRecruitRewards = new HashSet<string>();
 
+    private float escapeHoldTime = 0f;
+    private const float EscapeHoldRequired = 0.5f;
+
     // ────────────────────────────────────────────────────────────────
     private void Awake()
     {
@@ -358,16 +361,25 @@ public class PlayerInventory : MonoBehaviour
             }
         }
 
-        // Menu de Pausa
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // Menu de Pausa (Mantenir ESC 0.5 segons)
+        if (Input.GetKey(KeyCode.Escape))
         {
             var dialogUI = FindFirstObjectByType<DialogueUI>();
             bool isAnyMenuOpen = InventoryMenuUI.IsOpen || ShopMenuUI.IsOpen;
             
             if (!isAnyMenuOpen && !PauseMenuUI.IsOpen)
             {
-                PauseMenuUI.Show();
+                escapeHoldTime += Time.unscaledDeltaTime;
+                if (escapeHoldTime >= EscapeHoldRequired)
+                {
+                    escapeHoldTime = 0f;
+                    PauseMenuUI.Show();
+                }
             }
+        }
+        else
+        {
+            escapeHoldTime = 0f;
         }
 
         // Test mode: Establir or a 9999

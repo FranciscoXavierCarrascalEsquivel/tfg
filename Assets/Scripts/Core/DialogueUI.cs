@@ -31,6 +31,7 @@ public class DialogueUI : MonoBehaviour
     private bool isTyping;
     private int typedCount;
 
+    public bool WasSkipped { get; private set; }
     public System.Action OnDialogueClosed;
 
     // Generated UI refs
@@ -90,6 +91,8 @@ public class DialogueUI : MonoBehaviour
 
     private void Update()
     {
+        if (PauseMenuUI.IsOpen) return;
+
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // F Button (Skip) Logic
@@ -103,6 +106,7 @@ public class DialogueUI : MonoBehaviour
                     if (skipHoldTime >= SkipHoldRequired)
                     {
                         skipHoldTime = 0f;
+                        WasSkipped = true;
                         Hide();
                         return;
                     }
@@ -202,6 +206,7 @@ public class DialogueUI : MonoBehaviour
 
     public void StartDialogue(Interactable.DialogueLine[] lines, bool animateIn = true)
     {
+        WasSkipped = false;
         if (CombatLoader.IsInCombat)
         {
             var cm = FindFirstObjectByType<CombatManager>();
@@ -242,6 +247,7 @@ public class DialogueUI : MonoBehaviour
 
     public void Show(string text, Sprite portrait = null, RuntimeAnimatorController portraitAnim = null)
     {
+        WasSkipped = false;
         inSequence = false;
         sequence = null;
         seqIndex = 0;
@@ -294,7 +300,7 @@ public class DialogueUI : MonoBehaviour
                 }
             }
             
-            if (line.setNextInteractionVersion >= 0)
+            if (line.setNextInteractionVersion >= 0 && line.owner != null)
             {
                 line.owner.SetNextInteractionVersion(line.setNextInteractionVersion);
             }

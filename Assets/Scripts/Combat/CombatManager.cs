@@ -621,8 +621,8 @@ public class CombatManager : MonoBehaviour
         // --- Handle UI Input ---
         if (state != State.PlayerTurn || isPhaseShiftingThisTurn || isEnemySpeaking) return;
 
-        // Bloquejar input del combat mentre l'inventari és obert
-        if (InventoryMenuUI.IsOpen) return;
+        // Bloquejar input del combat mentre l'inventari o el menú de pausa són oberts
+        if (InventoryMenuUI.IsOpen || PauseMenuUI.IsOpen) return;
 
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
@@ -2282,7 +2282,7 @@ public class CombatManager : MonoBehaviour
         // Esperem que el jugador avanci/tanqui el diàleg
         while (!closed)
         {
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            if (!PauseMenuUI.IsOpen && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)))
             {
                 dialogUI.AdvanceOrSkip();
             }
@@ -2336,7 +2336,7 @@ public class CombatManager : MonoBehaviour
             while (elapsed < currentDelay)
             {
                 elapsed += Time.unscaledDeltaTime;
-                if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                if (!PauseMenuUI.IsOpen && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)))
                 {
                     skipped = true;
                     break;
@@ -2361,7 +2361,7 @@ public class CombatManager : MonoBehaviour
         yield return new WaitForSeconds(0.15f); // Prevenir tancat instantani si estavem pitjant
         while (!advance)
         {
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            if (!PauseMenuUI.IsOpen && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)))
             {
                 advance = true;
                 if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);

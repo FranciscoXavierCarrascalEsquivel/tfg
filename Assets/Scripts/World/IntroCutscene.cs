@@ -15,6 +15,8 @@ public class IntroCutscene : MonoBehaviour
     [SerializeField] private Interactable.DialogueLine[] dialogueWhileOnFloor;
     [Tooltip("Diàlegs després de canviar a l'sprite d'estar assegut")]
     [SerializeField] private Interactable.DialogueLine[] dialogueWhileSitting;
+    [Tooltip("Diàlegs després de posar-se dret")]
+    [SerializeField] private Interactable.DialogueLine[] dialogueWhileStanding;
     
     [Header("Efecte Tremolor & Audio")]
     [Tooltip("Temps que estarà tremolant abans de posar-se dret")]
@@ -31,6 +33,8 @@ public class IntroCutscene : MonoBehaviour
     [SerializeField] private float delayBeforeSecondDialogue = 0.5f;
     [Tooltip("Pausa de silenci just abans de fer l'últim esforç per aixecar-se")]
     [SerializeField] private float delayBeforeFinalTremble = 0.3f;
+    [Tooltip("Pausa després de posar-se dret, just abans de parlar la tercera part")]
+    [SerializeField] private float delayBeforeThirdDialogue = 0.5f;
 
     [Header("Opcions generals")]
     [Tooltip("Si vols que la cinemàtica passi només 1 únic cop. Deixa'l desmarcat si estàs provant.")]
@@ -89,6 +93,11 @@ public class IntroCutscene : MonoBehaviour
         if (dialogueUI != null && dialogueWhileOnFloor != null && dialogueWhileOnFloor.Length > 0)
         {
             yield return StartCoroutine(PlayDialogueAndWait(dialogueUI, dialogueWhileOnFloor));
+            if (dialogueUI.WasSkipped)
+            {
+                yield return StartCoroutine(CompleteCutsceneRoutine());
+                yield break;
+            }
         }
         
         // PRIMER TREMOLOR ABANS DE SEURE
@@ -106,6 +115,11 @@ public class IntroCutscene : MonoBehaviour
         if (dialogueUI != null && dialogueWhileSitting != null && dialogueWhileSitting.Length > 0)
         {
             yield return StartCoroutine(PlayDialogueAndWait(dialogueUI, dialogueWhileSitting));
+            if (dialogueUI.WasSkipped)
+            {
+                yield return StartCoroutine(CompleteCutsceneRoutine());
+                yield break;
+            }
         }
 
         // SEGON TREMOLOR ABANS D'AIXECAR-SE DEFINITIVAMENT
@@ -128,7 +142,37 @@ public class IntroCutscene : MonoBehaviour
             }
         }
 
-        // 5. FI! Tornem els controls
+        // 5. FASE DRET
+        if (delayBeforeThirdDialogue > 0f) yield return new WaitForSeconds(delayBeforeThirdDialogue);
+
+        if (dialogueUI != null && dialogueWhileStanding != null && dialogueWhileStanding.Length > 0)
+        {
+            yield return StartCoroutine(PlayDialogueAndWait(dialogueUI, dialogueWhileStanding));
+            if (dialogueUI.WasSkipped)
+            {
+                yield return StartCoroutine(CompleteCutsceneRoutine());
+                yield break;
+            }
+        }
+
+        // 6. FI! Tornem els controls
+        yield return StartCoroutine(CompleteCutsceneRoutine());
+    }
+
+    private IEnumerator CompleteCutsceneRoutine()
+    {
+        // Si encara no s'ha aixecat (animator deshabilitat), fem l'animació d'esforç (tremolor)
+        if (playerAnim != null && !playerAnim.enabled) 
+        {
+            yield return StartCoroutine(DoTrembleAndSound());
+
+            playerAnim.enabled = true;
+            FieldInfo lastDirField = typeof(PlayerController2D).GetField("lastDir", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (lastDirField != null)
+            {
+                lastDirField.SetValue(playerRef, new Vector2(1f, 0f));
+            }
+        }
         playerRef.UnlockMovement();
     }
 

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: The Butcher
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
   enemyName: The Butcher
-  minHP: 100
-  maxHP: 100
+  minHP: 21
+  maxHP: 21
   enemyPortrait: {fileID: -2424553518018739129, guid: 45176f93c6942a247a7cfb904e6286f2, type: 3}
   projectilePrefab: {fileID: 5410871294214501288, guid: 27db9a9145f38154faf0fc3b5355fe56, type: 3}
   attackDuration: 7
@@ -36,10 +36,8 @@ MonoBehaviour:
   goldRewardMin: 100
   goldRewardMax: 250
   drops:
-  - itemName: Energy
-    probability: 200
-  - itemName: Pendrive
-    probability: 50
+  - itemName: TXT File
+    probability: 100
   deathSound: {fileID: 0}
   combatMusic: {fileID: 8300000, guid: 6ed956cc6e2e4014c92753525abcb7b2, type: 3}
   voiceSound: {fileID: 8300000, guid: 30367d21e3be51b40838796daa7e1f5b, type: 3}
