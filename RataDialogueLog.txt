@@ -1,0 +1,332 @@
+--- Version 0 ---
+[0] Speaker='???' (Current='???') | Text='So...You got here... That is a...' | Portrait=True | SpriteChange=False
+[1] Speaker='' (Current='???') | Text='Where am I?...' | Portrait=True | SpriteChange=False
+[2] Speaker='???' (Current='???') | Text='That depends. Do you want the ...' | Portrait=True | SpriteChange=False
+[3] Speaker='' (Current='???') | Text='I don’t even remember my name....' | Portrait=True | SpriteChange=False
+[4] Speaker='???' (Current='???') | Text='...Ah. Then we’ll start there....' | Portrait=True | SpriteChange=False
+[5] Speaker='Ravel' (Current='Ravel') | Text='My name is Ravel. I know, I kn...' | Portrait=True | SpriteChange=False
+[6] Speaker='' (Current='Ravel') | Text='Are you a rat?...' | Portrait=True | SpriteChange=False
+[7] Speaker='Ravel' (Current='Ravel') | Text='I prefer “small survivor with ...' | Portrait=True | SpriteChange=False
+[8] Speaker='Ravel' (Current='Ravel') | Text='But yes. A rat....' | Portrait=True | SpriteChange=False
+[9] Speaker='Ravel' (Current='Ravel') | Text='And you… you are someone who h...' | Portrait=True | SpriteChange=False
+[10] Speaker='' (Current='Ravel') | Text='Lose myself?...' | Portrait=True | SpriteChange=False
+[11] Speaker='Ravel' (Current='Ravel') | Text='Your name is not just a word. ...' | Portrait=True | SpriteChange=False
+[12] Speaker='Ravel' (Current='Ravel') | Text='It connects you to who you wer...' | Portrait=True | SpriteChange=False
+[13] Speaker='Ravel' (Current='Ravel') | Text='If you can’t remember it… then...' | Portrait=True | SpriteChange=False
+[14] Speaker='' (Current='Ravel') | Text='Can I get it back?...' | Portrait=True | SpriteChange=False
+[15] Speaker='Ravel' (Current='Ravel') | Text='Maybe. But not by standing her...' | Portrait=True | SpriteChange=False
+[16] Speaker='Ravel' (Current='Ravel') | Text='This place is not a normal wor...' | Portrait=True | SpriteChange=False
+[17] Speaker='Ravel' (Current='Ravel') | Text='Abandoned games. Forgotten app...' | Portrait=True | SpriteChange=False
+[18] Speaker='Ravel' (Current='Ravel') | Text='They don’t vanish immediately....' | Portrait=True | SpriteChange=False
+[19] Speaker='' (Current='Ravel') | Text='Waiting for what?...' | Portrait=True | SpriteChange=False
+[20] Speaker='Ravel' (Current='Ravel') | Text='To be remembered. Or to be era...' | Portrait=True | SpriteChange=False
+[21] Speaker='Ravel' (Current='Ravel') | Text='So... what do you want to know...' | Portrait=True | SpriteChange=False
+[22] Speaker='Ravel' (Current='Ravel') | Text='There is something above this ...' | Portrait=True | SpriteChange=False
+[23] Speaker='Ravel' (Current='Ravel') | Text='A system. An intelligence crea...' | Portrait=True | SpriteChange=False
+[24] Speaker='Ravel' (Current='Ravel') | Text='When a world becomes too unsta...' | Portrait=True | SpriteChange=False
+[25] Speaker='' (Current='Ravel') | Text='And what does it do?...' | Portrait=True | SpriteChange=False
+[26] Speaker='Ravel' (Current='Ravel') | Text='It deletes. No mercy. No judgm...' | Portrait=True | SpriteChange=False
+[27] Speaker='Ravel' (Current='Ravel') | Text='Some call it an artificial int...' | Portrait=True | SpriteChange=False
+[28] Speaker='Ravel' (Current='Ravel') | Text='There is still a way to move b...' | Portrait=True | SpriteChange=False
+[29] Speaker='' (Current='Ravel') | Text='Files?...' | Portrait=True | SpriteChange=False
+[30] Speaker='Ravel' (Current='Ravel') | Text='PDFs. TXT documents. Broken no...' | Portrait=True | SpriteChange=False
+[31] Speaker='Ravel' (Current='Ravel') | Text='Sometimes, inside those files,...' | Portrait=True | SpriteChange=False
+[32] Speaker='' (Current='Ravel') | Text='Email addresses?...' | Portrait=True | SpriteChange=False
+[33] Speaker='Ravel' (Current='Ravel') | Text='Exactly. In your world, an ema...' | Portrait=True | SpriteChange=False
+[34] Speaker='Ravel' (Current='Ravel') | Text='A connection to another place....' | Portrait=True | SpriteChange=False
+[35] Speaker='Ravel' (Current='Ravel') | Text='If you find one, you can follo...' | Portrait=True | SpriteChange=False
+[36] Speaker='' (Current='Ravel') | Text='So that’s how I escape?...' | Portrait=True | SpriteChange=False
+[37] Speaker='Ravel' (Current='Ravel') | Text='That is how you continue. Esca...' | Portrait=True | SpriteChange=False
+[38] Speaker='Ravel' (Current='Ravel') | Text='The next route is not here. It...' | Portrait=True | SpriteChange=False
+[39] Speaker='' (Current='Ravel') | Text='By who?...' | Portrait=True | SpriteChange=False
+[40] Speaker='Ravel' (Current='Ravel') | Text='By something waiting beyond th...' | Portrait=True | SpriteChange=False
+[41] Speaker='Ravel' (Current='Ravel') | Text='First, you must cross the maze...' | Portrait=True | SpriteChange=False
+[42] Speaker='' (Current='Ravel') | Text='How big is it?...' | Portrait=True | SpriteChange=False
+[43] Speaker='Ravel' (Current='Ravel') | Text='Big enough that people stop as...' | Portrait=True | SpriteChange=False
+[44] Speaker='Ravel' (Current='Ravel') | Text='The maze is made of pieces fro...' | Portrait=True | SpriteChange=False
+[45] Speaker='Ravel' (Current='Ravel') | Text='Corridors from games. Menus fr...' | Portrait=True | SpriteChange=False
+[46] Speaker='Ravel' (Current='Ravel') | Text='It does not fully know what it...' | Portrait=True | SpriteChange=False
+[47] Speaker='Ravel' (Current='Ravel') | Text='Don't take too long. This plac...' | Portrait=True | SpriteChange=False
+[48] Speaker='Ravel' (Current='Ravel') | Text='Now you know what to look for....' | Portrait=True | SpriteChange=False
+[49] Speaker='Ravel' (Current='Ravel') | Text='There is something above this ...' | Portrait=True | SpriteChange=False
+[50] Speaker='Ravel' (Current='Ravel') | Text='A system. An intelligence crea...' | Portrait=True | SpriteChange=False
+[51] Speaker='Ravel' (Current='Ravel') | Text='When a world becomes too unsta...' | Portrait=True | SpriteChange=False
+[52] Speaker='' (Current='Ravel') | Text='And what does it do?...' | Portrait=True | SpriteChange=False
+[53] Speaker='Ravel' (Current='Ravel') | Text='It deletes. No mercy. No judgm...' | Portrait=True | SpriteChange=False
+[54] Speaker='Ravel' (Current='Ravel') | Text='Some call it an artificial int...' | Portrait=True | SpriteChange=False
+[55] Speaker='Ravel' (Current='Ravel') | Text='Inside, you will find enemies....' | Portrait=True | SpriteChange=False
+[56] Speaker='Ravel' (Current='Ravel') | Text='Small broken things that still...' | Portrait=True | SpriteChange=False
+[57] Speaker='Ravel' (Current='Ravel') | Text='When they see you, they may dr...' | Portrait=True | SpriteChange=False
+[58] Speaker='' (Current='Ravel') | Text='Combat?...' | Portrait=True | SpriteChange=False
+[59] Speaker='Ravel' (Current='Ravel') | Text='Yes. And listen carefully now....' | Portrait=True | SpriteChange=False
+[60] Speaker='Ravel' (Current='Ravel') | Text='When combat begins, you will a...' | Portrait=True | SpriteChange=False
+[61] Speaker='Ravel' (Current='Ravel') | Text='Attack. Reason. Use an item. R...' | Portrait=True | SpriteChange=False
+[62] Speaker='' (Current='Ravel') | Text='That’s all?...' | Portrait=True | SpriteChange=False
+[63] Speaker='Ravel' (Current='Ravel') | Text='That is all. Four choices. Eve...' | Portrait=True | SpriteChange=False
+[64] Speaker='Ravel' (Current='Ravel') | Text='Attack is the most direct opti...' | Portrait=True | SpriteChange=False
+[65] Speaker='Ravel' (Current='Ravel') | Text='Sometimes that will be necessa...' | Portrait=True | SpriteChange=False
+[66] Speaker='Ravel' (Current='Ravel') | Text='But attacking also has consequ...' | Portrait=True | SpriteChange=False
+[67] Speaker='Ravel' (Current='Ravel') | Text='Reason is different. You try t...' | Portrait=True | SpriteChange=False
+[68] Speaker='Ravel' (Current='Ravel') | Text='You talk. You observe. You loo...' | Portrait=True | SpriteChange=False
+[69] Speaker='Ravel' (Current='Ravel') | Text='If you reason well, you may en...' | Portrait=True | SpriteChange=False
+[70] Speaker='' (Current='Ravel') | Text='So I can spare them?...' | Portrait=True | SpriteChange=False
+[71] Speaker='Ravel' (Current='Ravel') | Text='Sometimes. But reasoning is no...' | Portrait=True | SpriteChange=False
+[72] Speaker='Ravel' (Current='Ravel') | Text='Use an item means relying on w...' | Portrait=True | SpriteChange=False
+[73] Speaker='Ravel' (Current='Ravel') | Text='Items can heal you. Protect yo...' | Portrait=True | SpriteChange=False
+[74] Speaker='Ravel' (Current='Ravel') | Text='Do not waste them. In a place ...' | Portrait=True | SpriteChange=False
+[75] Speaker='Ravel' (Current='Ravel') | Text='And then there is Run. Running...' | Portrait=True | SpriteChange=False
+[76] Speaker='Ravel' (Current='Ravel') | Text='Sometimes the smartest way to ...' | Portrait=True | SpriteChange=False
+[77] Speaker='Ravel' (Current='Ravel') | Text='But be careful. Some enemies w...' | Portrait=True | SpriteChange=False
+[78] Speaker='Ravel' (Current='Ravel') | Text='And if you run too much, you m...' | Portrait=True | SpriteChange=False
+[79] Speaker='Ravel' (Current='Ravel') | Text='These four choices will follow...' | Portrait=True | SpriteChange=False
+[80] Speaker='' (Current='Ravel') | Text='How will I know which one is r...' | Portrait=True | SpriteChange=False
+[81] Speaker='Ravel' (Current='Ravel') | Text='You won’t. Not at first....' | Portrait=True | SpriteChange=False
+[82] Speaker='Ravel' (Current='Ravel') | Text='But if you pay attention… if y...' | Portrait=True | SpriteChange=False
+[83] Speaker='Ravel' (Current='Ravel') | Text='But there is something else. A...' | Portrait=True | SpriteChange=False
+[84] Speaker='' (Current='Ravel') | Text='Their turn?...' | Portrait=True | SpriteChange=False
+[85] Speaker='Ravel' (Current='Ravel') | Text='Yes. They will attack you. Usu...' | Portrait=True | SpriteChange=False
+[86] Speaker='Ravel' (Current='Ravel') | Text='Fragments of code. Broken icon...' | Portrait=True | SpriteChange=False
+[87] Speaker='' (Current='Ravel') | Text='How am I supposed to stop that...' | Portrait=True | SpriteChange=False
+[88] Speaker='Ravel' (Current='Ravel') | Text='Look at your hands. The rings....' | Portrait=True | SpriteChange=False
+[89] Speaker='' (Current='Ravel') | Text='I… didn’t notice them before....' | Portrait=True | SpriteChange=False
+[90] Speaker='Ravel' (Current='Ravel') | Text='People rarely notice the tools...' | Portrait=True | SpriteChange=False
+[91] Speaker='Ravel' (Current='Ravel') | Text='When projectiles come toward y...' | Portrait=True | SpriteChange=False
+[92] Speaker='Ravel' (Current='Ravel') | Text='If your timing is good, you su...' | Portrait=True | SpriteChange=False
+[93] Speaker='' (Current='Ravel') | Text='And if it is not... I get hit....' | Portrait=True | SpriteChange=False
+[94] Speaker='Ravel' (Current='Ravel') | Text='Exactly. Your life is limited....' | Portrait=True | SpriteChange=False
+[95] Speaker='Ravel' (Current='Ravel') | Text='And if your life reaches zero…...' | Portrait=True | SpriteChange=False
+[96] Speaker='' (Current='Ravel') | Text='Just like that?...' | Portrait=True | SpriteChange=False
+[97] Speaker='Ravel' (Current='Ravel') | Text='Just like that. You end. And w...' | Portrait=True | SpriteChange=False
+[98] Speaker='Ravel' (Current='Ravel') | Text='That is why your choices matte...' | Portrait=True | SpriteChange=False
+[99] Speaker='' (Current='Ravel') | Text='And after the maze?...' | Portrait=True | SpriteChange=False
+[100] Speaker='Ravel' (Current='Ravel') | Text='After the maze, you will find ...' | Portrait=True | SpriteChange=False
+[101] Speaker='Ravel' (Current='Ravel') | Text='Inside it, there is an email a...' | Portrait=True | SpriteChange=False
+[102] Speaker='Ravel' (Current='Ravel') | Text='Without it, you cannot move fo...' | Portrait=True | SpriteChange=False
+[103] Speaker='' (Current='Ravel') | Text='What is guarding it?...' | Portrait=True | SpriteChange=False
+[104] Speaker='Ravel' (Current='Ravel') | Text='Not a forgotten person. Not a ...' | Portrait=True | SpriteChange=False
+[105] Speaker='Ravel' (Current='Ravel') | Text='A disciple of the intelligence...' | Portrait=True | SpriteChange=False
+[106] Speaker='' (Current='Ravel') | Text='The one that deletes worlds?...' | Portrait=True | SpriteChange=False
+[107] Speaker='Ravel' (Current='Ravel') | Text='Yes. A lesser program. A serva...' | Portrait=True | SpriteChange=False
+[108] Speaker='Ravel' (Current='Ravel') | Text='It was made to control routes....' | Portrait=True | SpriteChange=False
+[109] Speaker='Ravel' (Current='Ravel') | Text='It protects the file because c...' | Portrait=True | SpriteChange=False
+[110] Speaker='Ravel' (Current='Ravel') | Text='And that is exactly what the i...' | Portrait=True | SpriteChange=False
+[111] Speaker='' (Current='Ravel') | Text='So I have to defeat it....' | Portrait=True | SpriteChange=False
+[112] Speaker='Ravel' (Current='Ravel') | Text='Maybe. Or maybe you have to un...' | Portrait=True | SpriteChange=False
+[113] Speaker='Ravel' (Current='Ravel') | Text='Remember your four choices. At...' | Portrait=True | SpriteChange=False
+[114] Speaker='Ravel' (Current='Ravel') | Text='The same four doors. But not e...' | Portrait=True | SpriteChange=False
+[115] Speaker='' (Current='Ravel') | Text='Can I run from it?...' | Portrait=True | SpriteChange=False
+[116] Speaker='Ravel' (Current='Ravel') | Text='You can try. But some fights a...' | Portrait=True | SpriteChange=False
+[117] Speaker='Ravel' (Current='Ravel') | Text='You can run from the enemy. Bu...' | Portrait=True | SpriteChange=False
+[118] Speaker='Ravel' (Current='Ravel') | Text='So listen carefully. Go east f...' | Portrait=True | SpriteChange=False
+[119] Speaker='Ravel' (Current='Ravel') | Text='Survive the enemies inside. Cr...' | Portrait=True | SpriteChange=False
+[120] Speaker='Ravel' (Current='Ravel') | Text='Then face the guardian beyond ...' | Portrait=True | SpriteChange=False
+[121] Speaker='Ravel' (Current='Ravel') | Text='And maybe… somewhere between o...' | Portrait=True | SpriteChange=False
+[122] Speaker='' (Current='Ravel') | Text='And if I don’t?...' | Portrait=True | SpriteChange=False
+[123] Speaker='Ravel' (Current='Ravel') | Text='Then choose again. That is all...' | Portrait=True | SpriteChange=False
+[124] Speaker='' (Current='Ravel') | Text='...I’ll go....' | Portrait=True | SpriteChange=False
+[125] Speaker='Ravel' (Current='Ravel') | Text='Good. And one last thing....' | Portrait=True | SpriteChange=False
+[126] Speaker='' (Current='Ravel') | Text='What?...' | Portrait=True | SpriteChange=False
+[127] Speaker='Ravel' (Current='Ravel') | Text='If something in the maze looks...' | Portrait=True | SpriteChange=False
+[128] Speaker='Ravel' (Current='Ravel') | Text='If something looks dangerous… ...' | Portrait=True | SpriteChange=False
+[129] Speaker='' (Current='Ravel') | Text='That doesn’t help....' | Portrait=True | SpriteChange=False
+[130] Speaker='Ravel' (Current='Ravel') | Text='I never said I was good at hel...' | Portrait=True | SpriteChange=False
+[131] Speaker='Ravel' (Current='Ravel') | Text='Now go. Before the maze notice...' | Portrait=True | SpriteChange=False
+[132] Speaker='Ravel' (Current='Ravel') | Text='Once you have the file with th...' | Portrait=True | SpriteChange=False
+--- Version 1 ---
+[0] Speaker='Ravel' (Current='Ravel') | Text='You again. Need to know anythi...' | Portrait=True | SpriteChange=False
+[1] Speaker='Ravel' (Current='Ravel') | Text='There is something above this ...' | Portrait=True | SpriteChange=False
+[2] Speaker='Ravel' (Current='Ravel') | Text='A system. An intelligence crea...' | Portrait=True | SpriteChange=False
+[3] Speaker='Ravel' (Current='Ravel') | Text='When a world becomes too unsta...' | Portrait=True | SpriteChange=False
+[4] Speaker='' (Current='Ravel') | Text='And what does it do?...' | Portrait=True | SpriteChange=False
+[5] Speaker='Ravel' (Current='Ravel') | Text='It deletes. No mercy. No judgm...' | Portrait=True | SpriteChange=False
+[6] Speaker='Ravel' (Current='Ravel') | Text='Some call it an artificial int...' | Portrait=True | SpriteChange=False
+[7] Speaker='Ravel' (Current='Ravel') | Text='There is still a way to move b...' | Portrait=True | SpriteChange=False
+[8] Speaker='' (Current='Ravel') | Text='Files?...' | Portrait=True | SpriteChange=False
+[9] Speaker='Ravel' (Current='Ravel') | Text='PDFs. TXT documents. Broken no...' | Portrait=True | SpriteChange=False
+[10] Speaker='Ravel' (Current='Ravel') | Text='Sometimes, inside those files,...' | Portrait=True | SpriteChange=False
+[11] Speaker='' (Current='Ravel') | Text='Email addresses?...' | Portrait=True | SpriteChange=False
+[12] Speaker='Ravel' (Current='Ravel') | Text='Exactly. In your world, an ema...' | Portrait=True | SpriteChange=False
+[13] Speaker='Ravel' (Current='Ravel') | Text='A connection to another place....' | Portrait=True | SpriteChange=False
+[14] Speaker='Ravel' (Current='Ravel') | Text='If you find one, you can follo...' | Portrait=True | SpriteChange=False
+[15] Speaker='' (Current='Ravel') | Text='So that’s how I escape?...' | Portrait=True | SpriteChange=False
+[16] Speaker='Ravel' (Current='Ravel') | Text='That is how you continue. Esca...' | Portrait=True | SpriteChange=False
+[17] Speaker='Ravel' (Current='Ravel') | Text='The next route is not here. It...' | Portrait=True | SpriteChange=False
+[18] Speaker='' (Current='Ravel') | Text='By who?...' | Portrait=True | SpriteChange=False
+[19] Speaker='Ravel' (Current='Ravel') | Text='By something waiting beyond th...' | Portrait=True | SpriteChange=False
+[20] Speaker='Ravel' (Current='Ravel') | Text='First, you must cross the maze...' | Portrait=True | SpriteChange=False
+[21] Speaker='' (Current='Ravel') | Text='How big is it?...' | Portrait=True | SpriteChange=False
+[22] Speaker='Ravel' (Current='Ravel') | Text='Big enough that people stop as...' | Portrait=True | SpriteChange=False
+[23] Speaker='Ravel' (Current='Ravel') | Text='The maze is made of pieces fro...' | Portrait=True | SpriteChange=False
+[24] Speaker='Ravel' (Current='Ravel') | Text='Corridors from games. Menus fr...' | Portrait=True | SpriteChange=False
+[25] Speaker='Ravel' (Current='Ravel') | Text='It does not fully know what it...' | Portrait=True | SpriteChange=False
+[26] Speaker='Ravel' (Current='Ravel') | Text='Don't take too long. This plac...' | Portrait=True | SpriteChange=False
+[27] Speaker='Ravel' (Current='Ravel') | Text='Now you know what to look for....' | Portrait=True | SpriteChange=False
+[28] Speaker='Ravel' (Current='Ravel') | Text='There is something above this ...' | Portrait=True | SpriteChange=False
+[29] Speaker='Ravel' (Current='Ravel') | Text='A system. An intelligence crea...' | Portrait=True | SpriteChange=False
+[30] Speaker='Ravel' (Current='Ravel') | Text='When a world becomes too unsta...' | Portrait=True | SpriteChange=False
+[31] Speaker='' (Current='Ravel') | Text='And what does it do?...' | Portrait=True | SpriteChange=False
+[32] Speaker='Ravel' (Current='Ravel') | Text='It deletes. No mercy. No judgm...' | Portrait=True | SpriteChange=False
+[33] Speaker='Ravel' (Current='Ravel') | Text='Some call it an artificial int...' | Portrait=True | SpriteChange=False
+[34] Speaker='Ravel' (Current='Ravel') | Text='Inside, you will find enemies....' | Portrait=True | SpriteChange=False
+[35] Speaker='Ravel' (Current='Ravel') | Text='Small broken things that still...' | Portrait=True | SpriteChange=False
+[36] Speaker='Ravel' (Current='Ravel') | Text='When they see you, they may dr...' | Portrait=True | SpriteChange=False
+[37] Speaker='' (Current='Ravel') | Text='Combat?...' | Portrait=True | SpriteChange=False
+[38] Speaker='Ravel' (Current='Ravel') | Text='Yes. And listen carefully now....' | Portrait=True | SpriteChange=False
+[39] Speaker='Ravel' (Current='Ravel') | Text='When combat begins, you will a...' | Portrait=True | SpriteChange=False
+[40] Speaker='Ravel' (Current='Ravel') | Text='Attack. Reason. Use an item. R...' | Portrait=True | SpriteChange=False
+[41] Speaker='' (Current='Ravel') | Text='That’s all?...' | Portrait=True | SpriteChange=False
+[42] Speaker='Ravel' (Current='Ravel') | Text='That is all. Four choices. Eve...' | Portrait=True | SpriteChange=False
+[43] Speaker='Ravel' (Current='Ravel') | Text='Attack is the most direct opti...' | Portrait=True | SpriteChange=False
+[44] Speaker='Ravel' (Current='Ravel') | Text='Sometimes that will be necessa...' | Portrait=True | SpriteChange=False
+[45] Speaker='Ravel' (Current='Ravel') | Text='But attacking also has consequ...' | Portrait=True | SpriteChange=False
+[46] Speaker='Ravel' (Current='Ravel') | Text='Reason is different. You try t...' | Portrait=True | SpriteChange=False
+[47] Speaker='Ravel' (Current='Ravel') | Text='You talk. You observe. You loo...' | Portrait=True | SpriteChange=False
+[48] Speaker='Ravel' (Current='Ravel') | Text='If you reason well, you may en...' | Portrait=True | SpriteChange=False
+[49] Speaker='' (Current='Ravel') | Text='So I can spare them?...' | Portrait=True | SpriteChange=False
+[50] Speaker='Ravel' (Current='Ravel') | Text='Sometimes. But reasoning is no...' | Portrait=True | SpriteChange=False
+[51] Speaker='Ravel' (Current='Ravel') | Text='Use an item means relying on w...' | Portrait=True | SpriteChange=False
+[52] Speaker='Ravel' (Current='Ravel') | Text='Items can heal you. Protect yo...' | Portrait=True | SpriteChange=False
+[53] Speaker='Ravel' (Current='Ravel') | Text='Do not waste them. In a place ...' | Portrait=True | SpriteChange=False
+[54] Speaker='Ravel' (Current='Ravel') | Text='And then there is Run. Running...' | Portrait=True | SpriteChange=False
+[55] Speaker='Ravel' (Current='Ravel') | Text='Sometimes the smartest way to ...' | Portrait=True | SpriteChange=False
+[56] Speaker='Ravel' (Current='Ravel') | Text='But be careful. Some enemies w...' | Portrait=True | SpriteChange=False
+[57] Speaker='Ravel' (Current='Ravel') | Text='And if you run too much, you m...' | Portrait=True | SpriteChange=False
+[58] Speaker='Ravel' (Current='Ravel') | Text='These four choices will follow...' | Portrait=True | SpriteChange=False
+[59] Speaker='' (Current='Ravel') | Text='How will I know which one is r...' | Portrait=True | SpriteChange=False
+[60] Speaker='Ravel' (Current='Ravel') | Text='You won’t. Not at first....' | Portrait=True | SpriteChange=False
+[61] Speaker='Ravel' (Current='Ravel') | Text='But if you pay attention… if y...' | Portrait=True | SpriteChange=False
+[62] Speaker='Ravel' (Current='Ravel') | Text='But there is something else. A...' | Portrait=True | SpriteChange=False
+[63] Speaker='' (Current='Ravel') | Text='Their turn?...' | Portrait=True | SpriteChange=False
+[64] Speaker='Ravel' (Current='Ravel') | Text='Yes. They will attack you. Usu...' | Portrait=True | SpriteChange=False
+[65] Speaker='Ravel' (Current='Ravel') | Text='Fragments of code. Broken icon...' | Portrait=True | SpriteChange=False
+[66] Speaker='' (Current='Ravel') | Text='How am I supposed to stop that...' | Portrait=True | SpriteChange=False
+[67] Speaker='Ravel' (Current='Ravel') | Text='Look at your hands. The rings....' | Portrait=True | SpriteChange=False
+[68] Speaker='' (Current='Ravel') | Text='I… didn’t notice them before....' | Portrait=True | SpriteChange=False
+[69] Speaker='Ravel' (Current='Ravel') | Text='People rarely notice the tools...' | Portrait=True | SpriteChange=False
+[70] Speaker='Ravel' (Current='Ravel') | Text='When projectiles come toward y...' | Portrait=True | SpriteChange=False
+[71] Speaker='Ravel' (Current='Ravel') | Text='If your timing is good, you su...' | Portrait=True | SpriteChange=False
+[72] Speaker='' (Current='Ravel') | Text='And if it is not... I get hit....' | Portrait=True | SpriteChange=False
+[73] Speaker='Ravel' (Current='Ravel') | Text='Exactly. Your life is limited....' | Portrait=True | SpriteChange=False
+[74] Speaker='Ravel' (Current='Ravel') | Text='And if your life reaches zero…...' | Portrait=True | SpriteChange=False
+[75] Speaker='' (Current='Ravel') | Text='Just like that?...' | Portrait=True | SpriteChange=False
+[76] Speaker='Ravel' (Current='Ravel') | Text='Just like that. You end. And w...' | Portrait=True | SpriteChange=False
+[77] Speaker='Ravel' (Current='Ravel') | Text='That is why your choices matte...' | Portrait=True | SpriteChange=False
+[78] Speaker='' (Current='Ravel') | Text='And after the maze?...' | Portrait=True | SpriteChange=False
+[79] Speaker='Ravel' (Current='Ravel') | Text='After the maze, you will find ...' | Portrait=True | SpriteChange=False
+[80] Speaker='Ravel' (Current='Ravel') | Text='Inside it, there is an email a...' | Portrait=True | SpriteChange=False
+[81] Speaker='Ravel' (Current='Ravel') | Text='Without it, you cannot move fo...' | Portrait=True | SpriteChange=False
+[82] Speaker='' (Current='Ravel') | Text='What is guarding it?...' | Portrait=True | SpriteChange=False
+[83] Speaker='Ravel' (Current='Ravel') | Text='Not a forgotten person. Not a ...' | Portrait=True | SpriteChange=False
+[84] Speaker='Ravel' (Current='Ravel') | Text='A disciple of the intelligence...' | Portrait=True | SpriteChange=False
+[85] Speaker='' (Current='Ravel') | Text='The one that deletes worlds?...' | Portrait=True | SpriteChange=False
+[86] Speaker='Ravel' (Current='Ravel') | Text='Yes. A lesser program. A serva...' | Portrait=True | SpriteChange=False
+[87] Speaker='Ravel' (Current='Ravel') | Text='It was made to control routes....' | Portrait=True | SpriteChange=False
+[88] Speaker='Ravel' (Current='Ravel') | Text='It protects the file because c...' | Portrait=True | SpriteChange=False
+[89] Speaker='Ravel' (Current='Ravel') | Text='And that is exactly what the i...' | Portrait=True | SpriteChange=False
+[90] Speaker='' (Current='Ravel') | Text='So I have to defeat it....' | Portrait=True | SpriteChange=False
+[91] Speaker='Ravel' (Current='Ravel') | Text='Maybe. Or maybe you have to un...' | Portrait=True | SpriteChange=False
+[92] Speaker='Ravel' (Current='Ravel') | Text='Remember your four choices. At...' | Portrait=True | SpriteChange=False
+[93] Speaker='Ravel' (Current='Ravel') | Text='The same four doors. But not e...' | Portrait=True | SpriteChange=False
+[94] Speaker='' (Current='Ravel') | Text='Can I run from it?...' | Portrait=True | SpriteChange=False
+[95] Speaker='Ravel' (Current='Ravel') | Text='You can try. But some fights a...' | Portrait=True | SpriteChange=False
+[96] Speaker='Ravel' (Current='Ravel') | Text='You can run from the enemy. Bu...' | Portrait=True | SpriteChange=False
+[97] Speaker='Ravel' (Current='Ravel') | Text='So listen carefully. Go east f...' | Portrait=True | SpriteChange=False
+[98] Speaker='Ravel' (Current='Ravel') | Text='Survive the enemies inside. Cr...' | Portrait=True | SpriteChange=False
+[99] Speaker='Ravel' (Current='Ravel') | Text='Then face the guardian beyond ...' | Portrait=True | SpriteChange=False
+[100] Speaker='Ravel' (Current='Ravel') | Text='And maybe… somewhere between o...' | Portrait=True | SpriteChange=False
+[101] Speaker='' (Current='Ravel') | Text='And if I don’t?...' | Portrait=True | SpriteChange=False
+[102] Speaker='Ravel' (Current='Ravel') | Text='Then choose again. That is all...' | Portrait=True | SpriteChange=False
+[103] Speaker='' (Current='Ravel') | Text='...I’ll go....' | Portrait=True | SpriteChange=False
+[104] Speaker='Ravel' (Current='Ravel') | Text='Good. And one last thing....' | Portrait=True | SpriteChange=False
+[105] Speaker='' (Current='Ravel') | Text='What?...' | Portrait=True | SpriteChange=False
+[106] Speaker='Ravel' (Current='Ravel') | Text='If something in the maze looks...' | Portrait=True | SpriteChange=False
+[107] Speaker='Ravel' (Current='Ravel') | Text='If something looks dangerous… ...' | Portrait=True | SpriteChange=False
+[108] Speaker='' (Current='Ravel') | Text='That doesn’t help....' | Portrait=True | SpriteChange=False
+[109] Speaker='Ravel' (Current='Ravel') | Text='I never said I was good at hel...' | Portrait=True | SpriteChange=False
+[110] Speaker='Ravel' (Current='Ravel') | Text='Now go. Before the maze notice...' | Portrait=True | SpriteChange=False
+--- Version 2 ---
+[0] Speaker='Ravel' (Current='Ravel') | Text='You again. Ready for the maze?...' | Portrait=True | SpriteChange=False
+[1] Speaker='Ravel' (Current='Ravel') | Text='There is something above this ...' | Portrait=True | SpriteChange=False
+[2] Speaker='Ravel' (Current='Ravel') | Text='A system. An intelligence crea...' | Portrait=True | SpriteChange=False
+[3] Speaker='Ravel' (Current='Ravel') | Text='When a world becomes too unsta...' | Portrait=True | SpriteChange=False
+[4] Speaker='' (Current='Ravel') | Text='And what does it do?...' | Portrait=True | SpriteChange=False
+[5] Speaker='Ravel' (Current='Ravel') | Text='It deletes. No mercy. No judgm...' | Portrait=True | SpriteChange=False
+[6] Speaker='Ravel' (Current='Ravel') | Text='Some call it an artificial int...' | Portrait=True | SpriteChange=False
+[7] Speaker='Ravel' (Current='Ravel') | Text='Inside, you will find enemies....' | Portrait=True | SpriteChange=False
+[8] Speaker='Ravel' (Current='Ravel') | Text='Small broken things that still...' | Portrait=True | SpriteChange=False
+[9] Speaker='Ravel' (Current='Ravel') | Text='When they see you, they may dr...' | Portrait=True | SpriteChange=False
+[10] Speaker='' (Current='Ravel') | Text='Combat?...' | Portrait=True | SpriteChange=False
+[11] Speaker='Ravel' (Current='Ravel') | Text='Yes. And listen carefully now....' | Portrait=True | SpriteChange=False
+[12] Speaker='Ravel' (Current='Ravel') | Text='When combat begins, you will a...' | Portrait=True | SpriteChange=False
+[13] Speaker='Ravel' (Current='Ravel') | Text='Attack. Reason. Use an item. R...' | Portrait=True | SpriteChange=False
+[14] Speaker='' (Current='Ravel') | Text='That’s all?...' | Portrait=True | SpriteChange=False
+[15] Speaker='Ravel' (Current='Ravel') | Text='That is all. Four choices. Eve...' | Portrait=True | SpriteChange=False
+[16] Speaker='Ravel' (Current='Ravel') | Text='Attack is the most direct opti...' | Portrait=True | SpriteChange=False
+[17] Speaker='Ravel' (Current='Ravel') | Text='Sometimes that will be necessa...' | Portrait=True | SpriteChange=False
+[18] Speaker='Ravel' (Current='Ravel') | Text='But attacking also has consequ...' | Portrait=True | SpriteChange=False
+[19] Speaker='Ravel' (Current='Ravel') | Text='Reason is different. You try t...' | Portrait=True | SpriteChange=False
+[20] Speaker='Ravel' (Current='Ravel') | Text='You talk. You observe. You loo...' | Portrait=True | SpriteChange=False
+[21] Speaker='Ravel' (Current='Ravel') | Text='If you reason well, you may en...' | Portrait=True | SpriteChange=False
+[22] Speaker='' (Current='Ravel') | Text='So I can spare them?...' | Portrait=True | SpriteChange=False
+[23] Speaker='Ravel' (Current='Ravel') | Text='Sometimes. But reasoning is no...' | Portrait=True | SpriteChange=False
+[24] Speaker='Ravel' (Current='Ravel') | Text='Use an item means relying on w...' | Portrait=True | SpriteChange=False
+[25] Speaker='Ravel' (Current='Ravel') | Text='Items can heal you. Protect yo...' | Portrait=True | SpriteChange=False
+[26] Speaker='Ravel' (Current='Ravel') | Text='Do not waste them. In a place ...' | Portrait=True | SpriteChange=False
+[27] Speaker='Ravel' (Current='Ravel') | Text='And then there is Run. Running...' | Portrait=True | SpriteChange=False
+[28] Speaker='Ravel' (Current='Ravel') | Text='Sometimes the smartest way to ...' | Portrait=True | SpriteChange=False
+[29] Speaker='Ravel' (Current='Ravel') | Text='But be careful. Some enemies w...' | Portrait=True | SpriteChange=False
+[30] Speaker='Ravel' (Current='Ravel') | Text='And if you run too much, you m...' | Portrait=True | SpriteChange=False
+[31] Speaker='Ravel' (Current='Ravel') | Text='These four choices will follow...' | Portrait=True | SpriteChange=False
+[32] Speaker='' (Current='Ravel') | Text='How will I know which one is r...' | Portrait=True | SpriteChange=False
+[33] Speaker='Ravel' (Current='Ravel') | Text='You won’t. Not at first....' | Portrait=True | SpriteChange=False
+[34] Speaker='Ravel' (Current='Ravel') | Text='But if you pay attention… if y...' | Portrait=True | SpriteChange=False
+[35] Speaker='Ravel' (Current='Ravel') | Text='But there is something else. A...' | Portrait=True | SpriteChange=False
+[36] Speaker='' (Current='Ravel') | Text='Their turn?...' | Portrait=True | SpriteChange=False
+[37] Speaker='Ravel' (Current='Ravel') | Text='Yes. They will attack you. Usu...' | Portrait=True | SpriteChange=False
+[38] Speaker='Ravel' (Current='Ravel') | Text='Fragments of code. Broken icon...' | Portrait=True | SpriteChange=False
+[39] Speaker='' (Current='Ravel') | Text='How am I supposed to stop that...' | Portrait=True | SpriteChange=False
+[40] Speaker='Ravel' (Current='Ravel') | Text='Look at your hands. The rings....' | Portrait=True | SpriteChange=False
+[41] Speaker='' (Current='Ravel') | Text='I… didn’t notice them before....' | Portrait=True | SpriteChange=False
+[42] Speaker='Ravel' (Current='Ravel') | Text='People rarely notice the tools...' | Portrait=True | SpriteChange=False
+[43] Speaker='Ravel' (Current='Ravel') | Text='When projectiles come toward y...' | Portrait=True | SpriteChange=False
+[44] Speaker='Ravel' (Current='Ravel') | Text='If your timing is good, you su...' | Portrait=True | SpriteChange=False
+[45] Speaker='' (Current='Ravel') | Text='And if it is not... I get hit....' | Portrait=True | SpriteChange=False
+[46] Speaker='Ravel' (Current='Ravel') | Text='Exactly. Your life is limited....' | Portrait=True | SpriteChange=False
+[47] Speaker='Ravel' (Current='Ravel') | Text='And if your life reaches zero…...' | Portrait=True | SpriteChange=False
+[48] Speaker='' (Current='Ravel') | Text='Just like that?...' | Portrait=True | SpriteChange=False
+[49] Speaker='Ravel' (Current='Ravel') | Text='Just like that. You end. And w...' | Portrait=True | SpriteChange=False
+[50] Speaker='Ravel' (Current='Ravel') | Text='That is why your choices matte...' | Portrait=True | SpriteChange=False
+[51] Speaker='' (Current='Ravel') | Text='And after the maze?...' | Portrait=True | SpriteChange=False
+[52] Speaker='Ravel' (Current='Ravel') | Text='After the maze, you will find ...' | Portrait=True | SpriteChange=False
+[53] Speaker='Ravel' (Current='Ravel') | Text='Inside it, there is an email a...' | Portrait=True | SpriteChange=False
+[54] Speaker='Ravel' (Current='Ravel') | Text='Without it, you cannot move fo...' | Portrait=True | SpriteChange=False
+[55] Speaker='' (Current='Ravel') | Text='What is guarding it?...' | Portrait=True | SpriteChange=False
+[56] Speaker='Ravel' (Current='Ravel') | Text='Not a forgotten person. Not a ...' | Portrait=True | SpriteChange=False
+[57] Speaker='Ravel' (Current='Ravel') | Text='A disciple of the intelligence...' | Portrait=True | SpriteChange=False
+[58] Speaker='' (Current='Ravel') | Text='The one that deletes worlds?...' | Portrait=True | SpriteChange=False
+[59] Speaker='Ravel' (Current='Ravel') | Text='Yes. A lesser program. A serva...' | Portrait=True | SpriteChange=False
+[60] Speaker='Ravel' (Current='Ravel') | Text='It was made to control routes....' | Portrait=True | SpriteChange=False
+[61] Speaker='Ravel' (Current='Ravel') | Text='It protects the file because c...' | Portrait=True | SpriteChange=False
+[62] Speaker='Ravel' (Current='Ravel') | Text='And that is exactly what the i...' | Portrait=True | SpriteChange=False
+[63] Speaker='' (Current='Ravel') | Text='So I have to defeat it....' | Portrait=True | SpriteChange=False
+[64] Speaker='Ravel' (Current='Ravel') | Text='Maybe. Or maybe you have to un...' | Portrait=True | SpriteChange=False
+[65] Speaker='Ravel' (Current='Ravel') | Text='Remember your four choices. At...' | Portrait=True | SpriteChange=False
+[66] Speaker='Ravel' (Current='Ravel') | Text='The same four doors. But not e...' | Portrait=True | SpriteChange=False
+[67] Speaker='' (Current='Ravel') | Text='Can I run from it?...' | Portrait=True | SpriteChange=False
+[68] Speaker='Ravel' (Current='Ravel') | Text='You can try. But some fights a...' | Portrait=True | SpriteChange=False
+[69] Speaker='Ravel' (Current='Ravel') | Text='You can run from the enemy. Bu...' | Portrait=True | SpriteChange=False
+[70] Speaker='Ravel' (Current='Ravel') | Text='So listen carefully. Go east f...' | Portrait=True | SpriteChange=False
+[71] Speaker='Ravel' (Current='Ravel') | Text='Survive the enemies inside. Cr...' | Portrait=True | SpriteChange=False
+[72] Speaker='Ravel' (Current='Ravel') | Text='Then face the guardian beyond ...' | Portrait=True | SpriteChange=False
+[73] Speaker='Ravel' (Current='Ravel') | Text='And maybe… somewhere between o...' | Portrait=True | SpriteChange=False
+[74] Speaker='' (Current='Ravel') | Text='And if I don’t?...' | Portrait=True | SpriteChange=False
+[75] Speaker='Ravel' (Current='Ravel') | Text='Then choose again. That is all...' | Portrait=True | SpriteChange=False
+[76] Speaker='' (Current='Ravel') | Text='...I’ll go....' | Portrait=True | SpriteChange=False
+[77] Speaker='Ravel' (Current='Ravel') | Text='Good. And one last thing....' | Portrait=True | SpriteChange=False
+[78] Speaker='' (Current='Ravel') | Text='What?...' | Portrait=True | SpriteChange=False
+[79] Speaker='Ravel' (Current='Ravel') | Text='If something in the maze looks...' | Portrait=True | SpriteChange=False
+[80] Speaker='Ravel' (Current='Ravel') | Text='If something looks dangerous… ...' | Portrait=True | SpriteChange=False
+[81] Speaker='' (Current='Ravel') | Text='That doesn’t help....' | Portrait=True | SpriteChange=False
+[82] Speaker='Ravel' (Current='Ravel') | Text='I never said I was good at hel...' | Portrait=True | SpriteChange=False
+[83] Speaker='Ravel' (Current='Ravel') | Text='Now go. Before the maze notice...' | Portrait=True | SpriteChange=False
+[84] Speaker='Ravel' (Current='Ravel') | Text='Once you have the file with th...' | Portrait=True | SpriteChange=False

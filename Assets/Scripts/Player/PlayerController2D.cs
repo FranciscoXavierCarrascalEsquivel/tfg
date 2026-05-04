@@ -7,6 +7,8 @@ using System.Collections;
 [RequireComponent(typeof(Animator))]
 public class PlayerController2D : MonoBehaviour
 {
+    private static TMP_FontAsset cachedAlertFont;
+
     [Header("Alert & Encounters")]
     [Tooltip("El jugador a qui apareixerà l'exclamació a sobre.")]
     public Transform playerTransform;
@@ -33,7 +35,7 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float encounterChancePerStep = 0.05f; // Probabilitat de trobar enemic cada metre recorregut
     [SerializeField] private float minDistanceBetweenEncounters = 8f; // Distància mínima (metres) abans de la següent batalla
     [Tooltip("Llista d'enemics que et poden sortir aleatòriament per l'Overworld")]
-    [SerializeField] private EnemyProfile[] wildEnemies;
+    public EnemyProfile[] wildEnemies;
     
     [SerializeField] private bool disableEncounters = false;
 
@@ -347,14 +349,16 @@ public class PlayerController2D : MonoBehaviour
         txt.enableWordWrapping = false;
 
         // Font (mateixa que diàlegs)
-        TMP_FontAsset f = null;
+        if (cachedAlertFont == null)
+        {
 #if UNITY_EDITOR
-        f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
-            ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
+            cachedAlertFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
+                ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
 #endif
-        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF");
-        if (f == null) f = Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
-        if (f != null) txt.font = f;
+            if (cachedAlertFont == null) cachedAlertFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF");
+            if (cachedAlertFont == null) cachedAlertFont = Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+        }
+        if (cachedAlertFont != null) txt.font = cachedAlertFont;
 
         // Outline negre natiu de TMP
         txt.fontSharedMaterial = Instantiate(txt.fontSharedMaterial);

@@ -1167,16 +1167,25 @@ public class DialogueUI : MonoBehaviour
         }
     }
 
+    private static TMP_FontAsset cachedFont;
+
     private void SetFont(TextMeshProUGUI t, float size, Color col, FontStyles style, TextAlignmentOptions align)
     {
         t.fontSize = size; t.color = col; t.fontStyle = style; t.alignment = align;
+        
+        if (cachedFont == null)
+        {
 #if UNITY_EDITOR
-        var f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
-             ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
-        if (f != null) { t.font = f; return; }
+            cachedFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
+                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
 #endif
-        var r = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
-        if (r != null) t.font = r;
+            if (cachedFont == null)
+            {
+                cachedFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+            }
+        }
+
+        if (cachedFont != null) t.font = cachedFont;
     }
 
     // -----------------------

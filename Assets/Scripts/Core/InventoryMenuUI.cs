@@ -58,6 +58,12 @@ public class InventoryMenuUI : MonoBehaviour
         rt.anchorMin = rt.offsetMin = Vector2.zero;
         rt.anchorMax = Vector2.one; rt.offsetMax = Vector2.zero;
         var ui = go.AddComponent<InventoryMenuUI>();
+        
+        var cv = go.AddComponent<Canvas>();
+        cv.overrideSorting = true;
+        cv.sortingOrder = 30000;
+        go.AddComponent<GraphicRaycaster>();
+        
         ui.inCombat = isCombat; ui.onItemSelected = onItemSelected; ui.onClose = onClose;
         ui.Build(); IsOpen = true;
     }

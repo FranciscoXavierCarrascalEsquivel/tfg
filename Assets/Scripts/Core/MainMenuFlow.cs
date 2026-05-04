@@ -46,6 +46,12 @@ public class MainMenuFlow : MonoBehaviour
 
     private void Awake()
     {
+        // 1. Assegurar que la partida es reinicia completament
+        if (PlayerInventory.Instance != null)
+        {
+            Destroy(PlayerInventory.Instance.gameObject);
+        }
+
         // Estat inicial
         if (blackOverlay != null)
         {

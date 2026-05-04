@@ -13,7 +13,7 @@ EditorBuildSettings:
     guid: e38ddeec3987bfc42b30188e1a3d0e18
   - enabled: 1
     path: Assets/Scenes/Zona_Test.unity
-    guid: 68cfc1069e09977409114a3e38498419
+    guid: abd3163f02fa2b845a0734ef615fbf3c
   - enabled: 1
     path: Assets/Scenes/CombatScene.unity
     guid: 0869722c2885d27499642c961a9696d6

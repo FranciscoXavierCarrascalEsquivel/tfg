@@ -36,92 +36,125 @@ public class FixRataDialogue
         SerializedProperty versionsProp = so.FindProperty("versions");
         if (versionsProp != null && versionsProp.arraySize > 0)
         {
-            SerializedProperty linesProp = versionsProp.GetArrayElementAtIndex(0).FindPropertyRelative("lines");
-            if (linesProp != null)
+            bool lineAdded = false;
+
+            // Iterem per TOTES les versions per trobar i netejar opcions repetides i fer els botons 'repeatable'
+            for (int v = 0; v < versionsProp.arraySize; v++)
             {
-                bool lineAdded = false;
-
-                for (int i = 0; i < linesProp.arraySize; i++)
+                SerializedProperty linesProp = versionsProp.GetArrayElementAtIndex(v).FindPropertyRelative("lines");
+                if (linesProp != null)
                 {
-                    SerializedProperty lineProp = linesProp.GetArrayElementAtIndex(i);
-                    SerializedProperty textPropLine = lineProp.FindPropertyRelative("text");
-                    
-                    // Check if we already added the final line to avoid duplicating
-                    if (textPropLine != null && textPropLine.stringValue.Contains("Once you have the file with the email address"))
+                    for (int i = 0; i < linesProp.arraySize; i++)
                     {
-                        lineAdded = true;
-                    }
-
-                    SerializedProperty choicesProp = lineProp.FindPropertyRelative("choices");
-                    if (choicesProp != null && choicesProp.arraySize > 0)
-                    {
-                        for (int j = choicesProp.arraySize - 1; j >= 0; j--)
+                        SerializedProperty lineProp = linesProp.GetArrayElementAtIndex(i);
+                        SerializedProperty textPropLine = lineProp.FindPropertyRelative("text");
+                        
+                        // Check if we already added the final line to avoid duplicating
+                        if (textPropLine != null && textPropLine.stringValue.Contains("Once you have the file with the email address"))
                         {
-                            SerializedProperty choiceProp = choicesProp.GetArrayElementAtIndex(j);
-                            SerializedProperty textProp = choiceProp.FindPropertyRelative("text");
-                            
-                            if (textProp != null)
-                            {
-                                // 2. Remove the specific choice
-                                if (textProp.stringValue.Contains("Tell me more about what deletes worlds."))
-                                {
-                                    choicesProp.DeleteArrayElementAtIndex(j);
-                                    changed = true;
-                                    continue;
-                                }
+                            lineAdded = true;
+                        }
 
-                                // 3. Set repeatable to true for exit options
-                                if (textProp.stringValue.Contains("I need a minute to process this.") ||
-                                    textProp.stringValue.Contains("I think I'm ready to go."))
+                        // Forçar que TOTS els diàlegs tinguin el forceReopen = false
+                        SerializedProperty forceReopenProp = lineProp.FindPropertyRelative("forceReopen");
+                        if (forceReopenProp != null && forceReopenProp.boolValue)
+                        {
+                            forceReopenProp.boolValue = false;
+                            changed = true;
+                        }
+
+                        // Pre-calculate the correct index for "There is something above this place" inside this version
+                        int correctJumpIndex = -1;
+                        for (int k = 0; k < linesProp.arraySize; k++)
+                        {
+                            SerializedProperty p = linesProp.GetArrayElementAtIndex(k).FindPropertyRelative("text");
+                            if (p != null)
+                            {
+                                string t = p.stringValue.ToLower();
+                                if (t.Contains("something above this place") || t.Contains("hi ha alguna cosa per sobre") || t.Contains("no es una persona") || t.Contains("not a person"))
                                 {
-                                    SerializedProperty repProp = choiceProp.FindPropertyRelative("repeatable");
-                                    if (repProp != null && !repProp.boolValue)
+                                    correctJumpIndex = k;
+                                    break;
+                                }
+                            }
+                        }
+
+                        SerializedProperty choicesProp = lineProp.FindPropertyRelative("choices");
+                        if (choicesProp != null && choicesProp.arraySize > 0)
+                        {
+                            for (int j = choicesProp.arraySize - 1; j >= 0; j--)
+                            {
+                                SerializedProperty choiceProp = choicesProp.GetArrayElementAtIndex(j);
+                                SerializedProperty textProp = choiceProp.FindPropertyRelative("text");
+                                
+                                if (textProp != null)
+                                {
+                                    string txtVal = textProp.stringValue.ToLower();
+                                    
+                                    // 2. Remove the specific choice (repeated explanation about deleting worlds)
+                                    if (txtVal.Contains("deletes worlds") || txtVal.Contains("esborrar mons") || txtVal.Contains("esborra mons"))
                                     {
-                                        repProp.boolValue = true;
+                                        choicesProp.DeleteArrayElementAtIndex(j);
                                         changed = true;
+                                        continue;
+                                    }
+
+                                    // Fix the 'Erased by who' choice to point to the start of the explanation dynamically
+                                    if (txtVal.Contains("erased? by who") || txtVal.Contains("esborrats? per qui") || txtVal.Contains("esborrat? per qui") || txtVal.Contains("esborrats?"))
+                                    {
+                                        SerializedProperty jumpProp = choiceProp.FindPropertyRelative("jumpToLineIndex");
+                                        if (jumpProp != null && correctJumpIndex != -1 && jumpProp.intValue != correctJumpIndex)
+                                        {
+                                            jumpProp.intValue = correctJumpIndex;
+                                            changed = true;
+                                        }
+                                    }
+
+                                    // 3. Set repeatable to true for exit options
+                                    if (txtVal.Contains("process this") || txtVal.Contains("processar") ||
+                                        txtVal.Contains("ready to go") || txtVal.Contains("llest per marxar") || txtVal.Contains("marxar de la conversa"))
+                                    {
+                                        SerializedProperty repProp = choiceProp.FindPropertyRelative("repeatable");
+                                        if (repProp != null && !repProp.boolValue)
+                                        {
+                                            repProp.boolValue = true;
+                                            changed = true;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                // 4. Add the final line
-                if (!lineAdded)
+            // 4. Add the final line to the FIRST version
+            SerializedProperty linesProp0 = versionsProp.GetArrayElementAtIndex(0).FindPropertyRelative("lines");
+            if (linesProp0 != null && !lineAdded)
+            {
+                int lastLineIdx = linesProp0.arraySize - 1;
+                
+                linesProp0.arraySize++;
+                SerializedProperty newLineProp = linesProp0.GetArrayElementAtIndex(linesProp0.arraySize - 1);
+                SerializedProperty prevLineProp = linesProp0.GetArrayElementAtIndex(lastLineIdx);
+                
+                newLineProp.FindPropertyRelative("text").stringValue = "Once you have the file with the email address, come back here to use the computer. We will try to use it to reach another place before we are erased by oblivion.";
+                newLineProp.FindPropertyRelative("speakerName").stringValue = "Ravel";
+                newLineProp.FindPropertyRelative("isRightSide").boolValue = true;
+                newLineProp.FindPropertyRelative("showOnTop").boolValue = true;
+                newLineProp.FindPropertyRelative("isEndNode").boolValue = true;
+                newLineProp.FindPropertyRelative("setNextInteractionVersion").intValue = 2;
+                
+                SerializedProperty portraitProp = prevLineProp.FindPropertyRelative("portrait");
+                if (portraitProp != null)
                 {
-                    // Find the last line index
-                    int lastLineIdx = linesProp.arraySize - 1;
-                    
-                    // Add new element at the end
-                    linesProp.arraySize++;
-                    SerializedProperty newLineProp = linesProp.GetArrayElementAtIndex(linesProp.arraySize - 1);
-                    
-                    // Copy properties from the previous Ravel line to keep portrait etc.
-                    // We know Ravel speaks the last line ("Now go. Before the maze...")
-                    SerializedProperty prevLineProp = linesProp.GetArrayElementAtIndex(lastLineIdx);
-                    
-                    // Copy all fields manually or use a trick.
-                    // Actually, setting them manually is safer.
-                    newLineProp.FindPropertyRelative("text").stringValue = "Once you have the file with the email address, come back here to use the computer. We will try to use it to reach another place before we are erased by oblivion.";
-                    newLineProp.FindPropertyRelative("speakerName").stringValue = "Ravel";
-                    newLineProp.FindPropertyRelative("isRightSide").boolValue = true;
-                    newLineProp.FindPropertyRelative("showOnTop").boolValue = true;
-                    newLineProp.FindPropertyRelative("isEndNode").boolValue = true;
-                    newLineProp.FindPropertyRelative("setNextInteractionVersion").intValue = 2; // the end behavior
-                    
-                    // Copy portrait
-                    SerializedProperty portraitProp = prevLineProp.FindPropertyRelative("portrait");
-                    if (portraitProp != null)
-                    {
-                        newLineProp.FindPropertyRelative("portrait").objectReferenceValue = portraitProp.objectReferenceValue;
-                    }
-
-                    // Set previous line's isEndNode to false
-                    prevLineProp.FindPropertyRelative("isEndNode").boolValue = false;
-                    prevLineProp.FindPropertyRelative("setNextInteractionVersion").intValue = -1;
-
-                    changed = true;
+                    newLineProp.FindPropertyRelative("portrait").objectReferenceValue = portraitProp.objectReferenceValue;
                 }
+
+                prevLineProp.FindPropertyRelative("isEndNode").boolValue = false;
+                prevLineProp.FindPropertyRelative("setNextInteractionVersion").intValue = -1;
+
+                changed = true;
             }
         }
 

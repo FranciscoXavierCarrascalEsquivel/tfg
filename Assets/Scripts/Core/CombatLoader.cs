@@ -439,7 +439,11 @@ public enum EnemyAttackPattern
     RapidFireRed,
     RapidFireRedSpinning,
     RedHomingBarrage,
-    RedSweepWall
+    RedSweepWall,
+    SimpleStraightLines,
+    AlternatingSides,
+    SideSweepers,
+    ExpandingCross
 }
 
 [System.Serializable]

@@ -78,6 +78,19 @@ public class EnemyAttackSpawner : MonoBehaviour
                 yield return RedSweepWallRoutine(duration);
                 break;
 
+            case EnemyAttackPattern.SimpleStraightLines:
+                yield return SimpleStraightLinesRoutine(duration);
+                break;
+            case EnemyAttackPattern.AlternatingSides:
+                yield return AlternatingSidesRoutine(duration);
+                break;
+            case EnemyAttackPattern.SideSweepers:
+                yield return SideSweepersRoutine(duration);
+                break;
+            case EnemyAttackPattern.ExpandingCross:
+                yield return ExpandingCrossRoutine(duration);
+                break;
+
             case EnemyAttackPattern.RandomDropSpinning:
                 yield return RandomDropRoutine(duration, true);
                 break;
@@ -423,6 +436,136 @@ public class EnemyAttackSpawner : MonoBehaviour
                 }
             }
             float wait = 0.4f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 10. SIMPLE STRAIGHT LINES
+    // ===================================
+    private IEnumerator SimpleStraightLinesRoutine(float duration)
+    {
+        float t = 0f;
+        float screenW = arenaRect.rect.width * 0.5f;
+
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                int cols = Random.Range(1, 3);
+                float step = screenW / cols;
+                float offset = Random.Range(-step / 3f, step / 3f);
+
+                for (int i = 0; i <= cols; i++)
+                {
+                    var go = Instantiate(projectilePrefab, projectilesRoot);
+                    float x = -screenW / 2f + i * step + offset;
+                    go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
+                    go.GetComponent<ProjectileUI>().Init(Vector2.down, 250f, 0, 0, false);
+                }
+            }
+            float wait = 1.2f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 11. ALTERNATING SIDES
+    // ===================================
+    private IEnumerator AlternatingSidesRoutine(float duration)
+    {
+        float t = 0f;
+        bool leftSide = true;
+
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                int numProjectiles = 2;
+                float halfW = arenaRect.rect.width / 2f;
+
+                for (int i = 0; i < numProjectiles; i++)
+                {
+                    var go = Instantiate(projectilePrefab, projectilesRoot);
+                    float minX = leftSide ? -halfW + 20f : 20f;
+                    float maxX = leftSide ? -20f : halfW - 20f;
+                    float x = Random.Range(minX, maxX);
+                    
+                    go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + Random.Range(20f, 60f));
+                    go.GetComponent<ProjectileUI>().Init(Vector2.down, 280f, 0, 0, false);
+                }
+            }
+            leftSide = !leftSide;
+            float wait = 0.8f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 12. SIDE SWEEPERS
+    // ===================================
+    private IEnumerator SideSweepersRoutine(float duration)
+    {
+        float t = 0f;
+        bool fromLeft = true;
+
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                float w = arenaRect.rect.width / 2f;
+                float h = arenaRect.rect.height / 2f;
+
+                var go = Instantiate(projectilePrefab, projectilesRoot);
+                float startX = fromLeft ? -w - 50f : w + 50f;
+                float startY = Random.Range(-h + 80f, h - 80f);
+                go.GetComponent<RectTransform>().anchoredPosition = new Vector2(startX, startY);
+                
+                Vector2 dir = fromLeft ? Vector2.right : Vector2.left;
+                dir.y = Random.Range(-0.1f, 0.1f);
+                dir.Normalize();
+
+                go.GetComponent<ProjectileUI>().Init(dir, 220f, 0, 0, false);
+            }
+            fromLeft = !fromLeft;
+            float wait = 0.25f;
+            yield return new WaitForSeconds(wait);
+            t += wait;
+        }
+    }
+
+    // ===================================
+    // 13. EXPANDING CROSS
+    // ===================================
+    private IEnumerator ExpandingCrossRoutine(float duration)
+    {
+        float t = 0f;
+
+        while (t < duration)
+        {
+            if (projectilePrefab && projectilesRoot && arenaRect)
+            {
+                Vector2[] dirs = new Vector2[] { 
+                    Vector2.up, Vector2.down, Vector2.left, Vector2.right,
+                    new Vector2(1, 1).normalized, new Vector2(-1, 1).normalized,
+                    new Vector2(1, -1).normalized, new Vector2(-1, -1).normalized 
+                };
+                
+                float cx = Random.Range(-60f, 60f);
+                float cy = Random.Range(-20f, 80f); // Una mica més amunt del mig
+                Vector2 center = new Vector2(cx, cy);
+
+                foreach (var dir in dirs)
+                {
+                    var go = Instantiate(projectilePrefab, projectilesRoot);
+                    go.GetComponent<RectTransform>().anchoredPosition = center;
+                    go.GetComponent<ProjectileUI>().Init(dir, 160f, 0, 0, true);
+                }
+            }
+            float wait = 1.0f;
             yield return new WaitForSeconds(wait);
             t += wait;
         }
