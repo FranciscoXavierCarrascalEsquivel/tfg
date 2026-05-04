@@ -35,20 +35,20 @@ public class DialogueUI : MonoBehaviour
     public bool WasSkipped { get; private set; }
     public System.Action OnDialogueClosed;
 
-    // Generated UI refs
-    private GameObject currentPanelGO;
-    private RectTransform panelRect;
-    private CanvasGroup panelGroup;
+    [Header("UI References (Manual or Dynamic)")]
+    [SerializeField] private GameObject currentPanelGO;
+    [SerializeField] private RectTransform panelRect;
+    [SerializeField] private CanvasGroup panelGroup;
     public TextMeshProUGUI dialogueText;
-    private TextMeshProUGUI nameText;
-    private Image portraitImage;
-    private Animator portraitAnimator;
-    private GameObject nameBoxGO;
-    private CanvasGroup eBtnGroup;
-    private RectTransform eTextRT;
-    private CanvasGroup fBtnGroup;
-    private RectTransform fTextRT;
-    private RectTransform fContainerRT;
+    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private Image portraitImage;
+    [SerializeField] private Animator portraitAnimator;
+    [SerializeField] private GameObject nameBoxGO;
+    [SerializeField] private CanvasGroup eBtnGroup;
+    [SerializeField] private RectTransform eTextRT;
+    [SerializeField] private CanvasGroup fBtnGroup;
+    [SerializeField] private RectTransform fTextRT;
+    [SerializeField] private RectTransform fContainerRT;
     private float skipHoldTime;
     private const float SkipHoldRequired = 0.5f;
     private Vector3[] panelCorners = new Vector3[4]; // reused buffer
@@ -695,7 +695,8 @@ public class DialogueUI : MonoBehaviour
     // -----------------------
     private void BuildDynamicUI()
     {
-        if (currentPanelGO != null) return;
+        // Si l'usuari ja ha assignat manualment el panell i els textos, respectem-ho
+        if (currentPanelGO != null && dialogueText != null && nameText != null) return;
         
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         Canvas targetCanvas = null;

@@ -2253,13 +2253,20 @@ public class CombatManager : MonoBehaviour
     /// </summary>
     private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null, float speedMultiplier = 1f)
     {
-        // Creem un DialogueUI temporal per al combat
-        var canvas = FindFirstObjectByType<Canvas>();
-        if (canvas == null) { yield break; }
+        // Primer busquem si ja hi ha un DialogueUI a l'escena (el que l'usuari ha configurat)
+        var dialogUI = FindFirstObjectByType<DialogueUI>();
+        GameObject dialogGO = null;
 
-        var dialogGO = new GameObject("CombatDialogueUI");
-        dialogGO.transform.SetParent(canvas.transform, false);
-        var dialogUI = dialogGO.AddComponent<DialogueUI>();
+        if (dialogUI == null)
+        {
+            var canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null) { yield break; }
+
+            dialogGO = new GameObject("CombatDialogueUI");
+            dialogGO.transform.SetParent(canvas.transform, false);
+            dialogUI = dialogGO.AddComponent<DialogueUI>();
+        }
+        
         dialogUI.canSkip = false;
         
         // Apliquem la velocitat si és diferent a la normal
