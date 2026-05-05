@@ -78,17 +78,27 @@ public class ControlsUI : MonoBehaviour
                            "<b>ESC</b>  -  Pause (Hold)";
     }
 
+    private DialogueUI cachedDialogUI;
+    private float canvasRetryTimer = 0f;
+
     private void LateUpdate()
     {
         if (panelGO == null)
         {
+            // Evitem cercar el canvas cada frame — reintentem cada 0.5s
+            canvasRetryTimer -= Time.unscaledDeltaTime;
+            if (canvasRetryTimer > 0f) return;
+            canvasRetryTimer = 0.5f;
+
             var canvas = CanvasHelper.GetMainCanvas();
             if (canvas != null) BuildUI();
             return;
         }
 
-        var dialogUI = FindFirstObjectByType<DialogueUI>();
-        bool isDialogueOpen = (dialogUI != null && dialogUI.IsOpen);
+        // Busquem el DialogueUI només si no el tenim o s'ha destruït (canvi d'escena)
+        if (cachedDialogUI == null) cachedDialogUI = FindFirstObjectByType<DialogueUI>();
+        
+        bool isDialogueOpen = (cachedDialogUI != null && cachedDialogUI.IsOpen);
 
         // Lògica per començar a mostrar-ho només després del primer diàleg
         if (!hasFinishedFirstDialogue)
@@ -104,12 +114,11 @@ public class ControlsUI : MonoBehaviour
             }
         }
 
+        // Utilitzem les propietats estàtiques IsOpen en lloc de buscar per tota l'escena
         bool isMenuOpen = PauseMenuUI.IsOpen || 
                           InventoryMenuUI.IsOpen || 
                           ShopMenuUI.IsOpen ||
-                          GameObject.Find("PauseMenuUI") != null ||
-                          GameObject.Find("InventoryMenuUI") != null ||
-                          GameObject.Find("ShopMenuUI") != null;
+                          CombatLoader.IsInCombat;
 
         if (isMenuOpen)
         {
@@ -181,6 +190,6 @@ public class ControlsUI : MonoBehaviour
         if (f != null) return f;
 #endif
         var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}");
-        return r ?? Resources.Load<TMP_FontAsset>(n);
+        return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
     }
 }

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
   m_Name: The Butcher
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
-  enemyName: The Butcher
-  minHP: 21
-  maxHP: 21
+  enemyName: Butcher
+  minHP: 400
+  maxHP: 400
   enemyPortrait: {fileID: -2424553518018739129, guid: 45176f93c6942a247a7cfb904e6286f2, type: 3}
   projectilePrefab: {fileID: 5410871294214501288, guid: 27db9a9145f38154faf0fc3b5355fe56, type: 3}
   attackDuration: 7
@@ -22,24 +22,27 @@ MonoBehaviour:
   fleeProbability: 0
   socialBT: {fileID: 0}
   maxRecruitLimit: 1
-  recruitmentRewardSprite: {fileID: 21300000, guid: b0f1c8e7d72aa7b48a880108ce29fb77, type: 3}
-  recruitmentRewardDescription: You recruited The Butcher. His empathy is now your
-    strength.
-  recruitmentCompleteMessage: The Butcher has broken his chains. Created by SUPReme
-    to be a heartless eraser, his empathy became his rebellion. He now carries the
-    memory of everyone he was forced to delete, fighting alongside you to ensure
-    no one else suffers the same fate. Together, you will dismantle the Great Machine.
+  recruitmentRewardSprite: {fileID: 4650459530972154250, guid: f6d37e8e53497744ebb23132ce1d86db, type: 3}
+  recruitmentRewardDescription: Recruit this enemy to be able to escape from this
+    place.
+  recruitmentCompleteMessage: You got the TXT File. Now, you can escape using the
+    computer next to Ravel's house.
   recruitmentRewardSound: {fileID: 8300000, guid: 3a5508314bb4a5d40bb6c401ee85c628, type: 3}
-  bonusAttackPercent: 20
-  bonusHealthPercent: 20
-  bonusDefensePercent: 20
-  goldRewardMin: 100
-  goldRewardMax: 250
+  bonusAttackPercent: 10
+  bonusHealthPercent: 10
+  bonusDefensePercent: 10
+  goldRewardMin: 30
+  goldRewardMax: 40
   drops:
   - itemName: TXT File
     probability: 100
-  deathSound: {fileID: 0}
-  combatMusic: {fileID: 8300000, guid: 6ed956cc6e2e4014c92753525abcb7b2, type: 3}
+  amicableGoldRewardMin: 30
+  amicableGoldRewardMax: 40
+  amicableDrops:
+  - itemName: TXT File
+    probability: 100
+  deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
+  combatMusic: {fileID: 8300000, guid: 08f004790fa498542ade6e372a9823fe, type: 3}
   voiceSound: {fileID: 8300000, guid: 30367d21e3be51b40838796daa7e1f5b, type: 3}
   attackReactions:
   - Calculating lethal trajectory...
@@ -90,7 +93,7 @@ MonoBehaviour:
   - I'll see them all... in the void...
   - Tell the AI... I found the exit...
   - Connection... lost...
-  reasonFallbackDialogue: The Butcher seems to be fighting against his own programming.
+  reasonFallbackDialogue: You can't think of anything...
   reasonFallbackSound: {fileID: 0}
   phases:
   - phaseName: Initial

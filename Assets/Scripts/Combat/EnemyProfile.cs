@@ -42,12 +42,17 @@ public class EnemyProfile : ScriptableObject
     [Tooltip("Percentatge de reducció de dany rebut al completar la barra (ex: 10 = -10% dany rebut)")]
     public float bonusDefensePercent = 0f;
     
-    [Header("Rewards")]
+    [Header("Rewards (Violent Victory - Kill)")]
     public int goldRewardMin = 10;
     public int goldRewardMax = 30;
-    
     [Tooltip("Llista d'objectes i la probabilitat seqüencial d'obtenir-los (ex: 250 = 2 segurs + 50% pel 3è)")]
     public DropItemProbability[] drops;
+
+    [Header("Rewards (Amicable Victory - Recruit)")]
+    public int amicableGoldRewardMin = 5;
+    public int amicableGoldRewardMax = 15;
+    [Tooltip("Llista d'objectes al guanyar de forma pacífica.")]
+    public DropItemProbability[] amicableDrops;
 
     [Header("Audio")]
     [Tooltip("So que es reprodueix quan l'enemic mor.")]

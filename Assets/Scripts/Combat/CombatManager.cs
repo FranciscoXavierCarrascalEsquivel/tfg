@@ -131,6 +131,9 @@ public class CombatManager : MonoBehaviour
     // Control de fases de combat
     private int currentPhaseIndex = -1;
     private EnemyAttackPattern[] currentPhaseAttacks;
+    
+    // Control de no repetir l'últim atac
+    private EnemyAttackPattern? lastUsedPattern = null;
 
     /// <summary>Retorna i neteja la recompensa pendent (si n'hi ha).</summary>
     public EnemyProfile ConsumeRecruitReward()
@@ -414,6 +417,17 @@ public class CombatManager : MonoBehaviour
         currentPhaseAttacks = (encounter?.enemyProfile != null) ? encounter.enemyProfile.attackPatterns : null;
         CheckPhaseShift(true); 
 
+        // Inicialitzar Social BT si l'enemic en té un (això permet que l'enemic "recordi" atacs fins i tot si no hem obert el menú de raonar)
+        if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.socialBT != null)
+        {
+            socialState = new SocialBTState(encounter.enemyProfile.socialBT.startNodeId);
+        }
+        else
+        {
+            socialState = null;
+        }
+
+        lastUsedPattern = null; // Resetejar el control de repetició d'atacs
         UpdateStatsUI(true); // Posa les barres completes de cop a l'inci
 
         // Aplica l'sprite visual
@@ -1588,29 +1602,18 @@ public class CombatManager : MonoBehaviour
         if (playerHPText) playerHPText.text = "";
 
         // Càlcul de premis segons el perfil
-        int gold = Random.Range(30, 80);
+        int gold = 0;
         System.Collections.Generic.List<string> earnedItems = new System.Collections.Generic.List<string>();
 
         if (encounter != null && encounter.enemyProfile != null)
         {
-            gold = Random.Range(encounter.enemyProfile.goldRewardMin, encounter.enemyProfile.goldRewardMax + 1);
-            
-            if (encounter.enemyProfile.drops != null)
-            {
-                foreach (var drop in encounter.enemyProfile.drops)
-                {
-                    int prob = drop.probability;
-                    while (prob >= 100)
-                    {
-                        earnedItems.Add(drop.itemName);
-                        prob -= 100;
-                    }
-                    if (prob > 0 && Random.Range(0, 100) < prob)
-                    {
-                        earnedItems.Add(drop.itemName);
-                    }
-                }
-            }
+            var p = encounter.enemyProfile;
+            gold = Random.Range(p.goldRewardMin, p.goldRewardMax + 1);
+            earnedItems = CalculateDrops(p.drops);
+        }
+        else
+        {
+            gold = Random.Range(30, 80);
         }
 
         // Guarda HP restant del jugador i recompenses a l'inventari persistent
@@ -1982,13 +1985,34 @@ public class CombatManager : MonoBehaviour
 
         yield return new WaitForSeconds(outDur + 0.3f);
 
-        // Càlcul d'or per resolució amistosa
+        // Càlcul d'or i drops per resolució amistosa
         int friendGold = 0;
-        if (bt != null && bt.friendGoldMax > 0)
+        System.Collections.Generic.List<string> earnedItems = new System.Collections.Generic.List<string>();
+        
+        if (encounter?.enemyProfile != null)
         {
-            friendGold = Random.Range(bt.friendGoldMin, bt.friendGoldMax + 1);
-            if (PlayerInventory.Instance != null)
-                PlayerInventory.Instance.AddGold(friendGold);
+            var p = encounter.enemyProfile;
+            // Prioritat als valors de l'EnemyProfile, fallback al BT per compatibilitat
+            if (p.amicableGoldRewardMax > 0)
+            {
+                friendGold = Random.Range(p.amicableGoldRewardMin, p.amicableGoldRewardMax + 1);
+            }
+            else if (bt != null && bt.friendGoldMax > 0)
+            {
+                friendGold = Random.Range(bt.friendGoldMin, bt.friendGoldMax + 1);
+            }
+            
+            earnedItems = CalculateDrops(p.amicableDrops);
+        }
+
+        if (PlayerInventory.Instance != null)
+        {
+            PlayerInventory.Instance.AddGold(friendGold);
+            foreach (var item in earnedItems)
+            {
+                if (!string.IsNullOrEmpty(item) && item != "none" && item != "—")
+                    PlayerInventory.Instance.AddItem(item);
+            }
         }
 
         if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
@@ -1998,7 +2022,7 @@ public class CombatManager : MonoBehaviour
 
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
         bool done = false;
-        VictoryPanelUI.Create(canvasParent, friendGold, new System.Collections.Generic.List<string>(),
+        VictoryPanelUI.Create(canvasParent, friendGold, earnedItems,
             PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : friendGold, () => done = true);
 
         yield return new WaitUntil(() => done);
@@ -2010,7 +2034,12 @@ public class CombatManager : MonoBehaviour
             var completedProfile = PlayerInventory.Instance.CheckRecruitmentJustCompleted(encounter.enemyProfile.enemyName);
             if (completedProfile != null)
             {
+                Debug.Log($"[RECRUIT] Recruitment reward triggered for {encounter.enemyProfile.enemyName}!");
                 pendingRecruitReward = completedProfile;
+            }
+            else
+            {
+                Debug.Log($"[RECRUIT] Recruitment not completed yet for {encounter.enemyProfile.enemyName} (Count: {PlayerInventory.Instance.GetRecruitedCount(encounter.enemyProfile.enemyName)})");
             }
         }
 
@@ -2075,7 +2104,9 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            EndPlayerTurn("HEAL");
+            // Si l'objecte ha servit per fer mal, la reacció ha de ser d'atac (hit), no de healing
+            string reaction = (profile.effectType == ItemEffectType.DamageEnemy) ? "ATTACK" : "HEAL";
+            EndPlayerTurn(reaction);
         }
     }
 
@@ -2501,16 +2532,16 @@ public class CombatManager : MonoBehaviour
                     prefab = encounter.enemyProfile.projectilePrefab;
                     if (currentPhaseAttacks != null && currentPhaseAttacks.Length > 0)
                     {
-                        chosenPattern = currentPhaseAttacks[Random.Range(0, currentPhaseAttacks.Length)];
+                        chosenPattern = GetRandomPattern(currentPhaseAttacks);
                     }
                     else if (encounter.enemyProfile.attackPatterns != null && encounter.enemyProfile.attackPatterns.Length > 0)
                     {
-                        chosenPattern = encounter.enemyProfile.attackPatterns[Random.Range(0, encounter.enemyProfile.attackPatterns.Length)];
+                        chosenPattern = GetRandomPattern(encounter.enemyProfile.attackPatterns);
                     }
                 }
                 else if (encounter.attackPatterns != null && encounter.attackPatterns.Length > 0)
                 {
-                    chosenPattern = encounter.attackPatterns[Random.Range(0, encounter.attackPatterns.Length)];
+                    chosenPattern = GetRandomPattern(encounter.attackPatterns);
                 }
             }
 
@@ -2562,5 +2593,47 @@ public class CombatManager : MonoBehaviour
 
         state = State.PlayerTurn;
         ShowTurnMenu(true);
+    }
+
+    private EnemyAttackPattern GetRandomPattern(EnemyAttackPattern[] patterns)
+    {
+        if (patterns == null || patterns.Length == 0) return EnemyAttackPattern.RandomDrop;
+        if (patterns.Length == 1) return patterns[0];
+
+        EnemyAttackPattern chosen;
+        int maxAttempts = 10;
+        int attempts = 0;
+        
+        do
+        {
+            chosen = patterns[Random.Range(0, patterns.Length)];
+            attempts++;
+        } 
+        while (lastUsedPattern.HasValue && chosen == lastUsedPattern.Value && attempts < maxAttempts);
+
+        lastUsedPattern = chosen;
+        return chosen;
+    }
+
+    private System.Collections.Generic.List<string> CalculateDrops(DropItemProbability[] drops)
+    {
+        var earned = new System.Collections.Generic.List<string>();
+        if (drops != null)
+        {
+            foreach (var drop in drops)
+            {
+                int prob = drop.probability;
+                while (prob >= 100)
+                {
+                    earned.Add(drop.itemName);
+                    prob -= 100;
+                }
+                if (prob > 0 && Random.Range(0, 100) < prob)
+                {
+                    earned.Add(drop.itemName);
+                }
+            }
+        }
+        return earned;
     }
 }

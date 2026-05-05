@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
+  m_Name: Skell
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
+  enemyName: Skelly
+  minHP: 50
+  maxHP: 70
+  enemyPortrait: {fileID: 4925935257197340580, guid: 33033aee1b96c92438b92cb74b284935, type: 3}
+  projectilePrefab: {fileID: 5410871294214501288, guid: cb105ea0833faa740abdebdb0ae41c81, type: 3}
+  attackDuration: 6
+  attackPatterns: 0b0000000800000009000000
+  fleeProbability: 0.5
+  socialBT: {fileID: 11400000, guid: de419e6ca8f90094daf8daa54bf8ac87, type: 2}
+  maxRecruitLimit: 8
+  recruitmentRewardSprite: {fileID: 4641005251725549768, guid: ba5286b3c30db5c47afa76672b936050, type: 3}
+  recruitmentRewardDescription: Recruit all enemies of this type to increase your
+    attack by 20%.
+  recruitmentCompleteMessage: You now enjoy a 20% attack boost.
+  recruitmentRewardSound: {fileID: 8300000, guid: 3a5508314bb4a5d40bb6c401ee85c628, type: 3}
+  bonusAttackPercent: 20
+  bonusHealthPercent: 0
+  bonusDefensePercent: 0
+  goldRewardMin: 4
+  goldRewardMax: 6
+  drops:
+  - itemName: Bone
+    probability: 250
+  amicableGoldRewardMin: 4
+  amicableGoldRewardMax: 9
+  amicableDrops:
+  - itemName: Bone
+    probability: 100
+  deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
+  combatMusic: {fileID: 0}
+  voiceSound: {fileID: 8300000, guid: a94df6739b73a494795bc40d1d839b51, type: 3}
+  attackReactions:
+  - Hold the line! My bones still serve their oath!
+  - Rattle on, cursed frame! We fight with honor!
+  - I shall not yield while even one bone remains!
+  - For my fallen kingdom, I strike!
+  - Come then, knave! Test your steel against the dead!
+  - My ancient wrath is far from spent!
+  - These old bones still remember war!
+  - I was forged in battle long before your time!
+  - Stand fast! The grave has not claimed me yet!
+  - You face not a corpse, but a knight eternal!
+  healReactions:
+  - So, you hide behind trinkets and tonics? Pathetic.
+  - "Healing yourself? Have you no warrior\u2019s pride?"
+  - Coward! Face me blade to blade!
+  - You delay the inevitable with borrowed strength.
+  - A heal item? Hah! Even now, you fear defeat.
+  - Such desperate sorcery will not save you.
+  - You patch your wounds, yet your courage still bleeds.
+  - Consume all you wish, doom still marches toward you.
+  - You mend your flesh, but not your weakness.
+  - Rely on your little remedies. I shall simply strike again.
+  fleeFailReactions:
+  - Did you truly believe you could flee from the dead?
+  - Where are you going, coward? The battle is here!
+  - Nice try, meatbag... your retreat ends now.
+  - No one escapes my cursed watch.
+  - Run if you wish, your fear only amuses me.
+  - There is no fleeing from a knight bound by death.
+  - Stand and fight! Your legs will not save you!
+  - You cannot outrun judgment.
+  - Back to the battlefield with you, craven fool!
+  - The grave is patient... and so am I.
+  deathReactions:
+  - I have failed... my kingdom... once more...
+  reasonFallbackDialogue: 
+  reasonFallbackSound: {fileID: 0}
+  phases: []

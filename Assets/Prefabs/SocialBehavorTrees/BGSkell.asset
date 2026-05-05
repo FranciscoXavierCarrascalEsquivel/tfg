@@ -13,15 +13,14 @@ MonoBehaviour:
   m_Name: BGSkell
   m_EditorClassIdentifier: Assembly-CSharp::SocialBehaviorTree
   playerActions:
-  - Ballar
+  - Dance
   - Cry
   - Offer bone
   - Insult
   - Tell a joke
   menuHeader: 'Available Actions:'
   startNodeId: 0
-  friendshipText: Sembles una bona persona, crec que m'he equicovat jutjant-te abans
-    de temps... Espero que em perdonis...
+  friendshipText: You are a good guy, thank you. Take this bone as a gift.
   friendGoldMin: 4
   friendGoldMax: 6
   nodes:
@@ -31,35 +30,36 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
-      playerActionText: Comences a ballar de forma maldestre el primer que se't ve
-        al cap. L'enemic sembla curios per saber que es el que estas fent.
+    - actionName: Dance
+      playerActionText: "You start dancing awkwardly, doing the first thing that
+        comes to mind. The enemy seems curious to know what you\u2019re doing.\r\n"
       enemyReactionText: Hey! What's that? Some kind of forbidden technique?
       nextNodeId: 5
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: Et tires al terra i comences a plorar desconsoladament..
-        A l'enemic no li sembla importar...
-      enemyReactionText: El plor demostra que no ets un guerrer pur de cor... Aixeca't
-        i lluita com ha de ser!
+      playerActionText: "You throw yourself to the ground and start crying inconsolably...
+        The enemy doesn\u2019t seem to care..."
+      enemyReactionText: "Crying proves you\u2019re not a pure-hearted warrior...
+        Get up and fight properly!"
       nextNodeId: 0
       requiredItem: {fileID: 0}
     - actionName: Insult
-      playerActionText: Li dius a l'enemic que no te res de muscul... L'enemic sembla
-        confos...
+      playerActionText: You tell the enemy that they have no muscle at all... The
+        enemy seems confused...
       enemyReactionText: What's a 'muscle'?
       nextNodeId: 0
       requiredItem: {fileID: 0}
     - actionName: Offer bone
-      playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
-        de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
-      enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
-        donat
+      playerActionText: You raise the bone you had in your inventory with your hand.
+        Before you can say anything, the enemy takes it from your hand and seems
+        happy.
+      enemyReactionText: "Is it a gift? For me? It\u2019s the best thing you could
+        have given me."
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Tell a joke
-      playerActionText: "Li dius a l'enemic en forma d'acudit que els esquelets no
-        surten de festa perqu\xE8 no tenen cos per aguantar-ho. Es posa a riure."
+      playerActionText: "You jokingly tell the enemy that skeletons don\u2019t go
+        partying because they don\u2019t have the body to handle it. He start laughing."
       enemyReactionText: MUAHAHAHA! That's a rib-tickler! Literally!
       nextNodeId: 1
       requiredItem: {fileID: 0}
@@ -69,37 +69,40 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
-      playerActionText: Fas uns passos de flamenco, l'enemic queda sorpres i segueix
-        rient.
-      enemyReactionText: UAU, a sobre que ets bon comediant, tambe saps ballar? Quin
-        talent!
+    - actionName: Dance
+      playerActionText: You do a few flamenco steps. The enemy is surprised and keeps
+        laughing.
+      enemyReactionText: WOW, not only are you a good comedian, you can dance too?
+        What talent!
       nextNodeId: 6
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: "Comen\xE7es a plorar despres d'haver fet l'acudit. L'enemic
-        s'extranya..."
-      enemyReactionText: Yo... everything good at home?Potser no era un acudit i m'he equivocat...
-        Ho sento...
+      playerActionText: You start crying after telling the joke. The enemy finds
+        it strange...
+      enemyReactionText: "Yo... everything good at home? Maybe it wasn\u2019t a joke
+        and I got it wrong... I\u2019m sorry..."
       nextNodeId: 1
       requiredItem: {fileID: 0}
     - actionName: Offer bone
-      playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
-        de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
-      enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
-        donat
+      playerActionText: You raise the bone you had in your inventory with your hand.
+        Before you can say anything, the enemy takes it from your hand and seems
+        happy.
+      enemyReactionText: "Is it a gift? For me? It\u2019s the best thing you could
+        have given me."
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Insult
-      playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
+      playerActionText: "You tell the enemy that they don\u2019t have any muscle
+        at all. They seem confused..."
+      enemyReactionText: "What's a \u201Cmuscle\u201D? That word doesn\u2019t ring
+        a bell at all..."
       nextNodeId: 1
       requiredItem: {fileID: 0}
     - actionName: Tell a joke
-      playerActionText: Li dius en forma d'acudit a l'enemic que el seu menjar preferit
-        son les costelles. No pot parar de riure.
-      enemyReactionText: HAHAHAHA, clar, perque les costelles son un os de l'esquelet,
-        HAHAHAHA
+      playerActionText: "You jokingly tell the enemy that their favorite food is
+        ribs. They can\u2019t stop laughing."
+      enemyReactionText: HAHAHAHA, of course, because ribs are bones in the skeleton,
+        HAHAHAHA.
       nextNodeId: 2
       requiredItem: {fileID: 0}
   - nodeId: 2
@@ -108,63 +111,73 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
+    - actionName: Dance
       playerActionText: You do a little victory moonwalk. The skeleton is mesmerized.
-      enemyReactionText: Ets molt versatil, com un anec! Ho pilles? Perque els anecs
-        saben volar, nadar i caminar! HAHAHA
+      enemyReactionText: "You\u2019re very versatile, like a duck! Get it? Because
+        ducks can fly, swim, and walk! HAHAHA"
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: You start sobbing uncontrollably. The skeleton steps closer.
-      enemyReactionText: "Ei... tot b\xE9? Et puc ajudar amb alguna cosa?"
+      playerActionText: "Comences a plorar desconsoladament. L\u2019esquelet s\u2019acosta
+        una mica m\xE9s."
+      enemyReactionText: Hey... everything okay? Can I help you with anything?
       nextNodeId: 2
       requiredItem: {fileID: 0}
     - actionName: Offer bone
-      playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
-        de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
-      enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
-        donat
+      playerActionText: You raise the bone you had in your inventory with your hand.
+        Before you can say anything, the enemy takes it from your hand and seems
+        happy.
+      enemyReactionText: "Is it a gift? For me? It\u2019s the best thing you could
+        have given me."
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Insult
-      playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
+      playerActionText: "You tell the enemy that he don\u2019t have any muscle at
+        all. he seem confused...\r\n"
+      enemyReactionText: "What's a \u201Cmuscle\u201D? That word doesn\u2019t ring
+        a bell at all..."
       nextNodeId: 2
       requiredItem: {fileID: 0}
     - actionName: Tell a joke
-      playerActionText: Li preguntes a l'enemic que perque els esquelets no van a
-        classe. Abans de poder dir la resposta, ell et talla...
-      enemyReactionText: Oh! I know this one! Because their hearts aren't in it! HAHAHAHA!
+      playerActionText: "You ask the enemy why skeletons don\u2019t go to class.
+        Before you can give the answer, they cut you off...\r\n"
+      enemyReactionText: Oh! I know this one! Because their hearts aren't in it!
+        HAHAHAHA!
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
   - nodeId: 5
-    enemyEntryText: "Que es all\xF2 que feies fa un moment?"
+    enemyEntryText: What was that thing you were doing a moment ago?
     defaultReactionText: ...
     enableApology: 0
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
-      playerActionText: Balles amb mes confianca. Li dius a l'enemic que el que fas
-        es diu "ballar"
-      enemyReactionText: "Uaaaau, mai n'havia sentit a parlar! Deixa'm intentar-ho!
-        Ho faig b\xE9?"
+    - actionName: Dance
+      playerActionText: "You dance with more confidence. You tell the enemy that
+        what you\u2019re doing is called \u201Cdancing.\u201D"
+      enemyReactionText: "Woooow, I\u2019d never heard of it before! Let me try it!
+        Am I doing it right?"
       nextNodeId: 6
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: You burst into tears mid-dance. The skeleton stands in awkward silence.
-      enemyReactionText: "Yo... everything good at home?T'has tor\xE7at el tormell quan ballaves?"
+      playerActionText: You burst into tears mid-dance. The skeleton stands in awkward
+        silence.
+      enemyReactionText: Yo... everything good at home? Did you twist your ankle
+        while you were dancing?
       nextNodeId: 5
       requiredItem: {fileID: 0}
     - actionName: Offer bone
-      playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
-        de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
-      enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
-        donat!
+      playerActionText: You raise the bone you had in your inventory with your hand.
+        Before you can say anything, the enemy takes it from your hand and seems
+        happy.
+      enemyReactionText: "Is it a gift? For me? It\u2019s the best thing you could
+        have given me!"
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Insult
-      playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
+      playerActionText: "You tell the enemy that they don\u2019t have any muscle
+        at all. They seem confused...\r\n"
+      enemyReactionText: "What's a \u201Cmuscle\u201D? That word doesn\u2019t ring
+        a bell at all..."
       nextNodeId: 5
       requiredItem: {fileID: 0}
     - actionName: Tell a joke
@@ -180,72 +193,76 @@ MonoBehaviour:
     enableApology: 0
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
-      playerActionText: 'Balles. L''enemic et segueix el rotllo, li dons un 10/10. '
-      enemyReactionText: Crec que he trobat un nou passatemps preferit! I tot  gracies
-        a tu!
+    - actionName: Dance
+      playerActionText: You dance. The enemy plays along, and you give them a 10/10.
+      enemyReactionText: "I think I\u2019ve found a new favorite hobby! And it\u2019s
+        all thanks to you!"
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: "Comen\xE7es a plorar. L'enemic es preocupa per tu..."
-      enemyReactionText: 'Yo... everything good at home?'
+      playerActionText: You start crying. The enemy gets worried about you...
+      enemyReactionText: Yo... everything good at home?
       nextNodeId: 6
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Offer bone
-      playerActionText: Alces amb la teva ma l'os que tenies a l'inventari. Abans
-        de que puguis dir res, l'enemic te'l treu de la ma i sembla alegrar-se.
-      enemyReactionText: Es un regal? Per a mi? Es lo millor que em podries haver
-        donat!
+      playerActionText: You raise the bone you had in your inventory with your hand.
+        Before you can say anything, the enemy takes it from your hand and seems
+        happy.
+      enemyReactionText: "Is it a gift? For me? It\u2019s the best thing you could
+        have given me!"
       nextNodeId: AMIC
       requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Insult
-      playerActionText: Li dius a l'enemic que no te gens de muscul. Sembla confos...
-      enemyReactionText: What's a 'muscle'? No em sona gens ni mica aquesta paraula...
+      playerActionText: "You tell the enemy that they don\u2019t have any muscle
+        at all. They seem confused..."
+      enemyReactionText: "What's a \u201Cmuscle\u201D? That word doesn\u2019t ring
+        a bell at all..."
       nextNodeId: 6
       requiredItem: {fileID: 0}
     - actionName: Tell a joke
-      playerActionText: Li preguntes a l'enemic que perque els esquelets no van a
-        classe. Abans de poder dir la resposta, ell respon...
-      enemyReactionText: Oh! I know this one! Because their hearts aren't in it! HAHAHAHA!
+      playerActionText: "You ask the enemy why skeletons don\u2019t go to class.
+        Before you can give the answer, they answer...\r\n"
+      enemyReactionText: "Because they don\u2019t have a head for studying!"
       nextNodeId: AMIC
       requiredItem: {fileID: 0}
   - nodeId: 7
-    enemyEntryText: 'It's just a scratch, keep it together...'
+    enemyEntryText: Ouch... that hurts...
     defaultReactionText: ...
     enableApology: 1
     attackNextNodeId: 7
     transitions:
-    - actionName: Ballar
-      playerActionText: You inexplicably start dancing. He narrows his eye sockets suspiciously.
-      enemyReactionText: I'm going to turn you into a pile of dust!
+    - actionName: Dance
+      playerActionText: You start dancing, trying to soften the mood after the hit.
+        The enemy looks at you with suspicion.
+      enemyReactionText: "So... first you hit me, and now you want to throw a party?
+        I don\u2019t know whether to laugh or get even angrier."
       nextNodeId: 7
       requiredItem: {fileID: 0}
     - actionName: Cry
-      playerActionText: You cry crocodile tears. He's not buying it.
-      enemyReactionText: I'm going to turn you into a pile of dust!
+      playerActionText: You start crying uncontrollably, feeling sorry for the hit
+        you gave them. The enemy seems confused.
+      enemyReactionText: "Hey... now you\u2019re crying? But I\u2019m the one who
+        got hit!"
       nextNodeId: 7
       requiredItem: {fileID: 0}
     - actionName: Offer bone
-      playerActionText: Li ofereixes un os a mode de disculpes a l'enemic. Sembla
-        que ho accepta.
-      enemyReactionText: Ho agraeixo, encara que fa un moment m'has intentat matar...
-        pero, perdonable...
+      playerActionText: You raise the bone from your inventory as a peace offering.
+        The enemy looks at it, still a little annoyed.
+      enemyReactionText: "Hmph... it\u2019s a good gift, I won\u2019t deny that.
+        But it doesn\u2019t erase the fact that you hit me."
       nextNodeId: AMIC
-      requiredItem: {fileID: 0}
+      requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Insult
-      playerActionText: You roast his creator. He seems completely unfazed.
-      enemyReactionText: Didn't expect any less from a chaotic meat machine like you.
+      playerActionText: You try to insult the enemy, but after hitting them, it sounds
+        even worse. The enemy gets angry.
+      enemyReactionText: Seriously? First you hit me, and now you insult me? You
+        really want to lose this fight.
       nextNodeId: 7
-      requiredItem: {fileID: 0}
+      requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}
     - actionName: Tell a joke
-      playerActionText: Intentes deixar anar l'acudit mes divertit del mon, pero
-        no se t'acudeix res...
-      enemyReactionText: Oh wow... tough crowd! Guess it's my turn to attack!
-      nextNodeId: 7
-      requiredItem: {fileID: 0}
-    - actionName: Apologize
-      playerActionText: Demanes perdo pels teus actes agresius. L'enemic ho enten
-        pero tampoc baixa la guardia.
-      enemyReactionText: I get it... no hard feelings, BUT I'M STILL GONNA CRUSH YOU!
+      playerActionText: "You tell the enemy a joke, trying to fix the situation.
+        They try not to laugh, but it\u2019s difficult."
+      enemyReactionText: "I\u2019m not going to laugh after what you did... wait...
+        okay, that was kind of good."
       nextNodeId: 0
-      requiredItem: {fileID: 0}
+      requiredItem: {fileID: 11400000, guid: c029f67815947b24b8a3d0d258cf97f0, type: 2}

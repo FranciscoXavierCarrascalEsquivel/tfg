@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94c1041b6a4c16e4aa5f6bdc20e1f066, type: 3}
+  m_Name: Code Bug
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyProfile
+  enemyName: Code Bug
+  minHP: 15
+  maxHP: 25
+  enemyPortrait: {fileID: -6446764873070522060, guid: d3e1be9ca21c274448a63a1e48164b89, type: 3}
+  projectilePrefab: {fileID: 5410871294214501288, guid: 02ec096baca712e418840d70803f2bca, type: 3}
+  attackDuration: 6
+  attackPatterns: 1200000013000000
+  fleeProbability: 1
+  socialBT: {fileID: 11400000, guid: b9cb48a64a0f16840b153e6a6d833b03, type: 2}
+  maxRecruitLimit: 10
+  recruitmentRewardSprite: {fileID: 26913118143591116, guid: d4796cae3a08d3a428117b4f2d5d4c5c, type: 3}
+  recruitmentRewardDescription: Recruit this enemy to increase your defense by 20%.
+  recruitmentCompleteMessage: You now enjoy a 20% defense boost.
+  recruitmentRewardSound: {fileID: 8300000, guid: 3a5508314bb4a5d40bb6c401ee85c628, type: 3}
+  bonusAttackPercent: 0
+  bonusHealthPercent: 0
+  bonusDefensePercent: 20
+  goldRewardMin: 1
+  goldRewardMax: 3
+  drops: []
+  amicableGoldRewardMin: 1
+  amicableGoldRewardMax: 2
+  amicableDrops: []
+  deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
+  combatMusic: {fileID: 0}
+  voiceSound: {fileID: 0}
+  attackReactions:
+  - Heh... did I just lose a few pixels?
+  - Ouch! That almost fixed me!
+  - You hit hard... for a temporary patch.
+  - Bzzzt... still corrupted, still crawling.
+  - You can squash a bug, but not a system failure.
+  healReactions:
+  - Oh, great. More health to debug through.
+  - "Healing? That\u2019s just delaying the crash."
+  - Ugh... stop patching yourself already!
+  - You call that fair? I was this close to breaking you.
+  - "Fine, recover all you want. I\u2019ll just corrupt you again."
+  fleeFailReactions:
+  - "Where do you think you\u2019re going? You can\u2019t escape the error."
+  - Nice try! The bug always comes back.
+  - Running away? Classic user behavior.
+  - Escape failed. Just like the rest of the program.
+  - "Nope. You\u2019re stuck in this loop with me."
+  deathReactions:
+  - Bzzzt... guess this bug is... fixed...
+  reasonFallbackDialogue: 
+  reasonFallbackSound: {fileID: 0}
+  phases: []

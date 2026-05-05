@@ -19,6 +19,7 @@ public class CameraBoundedFollow : MonoBehaviour
 
     private Camera cam;
     private float backgroundZ;
+    private Vector3 velocity = Vector3.zero; // Velocity buffer per SmoothDamp
 
     private void Awake()
     {
@@ -40,8 +41,9 @@ public class CameraBoundedFollow : MonoBehaviour
         if (cam != null)
             desiredPosition = GetClampedPosition(desiredPosition);
 
-        // Suavitzat
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
+        // Suavitzat amb SmoothDamp (consistent independentment del framerate)
+        float smoothTime = 1f / Mathf.Max(0.01f, smoothSpeed);
+        Vector3 smoothedPosition = Vector3.SmoothDamp(transform.position, desiredPosition, ref velocity, smoothTime);
         smoothedPosition.z = offset.z;
 
         // Apliquem a la càmera
@@ -58,6 +60,22 @@ public class CameraBoundedFollow : MonoBehaviour
             if (keepBackgroundZ) bgPos.z = backgroundZ;
 
             backgroundToFollow.position = bgPos;
+
+            // --- ESCALAT DINÀMIC DEL FONS ---
+            SpriteRenderer sr = backgroundToFollow.GetComponent<SpriteRenderer>();
+            if (sr != null && cam != null)
+            {
+                float camHeight = cam.orthographicSize * 2.2f;
+                float camWidth = camHeight * cam.aspect;
+                Vector2 spriteSize = sr.sprite.bounds.size;
+                if (spriteSize.x > 0 && spriteSize.y > 0)
+                {
+                    float scaleX = camWidth / spriteSize.x;
+                    float scaleY = camHeight / spriteSize.y;
+                    float finalScale = Mathf.Max(scaleX, scaleY);
+                    backgroundToFollow.localScale = new Vector3(finalScale, finalScale, 1f);
+                }
+            }
         }
     }
 
@@ -96,8 +114,9 @@ public class CameraBoundedFollow : MonoBehaviour
         clampedPosition.z = offset.z;
 
         transform.position = clampedPosition;
+        velocity = Vector3.zero; // Reset velocity after snap per evitar inèrcia residual
 
-        // també “snap” del fons
+        // també "snap" del fons
         if (backgroundToFollow != null)
         {
             Vector3 bgPos = backgroundToFollow.position;
@@ -105,6 +124,23 @@ public class CameraBoundedFollow : MonoBehaviour
             bgPos.y = clampedPosition.y;
             if (keepBackgroundZ) bgPos.z = backgroundZ;
             backgroundToFollow.position = bgPos;
+
+            // --- ESCALAT DINÀMIC DEL FONS ---
+            SpriteRenderer sr = backgroundToFollow.GetComponent<SpriteRenderer>();
+            if (sr != null && cam != null)
+            {
+                float camHeight = cam.orthographicSize * 2.2f; // Una mica de marge extra per seguretat
+                float camWidth = camHeight * cam.aspect;
+
+                Vector2 spriteSize = sr.sprite.bounds.size;
+                if (spriteSize.x > 0 && spriteSize.y > 0)
+                {
+                    float scaleX = camWidth / spriteSize.x;
+                    float scaleY = camHeight / spriteSize.y;
+                    float finalScale = Mathf.Max(scaleX, scaleY);
+                    backgroundToFollow.localScale = new Vector3(finalScale, finalScale, 1f);
+                }
+            }
         }
     }
 

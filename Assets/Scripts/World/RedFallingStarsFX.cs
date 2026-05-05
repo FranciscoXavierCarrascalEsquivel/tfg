@@ -13,7 +13,7 @@ public class RedFallingStarsFX : MonoBehaviour
 
     [Header("Star Settings")]
     [Tooltip("Quants punts / estrelles vols tenir alhora")]
-    public int starCount = 150;
+    public int starCount = 75; // Reduït per millorar rendiment global
     
     [Tooltip("Direcció en la que cauen. Ex: (-1, -1) significa avall-esquerra.")]
     public Vector2 fallDirection = new Vector2(-1f, -1f);
@@ -49,10 +49,14 @@ public class RedFallingStarsFX : MonoBehaviour
     private List<Star> stars = new List<Star>();
     private Texture2D dotTexture;
     private Sprite dotSprite;
+    private Material sharedStarMaterial;
 
     private void Start()
     {
         CreateDotSprite();
+        
+        // Caching shader and material to avoid 150 allocations and Draw Calls
+        sharedStarMaterial = new Material(Shader.Find("Sprites/Default"));
         
         for (int i = 0; i < starCount; i++)
         {
@@ -100,8 +104,8 @@ public class RedFallingStarsFX : MonoBehaviour
         SpriteRenderer sr = starObj.AddComponent<SpriteRenderer>();
         sr.sprite = dotSprite;
         
-        // Assegurem que el material sigui el correcte a URP
-        sr.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+        // Use the shared material!
+        sr.sharedMaterial = sharedStarMaterial;
 
         // FORCEM que es dibuixi per sobre de TOT (ignorem l'inspector un moment)
         sr.sortingLayerName = sortingLayerName;
@@ -171,24 +175,25 @@ public class RedFallingStarsFX : MonoBehaviour
 
     private void Update()
     {
-        // Un normalize per garantir que la velocitat escala exactament com els paràmetres ho demanen
         Vector3 movement = fallDirection.normalized * Time.deltaTime;
-        
-        float halfW = areaWidth / 2f;
-        float halfH = areaHeight / 2f;
+        float halfW = areaWidth * 0.5f;
+        float halfH = areaHeight * 0.5f;
+        float dirX = fallDirection.x;
+        float dirY = fallDirection.y;
 
-        foreach (var star in stars)
+        int count = stars.Count;
+        for (int i = 0; i < count; i++)
         {
+            Star star = stars[i];
             star.transform.localPosition += movement * star.speed;
 
-            // Reciclem si surt fora dels límits establerts
             Vector3 pos = star.transform.localPosition;
-            bool outOfX = (fallDirection.x < 0 && pos.x < -halfW) || (fallDirection.x > 0 && pos.x > halfW);
-            bool outOfY = (fallDirection.y < 0 && pos.y < -halfH) || (fallDirection.y > 0 && pos.y > halfH);
+            bool outOfX = (dirX < 0 && pos.x < -halfW) || (dirX > 0 && pos.x > halfW);
+            bool outOfY = (dirY < 0 && pos.y < -halfH) || (dirY > 0 && pos.y > halfH);
 
             if (outOfX || outOfY)
             {
-                ResetStar(star, false); // Reseta al limit per simular un loop infinit
+                ResetStar(star, false);
             }
         }
     }

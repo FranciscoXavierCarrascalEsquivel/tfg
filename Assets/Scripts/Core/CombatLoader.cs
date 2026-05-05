@@ -246,6 +246,11 @@ public class CombatLoader : MonoBehaviour
         if (cm != null)
         {
             pendingReward = cm.ConsumeRecruitReward();
+            if (pendingReward != null) Debug.Log("[COMBAT] Detected pending recruit reward: " + pendingReward.enemyName);
+        }
+        else
+        {
+            Debug.LogWarning("[COMBAT] Could not find CombatManager to check for rewards!");
         }
 
         // REVERSE OVERLAY: fa que els trossos de la pantalla del món tornin a ajuntarse 
@@ -294,16 +299,23 @@ public class CombatLoader : MonoBehaviour
             Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
             foreach (var c in allCanvases)
             {
-                if (c.isRootCanvas && c.gameObject.activeInHierarchy && c.enabled)
+                if (c.isRootCanvas && c.gameObject.activeInHierarchy)
                 {
-                    // Prioritzem el que es digui "MainCanvas" o "UI"
-                    if (c.name.Contains("Main") || c.name.Contains("UI") || c.name.Contains("Overworld"))
+                    // Prioritzem el que es digui "MainCanvas", "UI" o "Overworld"
+                    string n = c.name.ToLower();
+                    if (n.Contains("main") || n.Contains("ui") || n.Contains("overworld") || n.Contains("player"))
                     {
                         worldCanvas = c;
                         break;
                     }
-                    worldCanvas = c; // Fallback al primer root actiu que trobi
+                    if (worldCanvas == null) worldCanvas = c; 
                 }
+            }
+
+            // Si tot i així és null, busquem qualsevol canvas actiu (encara que no sigui root)
+            if (worldCanvas == null && allCanvases.Length > 0)
+            {
+                foreach(var c in allCanvases) if(c.gameObject.activeInHierarchy) { worldCanvas = c; break; }
             }
 
             if (worldCanvas != null)
@@ -393,6 +405,7 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
+    #if UNITY_EDITOR
     private void OnGUI()
     {
         // Botó per fer debug i entrar en combat aleatori des del món
@@ -401,6 +414,7 @@ public class CombatLoader : MonoBehaviour
             DebugStartRandomCombat();
         }
     }
+    #endif
 
     private void DebugStartRandomCombat()
     {

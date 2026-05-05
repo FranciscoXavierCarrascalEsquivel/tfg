@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Rock
   m_EditorClassIdentifier: Assembly-CSharp::ItemProfile
   itemName: Rock
-  itemDescription: A rock shard you found before. It deals 50 damage to an enemy.
+  itemDescription: It deals 50 damage to an enemy.
   itemIcon: {fileID: 3768997556554935529, guid: d48623c9e0bebe346929915a1a0cadbb, type: 3}
   effectType: 1
   effectValue: 50
   buffDurationRounds: 3
-  buyPrice: 0
-  sellPrice: 1
+  buyPrice: 10
+  sellPrice: 5
   useSound: {fileID: 8300000, guid: c00eb0a664650474da9d939a3c537b93, type: 3}
   additionalUseSounds: []
   isStackable: 1

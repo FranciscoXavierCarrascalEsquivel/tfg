@@ -37,8 +37,10 @@ public class ShopMenuUI : MonoBehaviour
     private GridLayoutGroup glg;
     private RectTransform   glgRT;
     private Image           divImg;
-    private RectTransform   tabTopRT;
-    private RectTransform   escTopRT;
+    private RectTransform   tabTopRT_Ref;
+    private RectTransform   escTopRT_Ref;
+    private bool            lastTabPressed;
+    private bool            lastEscPressed;
 
     private class ShopEntry
     {
@@ -193,10 +195,10 @@ public class ShopMenuUI : MonoBehaviour
 
         var tabTopGO = new GameObject("Top");
         tabTopGO.transform.SetParent(tabKeyBtnRT, false);
-        tabTopRT = tabTopGO.AddComponent<RectTransform>();
-        tabTopRT.anchorMin = Vector2.zero; tabTopRT.anchorMax = Vector2.one;
-        tabTopRT.offsetMin = tabTopRT.offsetMax = Vector2.zero;
-        tabTopRT.anchoredPosition = new Vector2(0f, 4f);
+        tabTopRT_Ref = tabTopGO.AddComponent<RectTransform>();
+        tabTopRT_Ref.anchorMin = Vector2.zero; tabTopRT_Ref.anchorMax = Vector2.one;
+        tabTopRT_Ref.offsetMin = tabTopRT_Ref.offsetMax = Vector2.zero;
+        tabTopRT_Ref.anchoredPosition = new Vector2(0f, 4f);
         
         var tabTopImg = tabTopGO.AddComponent<Image>();
         tabTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
@@ -204,7 +206,7 @@ public class ShopMenuUI : MonoBehaviour
         tabTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
         tabTopOl.effectDistance = new Vector2(2f, -2f);
 
-        TxtFill(tabTopRT, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        TxtFill(tabTopRT_Ref, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Stats HP / Or ───────────────────────────────────────────
         var statsRT = TopZone(rightPanel, "Stats", ref fromTop, H_STATS);
@@ -318,10 +320,10 @@ public class ShopMenuUI : MonoBehaviour
 
         var escTopGO = new GameObject("Top");
         escTopGO.transform.SetParent(escBtnRT, false);
-        escTopRT = escTopGO.AddComponent<RectTransform>();
-        escTopRT.anchorMin = Vector2.zero; escTopRT.anchorMax = Vector2.one;
-        escTopRT.offsetMin = escTopRT.offsetMax = Vector2.zero;
-        escTopRT.anchoredPosition = new Vector2(0f, 4f);
+        escTopRT_Ref = escTopGO.AddComponent<RectTransform>();
+        escTopRT_Ref.anchorMin = Vector2.zero; escTopRT_Ref.anchorMax = Vector2.one;
+        escTopRT_Ref.offsetMin = escTopRT_Ref.offsetMax = Vector2.zero;
+        escTopRT_Ref.anchoredPosition = new Vector2(0f, 4f);
         
         var escTopImg = escTopGO.AddComponent<Image>();
         escTopImg.color = new Color(0.12f, 0.12f, 0.12f, 1f);
@@ -329,7 +331,7 @@ public class ShopMenuUI : MonoBehaviour
         escTopOl.effectColor = new Color(0.40f, 0.40f, 0.40f, 1f);
         escTopOl.effectDistance = new Vector2(2f, -2f);
 
-        TxtFill(escTopRT, "ESC", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        TxtFill(escTopRT_Ref, "ESC", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
         // ─── Graella ──────────────────────────────────────────────────
         var gridRT_zone = MakeRT("GridZone", rightPanel);
@@ -616,18 +618,26 @@ public class ShopMenuUI : MonoBehaviour
 
     private void Update()
     {
-        if (tabTopRT != null)
+        if (tabTopRT_Ref != null)
         {
             float cycle = Time.unscaledTime * 1.5f;
             bool isPressed = (cycle % 1f) > 0.7f;
-            tabTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            if (isPressed != lastTabPressed)
+            {
+                lastTabPressed = isPressed;
+                tabTopRT_Ref.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            }
         }
 
-        if (escTopRT != null)
+        if (escTopRT_Ref != null)
         {
             float cycle = Time.unscaledTime * 1.5f;
             bool isPressed = (cycle % 1f) > 0.7f;
-            escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            if (isPressed != lastEscPressed)
+            {
+                lastEscPressed = isPressed;
+                escTopRT_Ref.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            }
         }
 
         if (inputBlocked) return;
@@ -975,6 +985,6 @@ public class ShopMenuUI : MonoBehaviour
             $"Assets/TextMesh Pro/Resources/Fonts & Materials/{n}.asset");
         if (f != null) return f;
 #endif
-        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>(n);
+        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
     }
 }

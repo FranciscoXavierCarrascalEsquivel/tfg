@@ -225,6 +225,6 @@ public class HealFXUI : MonoBehaviour
 #endif
         var loaded = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{fontName}");
         if (loaded != null) return loaded;
-        return Resources.Load<TMP_FontAsset>(fontName);
+        return Resources.Load<TMP_FontAsset>($"Fonts/{fontName}") ?? Resources.Load<TMP_FontAsset>(fontName);
     }
 }

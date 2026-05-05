@@ -156,6 +156,22 @@ public class DialogueTrigger : MonoBehaviour
         int LastMoveYHash = Animator.StringToHash("lastMoveY");
         int SpeedMulHash = Animator.StringToHash("moveSpeedMultiplier");
 
+        // Comprovem quins paràmetres existeixen a l'Animator per evitar errors
+        bool hasIsMoving = false, hasMoveX = false, hasMoveY = false;
+        bool hasLastMoveX = false, hasLastMoveY = false, hasSpeedMul = false;
+        if (anim != null)
+        {
+            foreach (var p in anim.parameters)
+            {
+                if (p.nameHash == IsMovingHash) hasIsMoving = true;
+                if (p.nameHash == MoveXHash) hasMoveX = true;
+                if (p.nameHash == MoveYHash) hasMoveY = true;
+                if (p.nameHash == LastMoveXHash) hasLastMoveX = true;
+                if (p.nameHash == LastMoveYHash) hasLastMoveY = true;
+                if (p.nameHash == SpeedMulHash) hasSpeedMul = true;
+            }
+        }
+
         Vector2 lastAnimDir = Vector2.down; // Direcció per defecte si no es mou
 
         for (int i = 0; i < walkWaypoints.Length; i++)
@@ -178,12 +194,12 @@ public class DialogueTrigger : MonoBehaviour
 
                 if (anim != null)
                 {
-                    anim.SetBool(IsMovingHash, true);
-                    anim.SetFloat(MoveXHash, animDir.x);
-                    anim.SetFloat(MoveYHash, animDir.y);
-                    anim.SetFloat(LastMoveXHash, animDir.x);
-                    anim.SetFloat(LastMoveYHash, animDir.y);
-                    anim.SetFloat(SpeedMulHash, 1f);
+                    if (hasIsMoving) anim.SetBool(IsMovingHash, true);
+                    if (hasMoveX) anim.SetFloat(MoveXHash, animDir.x);
+                    if (hasMoveY) anim.SetFloat(MoveYHash, animDir.y);
+                    if (hasLastMoveX) anim.SetFloat(LastMoveXHash, animDir.x);
+                    if (hasLastMoveY) anim.SetFloat(LastMoveYHash, animDir.y);
+                    if (hasSpeedMul) anim.SetFloat(SpeedMulHash, 1f);
                 }
 
                 // So de caminar
@@ -205,12 +221,12 @@ public class DialogueTrigger : MonoBehaviour
         // Hem acabat: parem l'animació però mantenim la direcció de mirada
         if (anim != null)
         {
-            anim.SetBool(IsMovingHash, false);
-            anim.SetFloat(MoveXHash, 0f);
-            anim.SetFloat(MoveYHash, 0f);
-            anim.SetFloat(LastMoveXHash, lastAnimDir.x);
-            anim.SetFloat(LastMoveYHash, lastAnimDir.y);
-            anim.SetFloat(SpeedMulHash, 1f);
+            if (hasIsMoving) anim.SetBool(IsMovingHash, false);
+            if (hasMoveX) anim.SetFloat(MoveXHash, 0f);
+            if (hasMoveY) anim.SetFloat(MoveYHash, 0f);
+            if (hasLastMoveX) anim.SetFloat(LastMoveXHash, lastAnimDir.x);
+            if (hasLastMoveY) anim.SetFloat(LastMoveYHash, lastAnimDir.y);
+            if (hasSpeedMul) anim.SetFloat(SpeedMulHash, 1f);
         }
 
         // Actualitzem la direcció interna del PlayerController ABANS de desbloquejar

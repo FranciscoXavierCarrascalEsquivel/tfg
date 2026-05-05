@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerInteractor : MonoBehaviour
 {
+    public static bool IsShaking { get; set; } // Bloqueja interaccions globals si la pantalla tremola
+
     [SerializeField] private KeyCode interactKey = KeyCode.E; // Tecla d'interacció
     [SerializeField] private float radius = 0.6f; // Distancia màxima entre el jugador i l'objecte interactuable.
     [SerializeField] private LayerMask interactableLayer; // Capa d'in
@@ -26,7 +28,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (PauseMenuUI.IsOpen) return;
+        if (PauseMenuUI.IsOpen || IsShaking) return;
 
         if (!Input.GetKeyDown(interactKey)) return;
 

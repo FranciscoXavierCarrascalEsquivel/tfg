@@ -44,7 +44,7 @@ public class IntroCutscene : MonoBehaviour
     private Animator playerAnim;
     private SpriteRenderer playerSprite;
     
-    private static bool hasPlayed = false;
+    private bool hasPlayed = false;
 
     private void Awake()
     {
@@ -178,6 +178,7 @@ public class IntroCutscene : MonoBehaviour
 
     private IEnumerator DoTrembleAndSound()
     {
+        PlayerInteractor.IsShaking = true;
         Vector3 originalPos = playerRef.transform.position;
         float elapsed = 0f;
         
@@ -194,6 +195,7 @@ public class IntroCutscene : MonoBehaviour
         
         // Assegurem que torni a la posició original estable exacta
         playerRef.transform.position = originalPos;
+        PlayerInteractor.IsShaking = false;
 
         // Reproduïm el so just al moment exacte d'acabar el tremolor i fer el canvi!
         if (standUpSound != null)

@@ -52,6 +52,9 @@ public class DialogueUI : MonoBehaviour
     private float skipHoldTime;
     private const float SkipHoldRequired = 0.5f;
     private Vector3[] panelCorners = new Vector3[4]; // reused buffer
+
+    private bool lastEPressed;
+    private bool lastFPressed;
     private RectTransform dividerRT;
     private RectTransform portRT;
     private Image panelBgImg;
@@ -61,11 +64,13 @@ public class DialogueUI : MonoBehaviour
     private bool isHidingForCombat = false;
     private bool eventAlreadyFired = false;
 
+    private float currentSpeedMultiplier = 1f;
+
     public void SetSpeedMultiplier(float multiplier)
     {
-        // Si el multiplier és 4, la velocitat real (caràcters per segon) es divideix per 4
+        // Guardem el multiplicador temporalment en comptes de modificar permanentment la base charsPerSecond
         if (multiplier > 0)
-            charsPerSecond /= multiplier;
+            currentSpeedMultiplier = multiplier;
     }
 
     private Interactable.DialogueLine[] sequence;
@@ -78,6 +83,7 @@ public class DialogueUI : MonoBehaviour
     private AudioClip currentLineVoice;
 
     // Branches
+    private Interactable.DialogueLine currentLine;
     private Interactable.DialogueChoice[] currentLineChoices;
     private bool isSelectingChoice;
     private int selectedChoiceIdx;
@@ -98,7 +104,9 @@ public class DialogueUI : MonoBehaviour
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // F Button (Skip) Logic
-            if (canSkip)
+            bool lineAllowsSkip = canSkip && (currentLine == null || !currentLine.cannotSkip);
+
+            if (lineAllowsSkip)
             {
                 if (Input.GetKey(KeyCode.F))
                 {
@@ -118,7 +126,11 @@ public class DialogueUI : MonoBehaviour
                     skipHoldTime = 0f;
                     float fCycle = Time.unscaledTime * 1.5f + 0.5f; 
                     bool fIsPressed = (fCycle % 1f) > 0.7f;
-                    if (fTextRT != null) fTextRT.anchoredPosition = fIsPressed ? Vector2.zero : new Vector2(0f, 4f);
+                    if (fIsPressed != lastFPressed)
+                    {
+                        lastFPressed = fIsPressed;
+                        if (fTextRT != null) fTextRT.anchoredPosition = fIsPressed ? Vector2.zero : new Vector2(0f, 4f);
+                    }
                 }
 
                 if (fBtnGroup != null) fBtnGroup.alpha = 1f;
@@ -126,6 +138,7 @@ public class DialogueUI : MonoBehaviour
             else
             {
                 if (fBtnGroup != null) fBtnGroup.alpha = 0f;
+                skipHoldTime = 0f;
             }
 
             // E Button Logic
@@ -136,12 +149,25 @@ public class DialogueUI : MonoBehaviour
                     eBtnGroup.alpha = 1f;
                     float cycle = Time.unscaledTime * 1.5f;
                     bool isPressed = (cycle % 1f) > 0.7f;
-                    eTextRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+                    if (isPressed != lastEPressed)
+                    {
+                        lastEPressed = isPressed;
+                        eTextRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+                    }
                 }
                 else
                 {
                     eBtnGroup.alpha = 0f;
                 }
+            }
+
+            // Track F container to follow the panel position (including animations)
+            if (fContainerRT != null && panelRect != null)
+            {
+                panelRect.GetWorldCorners(panelCorners); // 0=bottom-left, 1=top-left, 2=top-right, 3=bottom-right
+                // Position below the bottom-left corner of the panel
+                Vector3 bottomLeft = panelCorners[0];
+                fContainerRT.position = new Vector3(bottomLeft.x, bottomLeft.y - 10f, bottomLeft.z);
             }
         }
         else
@@ -186,15 +212,6 @@ public class DialogueUI : MonoBehaviour
                     ItemSoundPlayer.Play(PlayerInventory.Instance.navSound);
                 }
             }
-        }
-
-        // Track F container to follow the panel position (including animations)
-        if (fContainerRT != null && panelRect != null)
-        {
-            panelRect.GetWorldCorners(panelCorners); // 0=bottom-left, 1=top-left, 2=top-right, 3=bottom-right
-            // Position below the bottom-left corner of the panel
-            Vector3 bottomLeft = panelCorners[0];
-            fContainerRT.position = new Vector3(bottomLeft.x, bottomLeft.y - 10f, bottomLeft.z);
         }
     }
 
@@ -269,6 +286,7 @@ public class DialogueUI : MonoBehaviour
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
 
         isOpen = true;
+        currentLine = line;
         fullText = line?.text ?? "";
         typedCount = 0;
 
@@ -356,6 +374,7 @@ public class DialogueUI : MonoBehaviour
             dialogueText.text = fullText;
             dialogueText.ForceMeshUpdate();
             dialogueText.enableAutoSizing = false;
+            dialogueText.maxVisibleCharacters = 0;
         }
 
         if (typingRoutine != null) StopCoroutine(typingRoutine);
@@ -364,6 +383,8 @@ public class DialogueUI : MonoBehaviour
 
     public void Hide()
     {
+        currentSpeedMultiplier = 1f; // Reseteja la velocitat per evitar bugs després de combats
+
         if (isHiding) return;
         isHiding = true;
 
@@ -395,11 +416,18 @@ public class DialogueUI : MonoBehaviour
 
         if (isTyping)
         {
+            // Eliminada la comprovació de cannotSkip aquí per permetre que la E sempre acabi el text ràpid.
+            // La restricció ara s'aplica només al botó F (saltar seqüència completa).
+            
             if (typingRoutine != null) StopCoroutine(typingRoutine);
             typingRoutine = null;
 
             isTyping = false;
-            if (dialogueText) dialogueText.text = fullText;
+            if (dialogueText)
+            {
+                dialogueText.text = fullText;
+                dialogueText.maxVisibleCharacters = fullText.Length;
+            }
             
             if (currentLineChoices != null && currentLineChoices.Length > 0)
             {
@@ -585,15 +613,24 @@ public class DialogueUI : MonoBehaviour
     private IEnumerator TypeRoutine(string text)
     {
         isTyping = true;
-        if (dialogueText) dialogueText.text = "";
 
         string cleanText = text.Trim();
-        float delay = 1f / Mathf.Max(1f, charsPerSecond);
+        
+        // Apliquem el multiplicador temporal a la velocitat base
+        float currentSpeed = Mathf.Max(1f, charsPerSecond / currentSpeedMultiplier);
+        float delay = 1f / currentSpeed;
+
+        // Usem maxVisibleCharacters per evitar crear strings nous cada frame (zero GC)
+        if (dialogueText)
+        {
+            dialogueText.text = cleanText;
+            dialogueText.maxVisibleCharacters = 0;
+        }
 
         for (int i = 0; i < cleanText.Length; i++)
         {
             char c = cleanText[i];
-            if (dialogueText) dialogueText.text += c;
+            if (dialogueText) dialogueText.maxVisibleCharacters = i + 1;
 
             bool shouldSound = true;
             if (skipSpaces && char.IsWhiteSpace(c)) shouldSound = false;
@@ -1182,7 +1219,7 @@ public class DialogueUI : MonoBehaviour
 #endif
             if (cachedFont == null)
             {
-                cachedFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+                cachedFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("Fonts/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
             }
         }
 
@@ -1266,7 +1303,7 @@ public class DialogueUI : MonoBehaviour
         panelRect.anchoredPosition = endPos;
 
         if (currentPanelGO) currentPanelGO.SetActive(false);
-        if (dialogueText) dialogueText.text = "";
+        if (dialogueText) { dialogueText.text = ""; dialogueText.maxVisibleCharacters = int.MaxValue; }
 
         animRoutine = null;
         if (invokeCloseEvent) 
@@ -1289,7 +1326,7 @@ public class DialogueUI : MonoBehaviour
         if (panelGroup != null) panelGroup.alpha = 0f;
         if (currentPanelGO != null) currentPanelGO.SetActive(false);
 
-        if (dialogueText) dialogueText.text = "";
+        if (dialogueText) { dialogueText.text = ""; dialogueText.maxVisibleCharacters = int.MaxValue; }
         isOpen = false;
         isTyping = false;
         inSequence = false;

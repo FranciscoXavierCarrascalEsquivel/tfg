@@ -58,6 +58,9 @@ public class Interactable : MonoBehaviour
         [Tooltip("Opcional: Si és &gt; 0, el diàleg avançarà a la següent línia automàticament al cap d'aquests segons un cop hagi acabat de teclejar (sense esperar a premer la E).")]
         public float autoAdvanceTime = 0f;
 
+        [Tooltip("Si és cert, el jugador no podrà saltar l'animació de tecleig d'aquesta línia prement la tecla d'interacció.")]
+        public bool cannotSkip = false;
+
         [Header("Xarxa de Nodes")]
 
         [Tooltip("Sobreescriu quina Versió de diàleg (índex) es reproduirà la propera vegada que interaccionis amb l'objecte. (-1 descarta)")]
@@ -117,6 +120,10 @@ public class Interactable : MonoBehaviour
     [Tooltip("S'executarà automàticament al interactuar si tenim l'objecte a l'inventari.")]
     public UnityEvent onRequirementMet;
 
+    [Tooltip("Si és cert, el diàleg de 'Requirement Met' només es mostrarà 1 vegada. Després tornarà al cicle normal.")]
+    [SerializeField] private bool requirementOnlyOnce = true;
+    private bool requirementAlreadyMet = false;
+
     [Header("Versions de Diàleg (cada interacció usa la següent; l'ultima es repeteix en bucle)")]
     [SerializeField] private DialogueVersion[] versions;
 
@@ -166,8 +173,9 @@ public class Interactable : MonoBehaviour
             }
         }
 
-        if (hasRequiredItem)
+        if (hasRequiredItem && (!requirementOnlyOnce || !requirementAlreadyMet))
         {
+            requirementAlreadyMet = true;
             onRequirementMet?.Invoke();
             linesToReturn = requirementMetVersion?.lines ?? new DialogueLine[0];
             

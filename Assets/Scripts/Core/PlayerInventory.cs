@@ -100,6 +100,8 @@ public class PlayerInventory : MonoBehaviour
 
     private float escapeHoldTime = 0f;
     private const float EscapeHoldRequired = 0.5f;
+    private PlayerController2D cachedPlayer;
+    private DialogueUI cachedDialogueUI;
 
     // ────────────────────────────────────────────────────────────────
     private void Awake()
@@ -324,26 +326,21 @@ public class PlayerInventory : MonoBehaviour
     // ── Input: Obrir Inventari o Botiga (Fora Combat) ───────────────────────
     private void Update()
     {
+        // Cache refs si s'han destruït (canvi d'escena)
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController2D>();
+        if (cachedDialogueUI == null) cachedDialogueUI = FindFirstObjectByType<DialogueUI>();
+
         // Si s'oprimeix 'I' o 'TAB' i no hi ha combat actiu (CombatManager) o no està ja obert
         if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
         {
-            var menuObert = FindFirstObjectByType<InventoryMenuUI>();
-            // Esborrem comprovació simplificada i afegim comprovació manual per Type
-            bool isShopOpen = false;
-            foreach (Transform t in CanvasHelper.GetMainCanvas()?.transform)
-            {
-                if (t.name == "ShopMenuUI") isShopOpen = true; // Temporary hack until ShopMenuUI exists fully
-            }
             // Només obrim l'inventari si no hi ha cap menú obert
-            if (menuObert == null && !isShopOpen && GameObject.Find("ShopMenuUI") == null)
+            if (!InventoryMenuUI.IsOpen && !ShopMenuUI.IsOpen)
             {
-                var combatManager = FindFirstObjectByType<CombatManager>();
-                if (combatManager == null) // Fora del combat
+                if (!CombatLoader.IsInCombat) // Fora del combat
                 {
                     Time.timeScale = 0f; // Posa en pausa el món
                     
-                    var player = FindFirstObjectByType<PlayerController2D>();
-                    if (player != null) player.LockMovement();
+                    if (cachedPlayer != null) cachedPlayer.LockMovement();
 
                     InventoryMenuUI.Show(isCombat: false, onItemSelected: (profile) =>
                     {
@@ -358,9 +355,8 @@ public class PlayerInventory : MonoBehaviour
                     }, 
                     onClose: () => {
                         Time.timeScale = 1f; // Continua el temps al tancar
-                        var dialogUI = FindFirstObjectByType<DialogueUI>();
-                        if (player != null && (dialogUI == null || !dialogUI.IsOpen))
-                            player.UnlockMovement();
+                        if (cachedPlayer != null && (cachedDialogueUI == null || !cachedDialogueUI.IsOpen))
+                            cachedPlayer.UnlockMovement();
                     });
                 }
             }
@@ -369,11 +365,9 @@ public class PlayerInventory : MonoBehaviour
         // Si s'oprimeix 'B' i no hi ha combat actiu obrim la botiga
         if (Input.GetKeyDown(KeyCode.B))
         {
-            var menuObert = FindFirstObjectByType<InventoryMenuUI>();
-            if (menuObert == null && GameObject.Find("ShopMenuUI") == null)
+            if (!InventoryMenuUI.IsOpen && !ShopMenuUI.IsOpen)
             {
-                var combatManager = FindFirstObjectByType<CombatManager>();
-                if (combatManager == null)
+                if (!CombatLoader.IsInCombat)
                 {
                     ShowShopMenu();
                 }
@@ -383,7 +377,6 @@ public class PlayerInventory : MonoBehaviour
         // Menu de Pausa (Mantenir ESC 0.5 segons)
         if (Input.GetKey(KeyCode.Escape))
         {
-            var dialogUI = FindFirstObjectByType<DialogueUI>();
             bool isAnyMenuOpen = InventoryMenuUI.IsOpen || ShopMenuUI.IsOpen;
             
             if (!isAnyMenuOpen && !PauseMenuUI.IsOpen)
@@ -411,15 +404,14 @@ public class PlayerInventory : MonoBehaviour
 
     public void ShowShopMenu()
     {
-        var player = FindFirstObjectByType<PlayerController2D>();
-        if (player != null) player.LockMovement();
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController2D>();
+        if (cachedPlayer != null) cachedPlayer.LockMovement();
         Time.timeScale = 0f;
 
         ShopMenuUI.Show(onClose: () => {
             Time.timeScale = 1f;
-            var dialogUI = FindFirstObjectByType<DialogueUI>();
-            if (player != null && (dialogUI == null || !dialogUI.IsOpen))
-                player.UnlockMovement();
+            if (cachedPlayer != null && (cachedDialogueUI == null || !cachedDialogueUI.IsOpen))
+                cachedPlayer.UnlockMovement();
         });
     }
 

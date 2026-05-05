@@ -440,7 +440,7 @@ public class VictoryPanelUI : MonoBehaviour
         // Runtime: ha d'estar dins una carpeta Resources
         var loaded = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{fontName}");
         if (loaded != null) return loaded;
-        return Resources.Load<TMP_FontAsset>(fontName);
+        return Resources.Load<TMP_FontAsset>($"Fonts/{fontName}") ?? Resources.Load<TMP_FontAsset>(fontName);
     }
 
     // ────────────────────────────────────────────────────────────────

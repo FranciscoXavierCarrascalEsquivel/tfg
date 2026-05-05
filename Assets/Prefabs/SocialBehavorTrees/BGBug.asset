@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4961ccfa01b95f14ca6b59134965d3cf, type: 3}
+  m_Name: BGBug
+  m_EditorClassIdentifier: Assembly-CSharp::SocialBehaviorTree
+  playerActions:
+  - Fix bug
+  - Mimic
+  - Think
+  menuHeader: 'Available Actions:'
+  startNodeId: 0
+  friendshipText: Thank you so much!
+  friendGoldMin: 1
+  friendGoldMax: 3
+  nodes:
+  - nodeId: 0
+    enemyEntryText: I will bug your face...
+    defaultReactionText: ...
+    enableApology: 0
+    attackNextNodeId: 1
+    transitions:
+    - actionName: Fix bug
+      playerActionText: You carefully fix the corrupted code. The bug creature becomes
+        stable again.
+      enemyReactionText: "I... I\u2019m not broken anymore. Thank you!"
+      nextNodeId: AMIC
+      requiredItem: {fileID: 0}
+    - actionName: Mimic
+      playerActionText: You get down on all fours and try to imitate a cockroach.
+        The enemy seems confused.
+      enemyReactionText: That's so cringe...
+      nextNodeId: 0
+      requiredItem: {fileID: 0}
+    - actionName: Think
+      playerActionText: You try to think possible actions... you can't think of anything...
+      enemyReactionText: What are you thinking? Focus in this fight!
+      nextNodeId: 0
+      requiredItem: {fileID: 0}
+  - nodeId: 1
+    enemyEntryText: Ouch...
+    defaultReactionText: ...
+    enableApology: 1
+    attackNextNodeId: 1
+    transitions:
+    - actionName: ...
+      playerActionText: 
+      enemyReactionText: 
+      nextNodeId: 
+      requiredItem: {fileID: 0}
+    - actionName: ...
+      playerActionText: 
+      enemyReactionText: 
+      nextNodeId: 
+      requiredItem: {fileID: 0}
+    - actionName: Apologize
+      playerActionText: You apologize for your sudden outburst of violence.
+      enemyReactionText: Oh... I thought you were trying to fix me... Anyway, don't
+        worry...
+      nextNodeId: 0
+      requiredItem: {fileID: 0}

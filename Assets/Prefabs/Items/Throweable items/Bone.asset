@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5b1d51fcc3adf54790d63653cc8d59f, type: 3}
-  m_Name: Os
+  m_Name: Bone
   m_EditorClassIdentifier: Assembly-CSharp::ItemProfile
   itemName: Bone
-  itemDescription: Un os, redueix el HP de l'oponent en 35 punts.
+  itemDescription: A bone which deals 35 damage to the enemy.
   itemIcon: {fileID: -1689705467738095068, guid: f7c6b10870460874ca7b6a57450046d3, type: 3}
   effectType: 1
   effectValue: 35
   buffDurationRounds: 3
-  buyPrice: 0
-  sellPrice: 5
+  buyPrice: 5
+  sellPrice: 2
   useSound: {fileID: 8300000, guid: c00eb0a664650474da9d939a3c537b93, type: 3}
+  additionalUseSounds: []
   isStackable: 1

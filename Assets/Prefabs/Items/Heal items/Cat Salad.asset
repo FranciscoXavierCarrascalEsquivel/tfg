@@ -18,8 +18,8 @@ MonoBehaviour:
   effectType: 0
   effectValue: 120
   buffDurationRounds: 3
-  buyPrice: 30
-  sellPrice: 15
+  buyPrice: 20
+  sellPrice: 10
   useSound: {fileID: 8300000, guid: 747f2294f56f43d408030e6530c17b8e, type: 3}
   additionalUseSounds:
   - {fileID: 8300000, guid: d5f628ed95359524a92651c87eac565b, type: 3}

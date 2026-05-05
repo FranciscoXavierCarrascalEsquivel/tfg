@@ -5,7 +5,10 @@ public class CombatDebugUI : MonoBehaviour
 {
     private PlayerController2D player;
     private CombatLoader combatLoader;
+
+    #if UNITY_EDITOR
     private bool showDebug = false;
+    #endif
 
     private void Start()
     {
@@ -13,6 +16,7 @@ public class CombatDebugUI : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    #if UNITY_EDITOR
     private void Update()
     {
         // Toggle debug UI with F12
@@ -65,6 +69,7 @@ public class CombatDebugUI : MonoBehaviour
         GUILayout.EndVertical();
         GUILayout.EndArea();
     }
+    #endif
 
     private void StartFight(EnemyProfile enemy)
     {
@@ -80,6 +85,8 @@ public class CombatDebugUI : MonoBehaviour
         enc.enemyProfile = enemy;
         
         combatLoader.StartCombat(enc);
+        #if UNITY_EDITOR
         showDebug = false;
+        #endif
     }
 }

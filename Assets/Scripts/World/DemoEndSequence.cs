@@ -315,6 +315,17 @@ public class DemoEndSequence : MonoBehaviour
         // 3. Monòleg final de l'Oblit amb els 4 finals
         int totalKills = 0;
         int totalRecruits = 0;
+        int totalMaxPopulation = 0;
+
+        // Carreguem tots els perfils d'enemic per calcular la població total del joc (sumant els seus límits)
+        EnemyProfile[] allEnemies = Resources.LoadAll<EnemyProfile>("Enemies");
+        foreach (var p in allEnemies)
+        {
+            totalMaxPopulation += p.maxRecruitLimit;
+        }
+        
+        // Restem 1 per no comptar el boss final (o un enemic especial) segons petició de l'usuari
+        totalMaxPopulation = Mathf.Max(1, totalMaxPopulation - 1);
         
         if (PlayerInventory.Instance != null)
         {
@@ -326,22 +337,22 @@ public class DemoEndSequence : MonoBehaviour
 
         if (totalKills == 0 && totalRecruits == 0)
         {
-            // Pacifista (No fer res)
+            // Ignorant (No reclutar i no matar)
             finalMonologue = "A true observer. You drifted through this world without taking a single life, nor saving one. You simply watched as the code unfolded. Did you think your inaction makes you innocent? When the Great Deletion comes, your hands will be clean, but you will be just as empty.";
         }
-        else if (totalKills > 0 && totalRecruits == 0)
+        else if (totalRecruits == 0 && totalKills >= totalMaxPopulation && totalMaxPopulation > 0)
         {
-            // Genocida
-            finalMonologue = "Oh, look at you... tearing through them like a virus. You're doing my job for me! Keep this up, little anomaly. If you keep purging the weak with such efficiency, perhaps when the Great Deletion comes, you will be rewarded. Keep slaughtering them. It's so entertaining.";
+            // Genocida (Matar-los a tots i no reclutar ningú)
+            finalMonologue = "Oh, look at you... tearing through them like a virus. You've purged every single one of them. You're doing my job for me, little anomaly! If you keep slaughtering with such efficiency, perhaps when the Great Deletion comes, you will be rewarded. It's so entertaining to watch the world bleed out through your hands.";
         }
-        else if (totalKills == 0 && totalRecruits > 0)
+        else if (totalKills == 0 && totalRecruits >= totalMaxPopulation && totalMaxPopulation > 0)
         {
-            // Reclutador (salvar a tothom, 0 morts)
-            finalMonologue = "Hah. You actually think saving them matters? You cling to these fragile strings of code, believing you can rescue a world already marked for deletion. It's almost poetic... how desperately you fight the inevitable. But make no mistake: your little 'friends' will be erased just the same. And I will be watching.";
+            // Reclutador (Reclutar a tothom i no matar ningú)
+            finalMonologue = "Hah. You actually think saving every single one of them matters? You've collected them like toys, believing you can rescue a world already marked for deletion. It's almost poetic... how desperately you fight the inevitable. But make no mistake: your little 'friends' will be erased just the same. And I will be watching.";
         }
         else
         {
-            // Neutral (Mica de tot)
+            // Mixte (Fer una mica de tot, o no arribar al màxim d'un sol tipus)
             finalMonologue = "How amusing. You spare some, yet you ruthlessly delete others when they stand in your way. You mock me, but every life you take only feeds your strength... making you more like ME. Keep playing the hero while you feast on their code. Who knows? One day, we might just be on the same side.";
         }
 
@@ -502,6 +513,7 @@ public class DemoEndSequence : MonoBehaviour
             tbcText.fontSize = 80;
             tbcText.color = new Color(1, 1, 1, 0f);
             tbcText.text = "TO BE CONTINUED...";
+            SetFont(tbcText);
 
             float tbcFadeIn = 2f;
             float timeCount = 0f;
@@ -529,6 +541,7 @@ public class DemoEndSequence : MonoBehaviour
             orText.fontSize = 40;
             orText.color = new Color(1, 1, 1, 0f);
             orText.text = "OR NOT";
+            SetFont(orText);
 
             float orFadeIn = 1.5f;
             timeCount = 0f;
@@ -542,8 +555,9 @@ public class DemoEndSequence : MonoBehaviour
 
             yield return new WaitForSeconds(3f);
 
-            // FADE OUT DE TOTS DOS TEXTOS
+            // FADE OUT DE TOTS DOS TEXTOS I MÚSICA
             float finalFadeOut = 2f;
+            float initialVolume = (audioSource != null) ? audioSource.volume : 0f;
             timeCount = 0f;
             while(timeCount < finalFadeOut)
             {
@@ -551,8 +565,13 @@ public class DemoEndSequence : MonoBehaviour
                 float a = Mathf.Clamp01(1f - (timeCount / finalFadeOut));
                 tbcText.color = new Color(1, 1, 1, a);
                 orText.color = new Color(1, 1, 1, a);
+                
+                if (audioSource != null) audioSource.volume = initialVolume * a;
+                
                 yield return null;
             }
+
+            if (audioSource != null) { audioSource.Stop(); audioSource.volume = initialVolume; }
 
             yield return new WaitForSeconds(1f);
 
@@ -570,7 +589,7 @@ public class DemoEndSequence : MonoBehaviour
         f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
             ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
 #endif
-        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF");
+        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("Fonts/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
         if (f != null) t.font = f;
     }
 }

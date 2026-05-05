@@ -389,6 +389,6 @@ public class PauseMenuUI : MonoBehaviour
             $"Assets/TextMesh Pro/Resources/Fonts & Materials/{n}.asset");
         if (f != null) return f;
 #endif
-        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>(n);
+        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
     }
 }

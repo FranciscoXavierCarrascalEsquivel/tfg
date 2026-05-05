@@ -66,6 +66,8 @@ public class PlayerController2D : MonoBehaviour
     
     private float distanceWalkedSinceEncounter = 3f; // Gràcia inicial en començar l'escena (3 metres)
     private float encounterSuppressionTimer = 0f;    // Temps de gràcia forçat per factors externs
+    private bool canEncounterAnyWildEnemy = true;
+    private float encounterCheckTimer = 0f;
 
     // Animator params (per evitar typos)
     private static readonly int IsMovingHash = Animator.StringToHash("isMoving");
@@ -82,11 +84,13 @@ public class PlayerController2D : MonoBehaviour
 
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
-#if UNITY_EDITOR
-        if (walkSound == null) walkSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/step.wav");
-        if (wallCollisionSound == null) wallCollisionSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/bump.wav");
-#endif
+        CheckAnimatorParams();
+
+        // Carreguem els àudios des de Resources (funciona a les builds .exe)
+        if (walkSound == null) walkSound = Resources.Load<AudioClip>("SFX/step");
+        if (wallCollisionSound == null) wallCollisionSound = Resources.Load<AudioClip>("SFX/bump");
     }
 
     // Bloqueig/desbloqueig
@@ -96,8 +100,8 @@ public class PlayerController2D : MonoBehaviour
         movementLocked = true;
         moveDir = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
-        anim.SetBool(IsMovingHash, false);
-        anim.SetFloat(SpeedMulHash, 1f);
+        if (hasIsMovingParam) anim.SetBool(IsMovingHash, false);
+        if (hasSpeedMulParam) anim.SetFloat(SpeedMulHash, 1f);
     }
 
     public void UnlockMovement()
@@ -115,6 +119,27 @@ public class PlayerController2D : MonoBehaviour
         lastPos = rb != null ? rb.position : (Vector2)transform.position;
     }
 
+    private bool hasSpeedMulParam;
+    private bool hasMoveXParam;
+    private bool hasMoveYParam;
+    private bool hasLastMoveXParam;
+    private bool hasLastMoveYParam;
+    private bool hasIsMovingParam;
+
+    private void CheckAnimatorParams()
+    {
+        if (anim == null) return;
+        foreach (var p in anim.parameters)
+        {
+            if (p.nameHash == SpeedMulHash) hasSpeedMulParam = true;
+            if (p.nameHash == MoveXHash) hasMoveXParam = true;
+            if (p.nameHash == MoveYHash) hasMoveYParam = true;
+            if (p.nameHash == LastMoveXHash) hasLastMoveXParam = true;
+            if (p.nameHash == LastMoveYHash) hasLastMoveYParam = true;
+            if (p.nameHash == IsMovingHash) hasIsMovingParam = true;
+        }
+    }
+
     private void Start()
     {
         lastPos = rb.position;
@@ -128,8 +153,8 @@ public class PlayerController2D : MonoBehaviour
         {
             if (!isAutoWalking)
             {
-                anim.SetBool(IsMovingHash, false);
-                anim.SetFloat(SpeedMulHash, 1f);
+                if (hasIsMovingParam) anim.SetBool(IsMovingHash, false);
+                if (hasSpeedMulParam) anim.SetFloat(SpeedMulHash, 1f);
             }
             
             // Actualitzem lastPos encara que estiguem bloquejats per evitar salts de distància al desbloquejar
@@ -209,25 +234,31 @@ public class PlayerController2D : MonoBehaviour
         // --- SISTEMA DE COMBAT ALEATORI PER DISTÀNCIA ---
         if (!disableEncounters && showMovingAnim && combatLoader != null && wildEnemies != null && wildEnemies.Length > 0 && encounterSuppressionTimer <= 0f)
         {
-            // Verify if there are any wild enemies that can still be recruited/encountered
-            bool anyValidEnemy = false;
-            if (PlayerInventory.Instance == null)
+            // Throttle: No cal comprovar la base de dades d'enemics 120 cops per segon
+            encounterCheckTimer -= Time.deltaTime;
+            if (encounterCheckTimer <= 0f)
             {
-                anyValidEnemy = true;
-            }
-            else
-            {
-                foreach (var enemy in wildEnemies)
+                encounterCheckTimer = 0.25f; // Comprovar cada 0.25 segons
+                canEncounterAnyWildEnemy = false;
+                if (PlayerInventory.Instance == null)
                 {
-                    if (PlayerInventory.Instance.GetRecruitedCount(enemy.enemyName) < PlayerInventory.Instance.GetAvailableRecruitLimit(enemy))
+                    canEncounterAnyWildEnemy = true;
+                }
+                else
+                {
+                    foreach (var enemy in wildEnemies)
                     {
-                        anyValidEnemy = true;
-                        break;
+                        if (enemy == null) continue;
+                        if (PlayerInventory.Instance.GetRecruitedCount(enemy.enemyName) < PlayerInventory.Instance.GetAvailableRecruitLimit(enemy))
+                        {
+                            canEncounterAnyWildEnemy = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            if (anyValidEnemy)
+            if (canEncounterAnyWildEnemy)
             {
                 distanceWalkedSinceEncounter += distanceMoved;
 
@@ -245,7 +276,7 @@ public class PlayerController2D : MonoBehaviour
         }
 
         // Animator:
-        anim.SetBool(IsMovingHash, showMovingAnim);
+        if (hasIsMovingParam) anim.SetBool(IsMovingHash, showMovingAnim);
 
         // Per al MOVE (walk): usa el moviment real (4 direccions)
         Vector2 moveAnimDir = Vector2.zero;
@@ -256,16 +287,19 @@ public class PlayerController2D : MonoBehaviour
             else
                 moveAnimDir = new Vector2(Mathf.Sign(input.x), 0);
         }
-        anim.SetFloat(MoveXHash, moveAnimDir.x);
-        anim.SetFloat(MoveYHash, moveAnimDir.y);
+        if (hasMoveXParam) anim.SetFloat(MoveXHash, moveAnimDir.x);
+        if (hasMoveYParam) anim.SetFloat(MoveYHash, moveAnimDir.y);
 
         // Per a IDLE: sempre l’última direcció coneguda
-        anim.SetFloat(LastMoveXHash, lastDir.x);
-        anim.SetFloat(LastMoveYHash, lastDir.y);
+        if (hasLastMoveXParam) anim.SetFloat(LastMoveXHash, lastDir.x);
+        if (hasLastMoveYParam) anim.SetFloat(LastMoveYHash, lastDir.y);
 
         // Multiplicador d'animació segons proporció run/walk
-        float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
-        anim.SetFloat(SpeedMulHash, isRunning ? ratio : 1f);
+        if (hasSpeedMulParam)
+        {
+            float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
+            anim.SetFloat(SpeedMulHash, isRunning ? ratio : 1f);
+        }
     }
 
     private void TriggerRandomEncounter()
@@ -273,10 +307,10 @@ public class PlayerController2D : MonoBehaviour
         Debug.Log("WILD ENCOUNTER TRIGGERED!");
         LockMovement(); 
         
-        anim.SetBool(IsMovingHash, false);
-        anim.SetFloat(MoveXHash, 0);
-        anim.SetFloat(MoveYHash, 0);
-        anim.SetFloat(SpeedMulHash, 1f);
+        if (hasIsMovingParam) anim.SetBool(IsMovingHash, false);
+        if (hasMoveXParam) anim.SetFloat(MoveXHash, 0);
+        if (hasMoveYParam) anim.SetFloat(MoveYHash, 0);
+        if (hasSpeedMulParam) anim.SetFloat(SpeedMulHash, 1f);
 
         System.Collections.Generic.List<EnemyProfile> validEnemies = new System.Collections.Generic.List<EnemyProfile>();
         foreach (var enemy in wildEnemies)
@@ -346,7 +380,7 @@ public class PlayerController2D : MonoBehaviour
         txt.color = new Color(0.95f, 0.8f, 0.15f); // Groc
         txt.alignment = TextAlignmentOptions.Center;
         txt.overflowMode = TextOverflowModes.Overflow;
-        txt.enableWordWrapping = false;
+        txt.textWrappingMode = TextWrappingModes.NoWrap;
 
         // Font (mateixa que diàlegs)
         if (cachedAlertFont == null)
@@ -356,7 +390,7 @@ public class PlayerController2D : MonoBehaviour
                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
 #endif
             if (cachedAlertFont == null) cachedAlertFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF");
-            if (cachedAlertFont == null) cachedAlertFont = Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+            if (cachedAlertFont == null) cachedAlertFont = Resources.Load<TMP_FontAsset>("Fonts/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
         }
         if (cachedAlertFont != null) txt.font = cachedAlertFont;
 

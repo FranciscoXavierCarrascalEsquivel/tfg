@@ -20,10 +20,19 @@ public class FixRataDialogue
         if (rataObj == null) return;
 
         Interactable interactable = rataObj.GetComponent<Interactable>();
-        if (interactable == null) return;
+        // Check if the component exists and hasn't been destroyed
+        if (interactable == null || interactable.Equals(null)) return;
 
         bool changed = false;
-        SerializedObject so = new SerializedObject(interactable);
+        SerializedObject so = null;
+        
+        try {
+            so = new SerializedObject(interactable);
+        } catch {
+            return; // Exit if the object is in an invalid state
+        }
+        
+        if (so == null) return;
 
         // 1. Set HideSeenChoices
         SerializedProperty hideProp = so.FindProperty("hideSeenChoices");

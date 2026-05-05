@@ -40,6 +40,9 @@ public class InventoryMenuUI : MonoBehaviour
     private GridLayoutGroup glg;
     private RectTransform   glgRT;
     private RectTransform   escTopRT;
+    private RectTransform   tabTopRT_Ref;
+    private bool            lastEscPressed;
+    private bool            lastTabPressed;
 
     private class InventoryEntry
     {
@@ -669,15 +672,23 @@ public class InventoryMenuUI : MonoBehaviour
         {
             float cycle = Time.unscaledTime * 1.5f;
             bool isPressed = (cycle % 1f) > 0.7f;
-            escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            if (isPressed != lastEscPressed)
+            {
+                lastEscPressed = isPressed;
+                escTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            }
         }
 
         if (tabKeyBtnRT != null)
         {
             float cycle = Time.unscaledTime * 1.5f;
             bool isPressed = (cycle % 1f) > 0.7f;
-            var tabTopRT = tabKeyBtnRT.Find("Top") as RectTransform;
-            if (tabTopRT != null) tabTopRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            if (isPressed != lastTabPressed)
+            {
+                lastTabPressed = isPressed;
+                if (tabTopRT_Ref == null) tabTopRT_Ref = tabKeyBtnRT.Find("Top") as RectTransform;
+                if (tabTopRT_Ref != null) tabTopRT_Ref.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+            }
         }
 
         if (inputBlocked) return;
@@ -990,6 +1001,6 @@ public class InventoryMenuUI : MonoBehaviour
             $"Assets/TextMesh Pro/Resources/Fonts & Materials/{n}.asset");
         if (f != null) return f;
 #endif
-        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>(n);
+        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
     }
 }
