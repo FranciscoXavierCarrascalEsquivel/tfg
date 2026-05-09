@@ -333,6 +333,11 @@ public class PlayerInventory : MonoBehaviour
         // Si s'oprimeix 'I' o 'TAB' i no hi ha combat actiu (CombatManager) o no està ja obert
         if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
         {
+            // Bloquejar inventari durant diàlegs normals o IA
+            bool isDialogueOpen = (cachedDialogueUI != null && cachedDialogueUI.IsOpen);
+            bool isAIOpen = (AIDialogueUI.Instance != null && AIDialogueUI.Instance.IsOpen);
+            if (isDialogueOpen || isAIOpen) return; // No obrir inventari durant diàlegs
+
             // Només obrim l'inventari si no hi ha cap menú obert
             if (!InventoryMenuUI.IsOpen && !ShopMenuUI.IsOpen)
             {
@@ -361,18 +366,6 @@ public class PlayerInventory : MonoBehaviour
                 }
             }
         }
-        
-        // Si s'oprimeix 'B' i no hi ha combat actiu obrim la botiga
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            if (!InventoryMenuUI.IsOpen && !ShopMenuUI.IsOpen)
-            {
-                if (!CombatLoader.IsInCombat)
-                {
-                    ShowShopMenu();
-                }
-            }
-        }
 
         // Menu de Pausa (Mantenir ESC 0.5 segons)
         if (Input.GetKey(KeyCode.Escape))
@@ -394,12 +387,6 @@ public class PlayerInventory : MonoBehaviour
             escapeHoldTime = 0f;
         }
 
-        // Test mode: Establir or a 9999
-        if (Input.GetKeyDown(KeyCode.F9))
-        {
-            Gold = 9999;
-            Debug.Log("Or de test establert a 9999.");
-        }
     }
 
     public void ShowShopMenu()

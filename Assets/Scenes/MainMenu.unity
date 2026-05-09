@@ -176,7 +176,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Fet per en Francisco Xavier Carrascal Esquivel
+  m_text: By Francisco Xavier Carrascal Esquivel
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: de009f5724689d84f8fc5ca2137c84c1, type: 2}
   m_sharedMaterial: {fileID: 6717122140819729994, guid: de009f5724689d84f8fc5ca2137c84c1, type: 2}
@@ -452,7 +452,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Prototip del TFG (Grau d'Enginyeria Inform\xE0tica)"
+  m_text: "Final Degree Project (Grau d'Enginyeria Inform\xE0tica)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: de009f5724689d84f8fc5ca2137c84c1, type: 2}
   m_sharedMaterial: {fileID: 6717122140819729994, guid: de009f5724689d84f8fc5ca2137c84c1, type: 2}

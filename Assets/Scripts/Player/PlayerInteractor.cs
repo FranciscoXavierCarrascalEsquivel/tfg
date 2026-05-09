@@ -30,6 +30,9 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (PauseMenuUI.IsOpen || IsShaking) return;
 
+        // Si el mode IA està obert, no processar cap interacció
+        if (AIDialogueUI.Instance != null && AIDialogueUI.Instance.IsOpen) return;
+
         if (!Input.GetKeyDown(interactKey)) return;
 
         // Si la botiga està oberta, estem en combat o en pausa, es bloqueja qualsevol interacció amb el món.
@@ -52,12 +55,48 @@ public class PlayerInteractor : MonoBehaviour
         Interactable i = col.GetComponent<Interactable>();
         if (!i) return;
 
-        // Bloqueja moviment i inicia seqüència (tantes línies com tingui l'objecte)
+        // Bloquejar moviment
+        if (playerController != null)
+            playerController.LockMovement();
+
+        // --- Lògica IA Generativa ---
+        if (i.useGenerativeAI)
+        {
+            // Prioritat: startAIDirectly > activateAIAfterNormalDialogue > default (IA directa)
+            if (i.startAIDirectly)
+            {
+                // Obrir directament el mode IA
+                OpenAIDialogue(i);
+                return;
+            }
+
+            if (i.activateAIAfterNormalDialogue)
+            {
+                // Primer diàleg normal, després mode IA
+                if (dialogueUI != null)
+                {
+                    System.Action onNormalClosed = null;
+                    onNormalClosed = () =>
+                    {
+                        dialogueUI.OnDialogueClosed -= onNormalClosed;
+                        // Quan el diàleg normal es tanca, obrir mode IA
+                        OpenAIDialogue(i);
+                    };
+                    dialogueUI.OnDialogueClosed += onNormalClosed;
+                    dialogueUI.StartDialogue(i.GetCurrentLines());
+                }
+                return;
+            }
+
+            // Default: si useGenerativeAI és cert però cap opció especial,
+            // obre directament la IA (comportament més simple i estable)
+            OpenAIDialogue(i);
+            return;
+        }
+
+        // --- Diàleg Normal (comportament original) ---
         if (dialogueUI != null)
         {
-            if (playerController != null)
-                playerController.LockMovement();
-
             System.Action onClosed = null;
             onClosed = () =>
             {
@@ -68,6 +107,25 @@ public class PlayerInteractor : MonoBehaviour
 
             dialogueUI.StartDialogue(i.Lines);
         }
+    }
+
+    /// <summary>
+    /// Obre el mode de diàleg IA per a un NPC concret.
+    /// </summary>
+    private void OpenAIDialogue(Interactable npc)
+    {
+        var aiUI = AIDialogueUI.Instance;
+        if (aiUI == null) return;
+
+        System.Action onAIClosed = null;
+        onAIClosed = () =>
+        {
+            aiUI.OnAIDialogueClosed -= onAIClosed;
+            if (playerController != null) playerController.UnlockMovement();
+        };
+        aiUI.OnAIDialogueClosed += onAIClosed;
+
+        aiUI.Open(npc);
     }
 
     private void OnDrawGizmosSelected()

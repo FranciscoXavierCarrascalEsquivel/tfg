@@ -657,15 +657,6 @@ public class CombatManager : MonoBehaviour
                 SetMenuPhase(MenuPhase.Main);
             }
         }
-        
-        // --- DEBUG SHORTCUT ---
-        // Prem 'O' en qualsevol moment del teu torn per forçar forçar la victòria i veure l'animació reverse
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            Debug.Log("DEBUG: Forçant Victòria amb la 'O'");
-            state = State.End;
-            StartCoroutine(VictoryRoutine());
-        }
     }
 
 

@@ -105,6 +105,62 @@ public class Interactable : MonoBehaviour
         public UnityEvent onLineReached;
     }
 
+    // =============================================
+    // IA Generativa (Ollama) — Configuració per NPC
+    // =============================================
+    [Header("IA Generativa (Ollama)")]
+
+    [Tooltip("Si és cert, aquest interactuable pot utilitzar IA generativa per a diàlegs lliures.")]
+    public bool useGenerativeAI = false;
+
+    [Tooltip("Nom del personatge IA (es mostra al quadre de diàleg i s'inclou al prompt).")]
+    public string aiCharacterName = "";
+
+    [TextArea(3, 8)]
+    [Tooltip("Descripció del comportament, personalitat, to i manera de parlar del personatge.")]
+    public string aiCharacterBehavior = "";
+
+    [TextArea(3, 8)]
+    [Tooltip("Informació que el personatge sap i límits del seu coneixement. Molt important per limitar la IA.")]
+    public string aiKnowledgeLimit = "";
+
+    [TextArea(3, 8)]
+    [Tooltip("Context narratiu addicional del personatge o de la zona on es troba.")]
+    public string aiInitialContext = "";
+
+    [Tooltip("URL de la API FastAPI pública (Cloudflare Tunnel).")]
+    public string aiApiUrl = "https://door-matched-cruises-agrees.trycloudflare.com/chat";
+
+    [Tooltip("Token d'autorització per a la API.")]
+    public string aiApiToken = "el-teu-token-secret-del-tfg";
+
+    [Tooltip("Idioma en què ha de respondre la IA (ex: English, Català, Español...).")]
+    public string aiResponseLanguage = "English";
+
+    [Tooltip("Si és cert, primer es mostra el diàleg normal i després s'activa el mode IA.")]
+    public bool activateAIAfterNormalDialogue = false;
+
+    [Tooltip("Si és cert, s'obre directament el mode IA sense passar pel diàleg normal. Prioritat sobre activateAIAfterNormalDialogue.")]
+    public bool startAIDirectly = false;
+
+    [Tooltip("Sprite opcional que es mostrarà al costat del diàleg d'IA.")]
+    public Sprite aiPortrait;
+
+    [TextArea(2, 4)]
+    [Tooltip("Missatge inicial que dirà el personatge en obrir el diàleg d'IA.")]
+    public string aiFirstMessage = "Hello! How can I help you today?";
+
+    [Header("Sons de Tecleig IA")]
+    [Tooltip("So que es reprodueix per cada tecla que polsa el jugador al camp d'entrada.")]
+    public AudioClip playerTypingSound;
+
+    [Tooltip("So que es reprodueix per cada lletra que apareix a la resposta del personatge IA.")]
+    public AudioClip aiTypingSound;
+
+    // =============================================
+    // Fi de la configuració IA
+    // =============================================
+
     [Header("Configuració de Diàleg")]
     [Tooltip("Si és cert, les opcions de diàleg (choices) que ja hem escollit s'amagaran la propera vegada, excepte si estan marcades com a repetibles.")]
     [SerializeField] private bool hideSeenChoices = false;

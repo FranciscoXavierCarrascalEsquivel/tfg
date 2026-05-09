@@ -1,28 +1,13 @@
 using UnityEngine;
 
+// Script de debug desactivat. 
+// La tecla P ja no inicia combats de prova.
 public class StartCombatOnKey : MonoBehaviour
 {
     public CombatLoader loader;
     public Sprite enemyPortrait;
     public GameObject projectilePrefab;
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            if (loader != null)
-            {
-                loader.StartCombat(new CombatEncounter
-                {
-                    enemyPortrait = enemyPortrait,
-                    projectilePrefab = projectilePrefab,
-                    enemyAttackDuration = 6f
-                });
-            }
-            else
-            {
-                Debug.LogWarning("StartCombatOnKey: No has assignat el 'loader' (CombatLoader) a l'inspector!");
-            }
-        }
-    }
+    // Desactivat intencionadament - era només per debug
+    // void Update() { }
 }
