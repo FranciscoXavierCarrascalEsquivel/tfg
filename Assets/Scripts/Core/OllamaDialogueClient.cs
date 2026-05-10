@@ -16,7 +16,7 @@ public class OllamaDialogueClient : MonoBehaviour
     private const int MaxHistoryMessages = 10;
 
     /// <summary>Timeout en segons per la petició HTTP.</summary>
-    private const int RequestTimeoutSeconds = 90;
+    private const int RequestTimeoutSeconds = 3600;
 
     /// <summary>Missatge de fallback si hi ha qualsevol error.</summary>
     public const string FallbackMessage = "Sento una interferència entre mons... Ara mateix no puc respondre.";

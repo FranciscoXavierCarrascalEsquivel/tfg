@@ -208,6 +208,14 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
+    /// Marca manualment l'objecte com a interactuat. Útil per a diàlegs d'IA que no passen pel flux normal.
+    /// </summary>
+    public void RegisterInteraction()
+    {
+        everInteracted = true;
+    }
+
+    /// <summary>
     /// Retorna les línies de diàleg corresponents a la interacció actual i incrementa el comptador.
     /// La darrera versió es repeteix indefinidament.
     /// </summary>

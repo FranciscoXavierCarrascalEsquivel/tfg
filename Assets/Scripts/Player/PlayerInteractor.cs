@@ -125,6 +125,9 @@ public class PlayerInteractor : MonoBehaviour
         };
         aiUI.OnAIDialogueClosed += onAIClosed;
 
+        // Registrar la interacció per a triggers del món
+        npc.RegisterInteraction();
+
         aiUI.Open(npc);
     }
 
