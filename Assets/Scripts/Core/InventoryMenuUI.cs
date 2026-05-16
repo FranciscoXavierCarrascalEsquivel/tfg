@@ -989,7 +989,9 @@ public class InventoryMenuUI : MonoBehaviour
     private void SetFont(TextMeshProUGUI t, float size, Color col, FontStyles style, TextAlignmentOptions align)
     {
         t.fontSize = size; t.color = col; t.fontStyle = style; t.alignment = align;
-        var f = LoadFont("8bitoperator_jve SDF"); if (f == null) f = LoadFont("PixelOperator SDF");
+        var f = LoadFont("determination SDF");
+        if (f == null) f = LoadFont("PixelOperator SDF");
+        if (f == null) f = LoadFont("8bitoperator_jve SDF");
         if (f != null) t.font = f;
     }
     private TMP_FontAsset LoadFont(string n)

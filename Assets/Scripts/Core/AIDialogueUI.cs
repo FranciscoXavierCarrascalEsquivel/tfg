@@ -627,14 +627,16 @@ public class AIDialogueUI : MonoBehaviour
         if (cachedFont == null)
         {
 #if UNITY_EDITOR
-            cachedFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset")
-                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
+            cachedFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/determination SDF.asset")
+                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/PixelOperator SDF.asset")
+                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/PixelOperator SDF.asset");
 #endif
             if (cachedFont == null)
             {
-                cachedFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF")
-                    ?? Resources.Load<TMP_FontAsset>("Fonts/8bitoperator_jve SDF")
-                    ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+                cachedFont = Resources.Load<TMP_FontAsset>("Fonts/determination SDF")
+                    ?? Resources.Load<TMP_FontAsset>("determination SDF")
+                    ?? Resources.Load<TMP_FontAsset>("Fonts/PixelOperator SDF")
+                    ?? Resources.Load<TMP_FontAsset>("PixelOperator SDF");
             }
         }
 

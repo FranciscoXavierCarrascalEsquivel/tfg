@@ -66,8 +66,9 @@ public class ControlsUI : MonoBehaviour
         controlsTxt.lineSpacing = 16f;
         controlsTxt.margin = new Vector4(0, 10, 0, 0); // Una mica de marge superior
         
-        var font = LoadFont("8bitoperator_jve SDF");
+        var font = LoadFont("determination SDF");
         if (font == null) font = LoadFont("PixelOperator SDF");
+        if (font == null) font = LoadFont("8bitoperator_jve SDF");
         if (font != null) controlsTxt.font = font;
 
         controlsTxt.text = "<color=#FFE526><size=28>CONTROLS</size></color>\n\n" +

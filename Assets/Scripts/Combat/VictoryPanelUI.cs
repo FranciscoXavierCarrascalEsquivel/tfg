@@ -88,8 +88,9 @@ public class VictoryPanelUI : MonoBehaviour
     private void Build()
     {
         // Carrega font 8-bit (ja inclosa al projecte)
-        pixelFont = LoadFont("8bitoperator_jve SDF");
+        pixelFont = LoadFont("determination SDF");
         if (pixelFont == null) pixelFont = LoadFont("PixelOperator SDF");
+        if (pixelFont == null) pixelFont = LoadFont("8bitoperator_jve SDF");
         if (pixelFont == null) pixelFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
 
         // Sprites de moneda i bossa (veure instruccions a sota)

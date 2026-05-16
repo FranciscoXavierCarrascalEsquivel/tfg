@@ -98,8 +98,9 @@ public class RecruitRewardPanelUI : MonoBehaviour
     // ────────────────────────────────────────────────────────────────
     private void Build()
     {
-        pixelFont = LoadFont("8bitoperator_jve SDF");
+        pixelFont = LoadFont("determination SDF");
         if (pixelFont == null) pixelFont = LoadFont("PixelOperator SDF");
+        if (pixelFont == null) pixelFont = LoadFont("8bitoperator_jve SDF");
         if (pixelFont == null) pixelFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
 
         // ── Overlay pantalla completa ─────────────────────────────────

@@ -586,10 +586,17 @@ public class DemoEndSequence : MonoBehaviour
     {
         TMP_FontAsset f = null;
 #if UNITY_EDITOR
-        f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/8bitoperator_jve SDF.asset") 
-            ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/8bitoperator_jve SDF.asset");
+        f = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/determination SDF.asset")
+            ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/PixelOperator SDF.asset") 
+            ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/PixelOperator SDF.asset");
 #endif
-        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("Fonts/8bitoperator_jve SDF") ?? Resources.Load<TMP_FontAsset>("8bitoperator_jve SDF");
+        if (f == null)
+        {
+            f = Resources.Load<TMP_FontAsset>("Fonts/determination SDF") 
+                ?? Resources.Load<TMP_FontAsset>("determination SDF")
+                ?? Resources.Load<TMP_FontAsset>("Fonts/PixelOperator SDF") 
+                ?? Resources.Load<TMP_FontAsset>("PixelOperator SDF");
+        }
         if (f != null) t.font = f;
     }
 }

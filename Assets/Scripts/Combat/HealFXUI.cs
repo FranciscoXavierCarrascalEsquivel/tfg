@@ -207,8 +207,9 @@ public class HealFXUI : MonoBehaviour
         txt.fontSharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.28f);
         txt.fontSharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0.04f, 0.04f, 0.04f, 1f));
 
-        var font = LoadFont("8bitoperator_jve SDF");
+        var font = LoadFont("determination SDF");
         if (font == null) font = LoadFont("PixelOperator SDF");
+        if (font == null) font = LoadFont("8bitoperator_jve SDF");
         if (font != null) txt.font = font;
 
         return txt;
