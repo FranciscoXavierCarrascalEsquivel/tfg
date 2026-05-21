@@ -105,7 +105,7 @@ public class DialogueUI : MonoBehaviour
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // F Button (Skip) Logic
-            bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && (currentLine == null || !currentLine.cannotSkip);
+            bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && (currentLine == null || (!currentLine.cannotSkip && (currentLine.owner == null || !currentLine.owner.CannotSkipDialogue)));
 
             if (lineAllowsSkip)
             {

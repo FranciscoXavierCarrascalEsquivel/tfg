@@ -166,6 +166,10 @@ public class Interactable : MonoBehaviour
     [SerializeField] private bool hideSeenChoices = false;
     public bool HideSeenChoices => hideSeenChoices;
 
+    [Tooltip("Si és cert, el diàleg d'aquest interactuable no es podrà saltar del tot (deshabilita el saltar amb F).")]
+    [SerializeField] private bool cannotSkipDialogue = false;
+    public bool CannotSkipDialogue => cannotSkipDialogue;
+
     [Header("Requisit d'Inventari (Opcional)")]
     [Tooltip("Nom de l'objecte necessari a l'inventari per executar l'acció especial en comptes del diàleg normal.")]
     public string requiredItemName = "";
