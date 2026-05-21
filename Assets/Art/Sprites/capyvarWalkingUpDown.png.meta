@@ -1,0 +1,358 @@
+fileFormatVersion: 2
+guid: 52cf014fd704f8847893258e491fb480
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6814434840012089928
+    second: capybara_sprites_transparent_0
+  - first:
+      213: 7858830712883330805
+    second: capybara_sprites_transparent_1
+  - first:
+      213: 7726720181811058040
+    second: capybara_sprites_transparent_2
+  - first:
+      213: 932078533785560344
+    second: capybara_sprites_transparent_3
+  - first:
+      213: 4229044408394470457
+    second: capybara_sprites_transparent_4
+  - first:
+      213: 3536523044331391401
+    second: capybara_sprites_transparent_5
+  - first:
+      213: -7055693684254245983
+    second: capybara_sprites_transparent_6
+  - first:
+      213: 6586793581344681862
+    second: capybara_sprites_transparent_7
+  - first:
+      213: -4243240543441490002
+    second: capybara_sprites_transparent_8
+  - first:
+      213: -1797662845791882366
+    second: capybara_sprites_transparent_9
+  - first:
+      213: 3125206845269302478
+    second: capybara_sprites_transparent_10
+  - first:
+      213: -8014195456048865424
+    second: capybara_sprites_transparent_11
+  - first:
+      213: 5154481904877815968
+    second: capybara_sprites_transparent_12
+  - first:
+      213: -897068784439305861
+    second: capybara_sprites_transparent_13
+  - first:
+      213: 7764434598307449723
+    second: capybara_sprites_transparent_14
+  - first:
+      213: -2493553874895052783
+    second: capybara_sprites_transparent_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 250
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_0
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 942
+        width: 180
+        height: 262
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84a67ffe16cb19e50800000000000000
+      internalID: 6814434840012089928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_1
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 941
+        width: 182
+        height: 262
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fe375f35ec201d60800000000000000
+      internalID: 7858830712883330805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_2
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 942
+        width: 183
+        height: 261
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87590b34113da3b60800000000000000
+      internalID: 7726720181811058040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_3
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 941
+        width: 183
+        height: 262
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8152e05fc786fec00800000000000000
+      internalID: 932078533785560344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_12
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 84
+        width: 173
+        height: 255
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a8cb6d9bf5688740800000000000000
+      internalID: 5154481904877815968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_13
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 83
+        width: 174
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b79576481b8fc83f0800000000000000
+      internalID: -897068784439305861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_14
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 84
+        width: 177
+        height: 255
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7b4ed12120d0cb60800000000000000
+      internalID: 7764434598307449723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: capybara_sprites_transparent_15
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 82
+        width: 171
+        height: 257
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 110e49256fd156dd0800000000000000
+      internalID: -2493553874895052783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 01a26ea896399e9448a224b097239a1b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      capybara_sprites_transparent_0: 6814434840012089928
+      capybara_sprites_transparent_1: 7858830712883330805
+      capybara_sprites_transparent_10: 3125206845269302478
+      capybara_sprites_transparent_11: -8014195456048865424
+      capybara_sprites_transparent_12: 5154481904877815968
+      capybara_sprites_transparent_13: -897068784439305861
+      capybara_sprites_transparent_14: 7764434598307449723
+      capybara_sprites_transparent_15: -2493553874895052783
+      capybara_sprites_transparent_2: 7726720181811058040
+      capybara_sprites_transparent_3: 932078533785560344
+      capybara_sprites_transparent_4: 4229044408394470457
+      capybara_sprites_transparent_5: 3536523044331391401
+      capybara_sprites_transparent_6: -7055693684254245983
+      capybara_sprites_transparent_7: 6586793581344681862
+      capybara_sprites_transparent_8: -4243240543441490002
+      capybara_sprites_transparent_9: -1797662845791882366
+      capyvarWalkingUpDown_0: 846878159
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

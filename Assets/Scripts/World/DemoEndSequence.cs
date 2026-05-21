@@ -39,9 +39,25 @@ public class DemoEndSequence : MonoBehaviour
             }
         }
 
-        // Bloquegem el jugador
+        // Bloquegem el jugador i les seves interaccions
         var player = FindFirstObjectByType<PlayerController2D>();
-        if (player != null) player.enabled = false;
+        if (player != null)
+        {
+            player.LockMovement();
+            player.enabled = false;
+        }
+
+        var movement = FindFirstObjectByType<PlayerMovement2D>();
+        if (movement != null)
+        {
+            movement.enabled = false;
+        }
+
+        var interactor = FindFirstObjectByType<PlayerInteractor>();
+        if (interactor != null)
+        {
+            interactor.enabled = false;
+        }
 
         StartCoroutine(SequenceRoutine());
     }

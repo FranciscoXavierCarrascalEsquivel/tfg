@@ -20,6 +20,8 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float walkSpeed = 5f;       // Velocitat quan el jugador camina.
     [SerializeField] private float runSpeed = 8f;        // Velocitat quan el jugador corre.
     [SerializeField] private KeyCode runKey = KeyCode.LeftShift; // Tecla per córrer.
+    [SerializeField] private float horizontalAnimSpeedMultiplier = 0.7f; // Multiplicador de velocitat exclusiu per a les animacions horitzontals (esquerra/dreta).
+    [SerializeField] private float verticalAnimSpeedMultiplier = 1.25f; // Multiplicador de velocitat exclusiu per a les animacions verticals (dalt/abaix).
 
     [Header("Audio")]
     [SerializeField] private AudioClip walkSound;
@@ -102,6 +104,7 @@ public class PlayerController2D : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         if (hasIsMovingParam) anim.SetBool(IsMovingHash, false);
         if (hasSpeedMulParam) anim.SetFloat(SpeedMulHash, 1f);
+        anim.speed = 1f;
     }
 
     public void UnlockMovement()
@@ -295,9 +298,24 @@ public class PlayerController2D : MonoBehaviour
         if (hasLastMoveYParam) anim.SetFloat(LastMoveYHash, lastDir.y);
 
         // Multiplicador d'animació segons proporció run/walk
+        float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
+        float animSpeedVal = isRunning ? ratio : 1f;
+
+        // Si ens movem horitzontalment (esquerra/dreta), apliquem el multiplicador de reducció
+        if (showMovingAnim && Mathf.Abs(moveAnimDir.x) > 0.01f)
+        {
+            animSpeedVal *= horizontalAnimSpeedMultiplier;
+        }
+        // Si ens movem verticalment (dalt/abaix) i no estem corrent (només caminant), apliquem el multiplicador d'increment
+        else if (showMovingAnim && Mathf.Abs(moveAnimDir.y) > 0.01f && !isRunning)
+        {
+            animSpeedVal *= verticalAnimSpeedMultiplier;
+        }
+
+        anim.speed = animSpeedVal;
+
         if (hasSpeedMulParam)
         {
-            float ratio = (walkSpeed <= 0.0001f) ? 1f : (runSpeed / walkSpeed);
             anim.SetFloat(SpeedMulHash, isRunning ? ratio : 1f);
         }
     }

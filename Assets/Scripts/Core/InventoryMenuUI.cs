@@ -508,8 +508,8 @@ public class InventoryMenuUI : MonoBehaviour
             }
 
             int limit = 1;
-            if (enemyP != null && PlayerInventory.Instance != null)
-                limit = Mathf.Max(1, PlayerInventory.Instance.GetAvailableRecruitLimit(enemyP)); // max 1 for division safety
+            if (enemyP != null)
+                limit = Mathf.Max(1, enemyP.maxRecruitLimit);
 
             string dispName = encountered ? nameStr : "???";
 

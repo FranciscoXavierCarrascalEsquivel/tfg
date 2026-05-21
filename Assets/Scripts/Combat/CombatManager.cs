@@ -2308,6 +2308,9 @@ public class CombatManager : MonoBehaviour
         dialogUI.OnDialogueClosed += () => closed = true;
         dialogUI.Show(text);
 
+        // Purgar un frame per evitar que la mateixa pulsació de tecla de selecció de menú se salti l'animació de text a l'instant
+        yield return null;
+
         // Esperem que el jugador avanci/tanqui el diàleg
         while (!closed)
         {
@@ -2339,6 +2342,9 @@ public class CombatManager : MonoBehaviour
         // Paràmetres orgànics idèntics a DialogueUI
         float charsPerSecond = 45f;
         float delay = (1f / charsPerSecond) * speedMultiplier;
+
+        // Purgar un frame per evitar que la mateixa pulsació de tecla de selecció de menú se salti l'animació de text a l'instant
+        yield return null;
 
         for (int i = 0; i < cleanText.Length; i++)
         {
