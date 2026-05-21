@@ -21,6 +21,7 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private bool animateOnShow = true;  
     public bool canSkip = true;
     public bool canAdvance = true;
+    public static bool ForceDisableSkipGlobals { get; set; } = false;
 
     private Coroutine typingRoutine;
     private Coroutine animRoutine;
@@ -104,7 +105,7 @@ public class DialogueUI : MonoBehaviour
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // F Button (Skip) Logic
-            bool lineAllowsSkip = canSkip && (currentLine == null || !currentLine.cannotSkip);
+            bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && (currentLine == null || !currentLine.cannotSkip);
 
             if (lineAllowsSkip)
             {

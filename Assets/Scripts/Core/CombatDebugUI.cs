@@ -86,6 +86,14 @@ public class CombatDebugUI : MonoBehaviour
                 PlayerInventory.Instance.AddGold(500);
                 Debug.Log("[DEBUG] S'han afegit 500 unitats d'or.");
             }
+
+            GUILayout.Space(10);
+            string skipButtonText = DialogueUI.ForceDisableSkipGlobals ? "<b><color=#ff4d4d>Salts Bloquejats</color></b>" : "Bloquejar salt de diàlegs";
+            if (GUILayout.Button(skipButtonText, buttonStyle, GUILayout.Height(50)))
+            {
+                DialogueUI.ForceDisableSkipGlobals = !DialogueUI.ForceDisableSkipGlobals;
+                Debug.Log($"[DEBUG] Forçar diàlegs no saltables: {DialogueUI.ForceDisableSkipGlobals}");
+            }
         }
         else
         {
