@@ -57,6 +57,10 @@ public class AIDialogueUI : MonoBehaviour
     private bool isBuilt;
     private Coroutine typingRoutine;
 
+    // --- Portraits (thinking vs responding) ---
+    private Sprite cachedResponsePortrait;
+    private Sprite cachedThinkingPortrait;
+
     // --- Animació ---
     private float animDuration = 0.4f;
     private Coroutine animRoutine;
@@ -121,12 +125,15 @@ public class AIDialogueUI : MonoBehaviour
         }
         if (thinkingBubbleGO != null) thinkingBubbleGO.SetActive(false);
 
-        // Configurar portrait si en té
+        // Configurar portraits (normal i thinking)
+        cachedResponsePortrait = npc.aiPortrait;
+        cachedThinkingPortrait = npc.aiThinkingPortrait != null ? npc.aiThinkingPortrait : npc.aiPortrait;
+
         if (aiPortraitImage != null)
         {
-            if (npc.aiPortrait != null)
+            if (cachedResponsePortrait != null)
             {
-                aiPortraitImage.sprite = npc.aiPortrait;
+                aiPortraitImage.sprite = cachedResponsePortrait;
                 aiPortraitImage.enabled = true;
             }
             else
@@ -135,11 +142,12 @@ public class AIDialogueUI : MonoBehaviour
             }
         }
 
-        // Mostrar missatge inicial si en té (amb un mini-retard per seguretat)
-        if (!string.IsNullOrEmpty(npc.aiFirstMessage))
+        // Mostrar missatge inicial o repetit si en té (amb un mini-retard per seguretat)
+        string aiMsg = npc.GetAIMessage();
+        if (!string.IsNullOrEmpty(aiMsg))
         {
             if (typingRoutine != null) StopCoroutine(typingRoutine);
-            typingRoutine = StartCoroutine(TypeInitialMessageDelayed(npc.aiFirstMessage));
+            typingRoutine = StartCoroutine(TypeInitialMessageDelayed(aiMsg));
         }
         else if (npcResponseText != null)
         {
@@ -282,6 +290,11 @@ public class AIDialogueUI : MonoBehaviour
         {
             Debug.LogError($"[AIDialogueUI] ERROR a OnResponseReceived: {e.Message}\n{e.StackTrace}");
             isWaitingForResponse = false;
+            // Tornar al portrait normal en cas d'error
+            if (aiPortraitImage != null && cachedResponsePortrait != null)
+            {
+                aiPortraitImage.sprite = cachedResponsePortrait;
+            }
             // Intentem mostrar el text directament com a últim recurs
             if (npcResponseText != null)
             {
@@ -309,6 +322,12 @@ public class AIDialogueUI : MonoBehaviour
     {
         if (thinkingBubbleGO == null) yield break;
         
+        // Canviar al portrait de "pensant"
+        if (aiPortraitImage != null && cachedThinkingPortrait != null)
+        {
+            aiPortraitImage.sprite = cachedThinkingPortrait;
+        }
+
         thinkingBubbleGO.SetActive(true);
         npcResponseText.text = ""; // Netegem el text mentre pensa
         
@@ -337,6 +356,12 @@ public class AIDialogueUI : MonoBehaviour
 
         // Amagar l'animació de càrrega quan comencem a escriure la resposta
         if (thinkingBubbleGO != null) thinkingBubbleGO.SetActive(false);
+
+        // Tornar al portrait de "resposta"
+        if (aiPortraitImage != null && cachedResponsePortrait != null)
+        {
+            aiPortraitImage.sprite = cachedResponsePortrait;
+        }
 
         npcResponseText.text = text;
         npcResponseText.maxVisibleCharacters = 0;

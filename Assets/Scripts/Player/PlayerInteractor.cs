@@ -35,8 +35,8 @@ public class PlayerInteractor : MonoBehaviour
 
         if (!Input.GetKeyDown(interactKey)) return;
 
-        // Si la botiga està oberta, estem en combat o en pausa, es bloqueja qualsevol interacció amb el món.
-        if (ShopMenuUI.IsOpen || CombatLoader.IsInCombat || PauseMenuUI.IsOpen) return;
+        // Si la botiga, inventari, combat o pausa estan oberts, es bloqueja qualsevol interacció amb el món.
+        if (ShopMenuUI.IsOpen || InventoryMenuUI.IsOpen || CombatLoader.IsInCombat || PauseMenuUI.IsOpen) return;
 
         // Si hi ha diàleg obert, la E serveix per avançar línia o tancar quan toca.
         
@@ -62,24 +62,69 @@ public class PlayerInteractor : MonoBehaviour
         // --- Lògica IA Generativa ---
         if (i.useGenerativeAI)
         {
-            // Prioritat: startAIDirectly > activateAIAfterNormalDialogue > default (IA directa)
+            // Prioritat 1: startAIDirectly → IA directa sempre
             if (i.startAIDirectly)
             {
-                // Obrir directament el mode IA
                 OpenAIDialogue(i);
                 return;
             }
 
+            // Prioritat 2: activateAIAtVersion → mode híbrid
+            if (i.activateAIAtVersion >= 0)
+            {
+                if (i.ShouldUseAIForCurrentInteraction())
+                {
+                    // Ja hem superat el llindar → mode IA
+                    if (i.activateAIAfterNormalDialogue)
+                    {
+                        // Mostrar diàleg normal de la versió actual, i al tancar, obrir IA
+                        if (dialogueUI != null)
+                        {
+                            System.Action onNormalClosed = null;
+                            onNormalClosed = () =>
+                            {
+                                dialogueUI.OnDialogueClosed -= onNormalClosed;
+                                OpenAIDialogue(i);
+                            };
+                            dialogueUI.OnDialogueClosed += onNormalClosed;
+                            dialogueUI.StartDialogue(i.GetCurrentLines());
+                        }
+                    }
+                    else
+                    {
+                        // Incrementem el comptador i obrim IA directament
+                        i.RegisterInteraction();
+                        OpenAIDialogue(i);
+                    }
+                    return;
+                }
+                else
+                {
+                    // Encara no hem arribat al llindar → diàleg normal
+                    if (dialogueUI != null)
+                    {
+                        System.Action onClosed = null;
+                        onClosed = () =>
+                        {
+                            if (playerController != null) playerController.UnlockMovement();
+                            dialogueUI.OnDialogueClosed -= onClosed;
+                        };
+                        dialogueUI.OnDialogueClosed += onClosed;
+                        dialogueUI.StartDialogue(i.GetCurrentLines());
+                    }
+                    return;
+                }
+            }
+
+            // Prioritat 3: activateAIAfterNormalDialogue → diàleg normal + IA al tancar
             if (i.activateAIAfterNormalDialogue)
             {
-                // Primer diàleg normal, després mode IA
                 if (dialogueUI != null)
                 {
                     System.Action onNormalClosed = null;
                     onNormalClosed = () =>
                     {
                         dialogueUI.OnDialogueClosed -= onNormalClosed;
-                        // Quan el diàleg normal es tanca, obrir mode IA
                         OpenAIDialogue(i);
                     };
                     dialogueUI.OnDialogueClosed += onNormalClosed;
@@ -88,8 +133,7 @@ public class PlayerInteractor : MonoBehaviour
                 return;
             }
 
-            // Default: si useGenerativeAI és cert però cap opció especial,
-            // obre directament la IA (comportament més simple i estable)
+            // Default: IA directa
             OpenAIDialogue(i);
             return;
         }

@@ -969,6 +969,13 @@ public class DialogueUI : MonoBehaviour
         isSelectingChoice = true;
         selectedChoiceIdx = 0;
         
+        // Reactivar el GridLayoutGroup (pot estar desactivat per l'animació anterior)
+        if (choicePanelRT != null)
+        {
+            var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
+            if (glg != null) glg.enabled = true;
+        }
+
         foreach(Transform child in choicePanelRT) Destroy(child.gameObject);
         choiceTexts.Clear();
         visibleChoices.Clear();
@@ -1001,6 +1008,10 @@ public class DialogueUI : MonoBehaviour
             ol.effectColor = new Color(0.8f, 0.8f, 0.8f, 1f);
             ol.effectDistance = new Vector2(3f, -3f);
 
+            // CanvasGroup per controlar l'opacitat de l'animació
+            var cg = btnGO.AddComponent<CanvasGroup>();
+            cg.alpha = 0f; // Comença invisible
+
             var txtGO = new GameObject("Txt");
             txtGO.transform.SetParent(btnGO.transform, false);
             var tRT = txtGO.AddComponent<RectTransform>();
@@ -1025,6 +1036,74 @@ public class DialogueUI : MonoBehaviour
         }
         
         HighlightChoice();
+        StartCoroutine(AnimateChoicesIn());
+    }
+
+    private IEnumerator AnimateChoicesIn()
+    {
+        float slideDistance = 120f;
+        float staggerDelay = 0.08f;
+        float animTime = 0.25f;
+
+        // Esperar un frame perquè el GridLayoutGroup calculi les posicions correctes
+        yield return null;
+
+        // Guardar les posicions i tamanys finals calculades pel layout
+        var choiceRTs = new System.Collections.Generic.List<RectTransform>();
+        var choiceCGs = new System.Collections.Generic.List<CanvasGroup>();
+        var targetPositions = new System.Collections.Generic.List<Vector2>();
+        var targetSizes = new System.Collections.Generic.List<Vector2>();
+
+        for (int i = 0; i < choiceTexts.Count; i++)
+        {
+            var btnGO = choiceTexts[i].transform.parent.gameObject;
+            var rt = btnGO.GetComponent<RectTransform>();
+            var cg = btnGO.GetComponent<CanvasGroup>();
+            choiceRTs.Add(rt);
+            choiceCGs.Add(cg);
+            targetPositions.Add(rt.anchoredPosition);
+            targetSizes.Add(rt.sizeDelta);
+        }
+
+        // Desactivar el GridLayoutGroup per poder animar lliurement
+        var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
+        if (glg != null) glg.enabled = false;
+
+        // Aplicar tamanys explícits i preparar animació
+        for (int i = 0; i < choiceRTs.Count; i++)
+        {
+            choiceRTs[i].sizeDelta = targetSizes[i];
+            choiceRTs[i].anchoredPosition = targetPositions[i] + new Vector2(-slideDistance, 0f);
+            choiceCGs[i].alpha = 0f;
+        }
+
+        // Animar escalonadament
+        for (int i = 0; i < choiceRTs.Count; i++)
+        {
+            StartCoroutine(AnimateSingleChoice(choiceRTs[i], choiceCGs[i], targetPositions[i], slideDistance, animTime));
+            yield return new WaitForSecondsRealtime(staggerDelay);
+        }
+    }
+
+    private IEnumerator AnimateSingleChoice(RectTransform rt, CanvasGroup cg, Vector2 targetPos, float slideDistance, float duration)
+    {
+        Vector2 startPos = targetPos + new Vector2(-slideDistance, 0f);
+        float t = 0f;
+
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float u = Mathf.Clamp01(t / duration);
+            // Ease out cubic
+            float eased = 1f - Mathf.Pow(1f - u, 3f);
+
+            rt.anchoredPosition = Vector2.Lerp(startPos, targetPos, eased);
+            cg.alpha = eased;
+            yield return null;
+        }
+
+        rt.anchoredPosition = targetPos;
+        cg.alpha = 1f;
     }
 
     private void HighlightChoice()

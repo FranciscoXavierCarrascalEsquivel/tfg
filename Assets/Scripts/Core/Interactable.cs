@@ -143,12 +143,22 @@ public class Interactable : MonoBehaviour
     [Tooltip("Si és cert, s'obre directament el mode IA sense passar pel diàleg normal. Prioritat sobre activateAIAfterNormalDialogue.")]
     public bool startAIDirectly = false;
 
-    [Tooltip("Sprite opcional que es mostrarà al costat del diàleg d'IA.")]
+    [Tooltip("Versió de diàleg (índex, 0-based) a partir de la qual s'activa el mode IA en comptes del diàleg normal. -1 = desactivat. Exemple: si poses 2, les versions 0 i 1 seran diàleg normal, i de la 2 en endavant serà mode IA.")]
+    public int activateAIAtVersion = -1;
+
+    [Tooltip("Sprite que es mostrarà quan la IA estigui donant la resposta (estat normal).")]
     public Sprite aiPortrait;
+
+    [Tooltip("Sprite que es mostrarà mentre la IA està pensant la resposta. Si està buit, es farà servir aiPortrait.")]
+    public Sprite aiThinkingPortrait;
 
     [TextArea(2, 4)]
     [Tooltip("Missatge inicial que dirà el personatge en obrir el diàleg d'IA.")]
     public string aiFirstMessage = "Hello! How can I help you today?";
+
+    [TextArea(2, 4)]
+    [Tooltip("Missatge que es mostrarà cada cop que es torni a obrir el diàleg IA (2a interacció en endavant). Si està buit, es farà servir sempre aiFirstMessage.")]
+    public string aiRepeatMessage = "";
 
     [Header("Sons de Tecleig IA")]
     [Tooltip("So que es reprodueix per cada tecla que polsa el jugador al camp d'entrada.")]
@@ -198,7 +208,9 @@ public class Interactable : MonoBehaviour
     [SerializeField] private DialogueLine[] lines;
 
     private int interactionCount = 0;
+    public int InteractionCount => interactionCount;
     private bool everInteracted = false;
+    private int aiInteractionCount = 0;
 
     /// <summary>Cert si el jugador ha interactuat almenys una vegada amb aquest objecte (no es reseteja mai).</summary>
     public bool HasBeenInteracted => everInteracted;
@@ -217,6 +229,36 @@ public class Interactable : MonoBehaviour
     public void RegisterInteraction()
     {
         everInteracted = true;
+    }
+
+    /// <summary>
+    /// Retorna el missatge IA adequat (primer cop o repetit) i incrementa el comptador IA.
+    /// </summary>
+    public string GetAIMessage()
+    {
+        string msg;
+        if (aiInteractionCount == 0 || string.IsNullOrEmpty(aiRepeatMessage))
+        {
+            msg = aiFirstMessage;
+        }
+        else
+        {
+            msg = aiRepeatMessage;
+        }
+        aiInteractionCount++;
+        return msg;
+    }
+
+    /// <summary>
+    /// Retorna cert si la interacció actual (basant-se en interactionCount) hauria d'activar el mode IA.
+    /// NO incrementa el comptador.
+    /// </summary>
+    public bool ShouldUseAIForCurrentInteraction()
+    {
+        if (!useGenerativeAI) return false;
+        if (startAIDirectly) return true;
+        if (activateAIAtVersion >= 0 && interactionCount >= activateAIAtVersion) return true;
+        return false;
     }
 
     /// <summary>
