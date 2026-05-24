@@ -638,11 +638,11 @@ public class CombatManager : MonoBehaviour
         // Bloquejar input del combat mentre l'inventari o el menú de pausa són oberts
         if (InventoryMenuUI.IsOpen || PauseMenuUI.IsOpen) return;
 
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MoveSelection(-1);
         }
-        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
             MoveSelection(1);
         }
@@ -2056,7 +2056,6 @@ public class CombatManager : MonoBehaviour
         {
             // Fugida exitosa
             yield return ShowPlayerActionDialogue("You try to run away... and you make it!");
-            
             state = State.End;
             loader.EndCombat();
         }
@@ -2064,7 +2063,6 @@ public class CombatManager : MonoBehaviour
         {
             // Falla
             yield return ShowPlayerActionDialogue("You try to run away... but you can't escape!");
-            
             EndPlayerTurn("FLEE_FAIL");
         }
     }
@@ -2164,7 +2162,7 @@ public class CombatManager : MonoBehaviour
             }
             
             speedBuffRoundsLeft = profile.buffDurationRounds;
-            HealFXUI.Show(canvasParent, $"VELOC +{profile.effectValue}% ({speedBuffRoundsLeft} TORNS)", new Color(1f, 0.9f, 0.15f));
+            HealFXUI.Show(canvasParent, $"SPEED +{profile.effectValue}% ({speedBuffRoundsLeft} TURNS)", new Color(1f, 0.9f, 0.15f));
             
             // NOU: Efecte fletxes a pantalla completa
             HealFXUI.ShowSpeedFullscreen(canvasParent);

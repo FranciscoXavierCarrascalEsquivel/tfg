@@ -116,12 +116,12 @@ TextureImporter:
       name: handSome_0
       rect:
         serializedVersion: 2
-        x: 2
+        x: 33
         y: 0
-        width: 575
-        height: 433
+        width: 413
+        height: 403
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 0380b768ca1110d4cb77c2a93c1e5d33
     internalID: 0
     vertices: []
     indices: 

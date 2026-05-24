@@ -16,6 +16,11 @@ public class DialogueUI : MonoBehaviour
     [Range(0f, 0.4f)][SerializeField] private float pitchRandom = 0.05f;
     [Range(0f, 1f)][SerializeField] private float volume = 0.8f;
 
+    [Header("Choice Appearance Sounds")]
+    [SerializeField] private AudioClip choiceAppearSound; // So quan apareix una opció de diàleg (choices)
+    [SerializeField] private float choiceBasePitch = 1.0f; // Pitch inicial per a la primera opció
+    [SerializeField] private float choicePitchIncrement = 0.15f; // Quant s'incrementa el pitch per a cada opció següent
+
     [Header("Panel Animation")]
     [SerializeField] private float animDuration = 0.4f; 
     [SerializeField] private bool animateOnShow = true;  
@@ -1080,8 +1085,25 @@ public class DialogueUI : MonoBehaviour
         // Animar escalonadament
         for (int i = 0; i < choiceRTs.Count; i++)
         {
+            if (choiceAppearSound != null)
+            {
+                if (!audioSource)
+                {
+                    audioSource = gameObject.AddComponent<AudioSource>();
+                    audioSource.spatialBlend = 0f;
+                }
+                audioSource.pitch = choiceBasePitch + (i * choicePitchIncrement);
+                audioSource.PlayOneShot(choiceAppearSound);
+            }
+
             StartCoroutine(AnimateSingleChoice(choiceRTs[i], choiceCGs[i], targetPositions[i], slideDistance, animTime));
             yield return new WaitForSecondsRealtime(staggerDelay);
+        }
+
+        // Restablir el pitch a 1 per a futurs àudios
+        if (audioSource != null)
+        {
+            audioSource.pitch = 1f;
         }
     }
 

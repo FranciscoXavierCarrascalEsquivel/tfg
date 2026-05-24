@@ -119,7 +119,7 @@ public class SkillCheckUI : MonoBehaviour
         nextTick = 0.1f;
         if (damageText != null) 
         {
-            damageText.text = "PREM E\nO INTRO";
+            damageText.text = "PRESS E\nOR ENTER";
             if (customFont != null) damageText.font = customFont;
             damageText.alignment = TMPro.TextAlignmentOptions.Center;
             damageText.fontSize = 80; // Molt més gran i cridaner
