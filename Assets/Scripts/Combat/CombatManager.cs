@@ -2,103 +2,128 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Gestor Principal del Sistema de Combat (CombatManager).
+/// Aquest script és el nucli ("core") de tota la lògica de la batalla de tipus RPG del nostre TFG.
+/// S'encarrega d'orquestrar els diferents torns (Torn de Jugador, Torn d'Enemic, Resolució i Fi),
+/// gestionar les estadístiques dels personatges de forma persistent enllaçant amb l'inventari global (PlayerInventory),
+/// respondre als atacs mitjançant la invocació de minijocs de precisió (SkillCheckUI), i oferir
+/// interaccions avançades a través de l'arbre de comportament social per a la resolució pacífica (SocialBehaviorTree).
+/// A més, incorpora reaccions asíncrones de l'enemic en forma de diàlegs tipus "typewriter", canvis de fase
+/// per punts de vida dinàmics, i efectes visuals premium com ara partícules, batuts de pantalla ("shake") i count-ups d'or.
+/// </summary>
 public class CombatManager : MonoBehaviour
 {
+    // ─── ENUMERATS DE FLUX I CONTROL ────────────────────────────────
+    /// <summary>
+    /// Representa els estats principals de la màquina d'estats del combat.
+    /// </summary>
     public enum State
     {
-        Enter,
-        PlayerTurn,
-        EnemyTurn,
-        Resolve,
-        End
+        Enter,       // Fase d'animació d'entrada i càrrega de dades
+        PlayerTurn,  // El jugador tria la seva opció de menú (Atacar, Raonar, Objecte, Fugir)
+        EnemyTurn,   // L'enemic inicia les coreografies d'esquivar (Bullet Hell)
+        Resolve,     // Fase de càlculs o minijocs on es pausen les tecles bàsiques
+        End          // Finalització del combat (derrota o victòria)
     }
 
+    /// <summary>
+    /// Representa les sub-fases de navegació per teclat a dins del menú.
+    /// </summary>
     public enum MenuPhase
     {
-        Main,
-        Target
+        Main,        // Menú principal (Fight, Reason, Item, Flee)
+        Target       // Menú de selecció d'objectiu (per defecte, el rival enemic)
     }
 
+    // ─── CONFIGURACIÓ DE REFERÈNCIES DE LA UI ───────────────────────
     [Header("UI")]
-    [SerializeField] private GameObject turnMenu;
-    [SerializeField] private Button fightButton;
-    [SerializeField] private Button reasonButton;
-    [SerializeField] private Button itemButton;
-    [SerializeField] private Button fleeButton;
-    [SerializeField] private SkillCheckUI skillCheckPrefab;
+    [SerializeField] private GameObject turnMenu;          // Marc o panell de fons que conté els botons d'acció
+    [SerializeField] private Button fightButton;           // Botó d'acció "Fight" (Atacar)
+    [SerializeField] private Button reasonButton;          // Botó d'acció "Reason" (Raonar/Negociar)
+    [SerializeField] private Button itemButton;            // Botó d'acció "Item" (Utilitzar objecte)
+    [SerializeField] private Button fleeButton;            // Botó d'acció "Flee" (Intentar fugir)
+    [SerializeField] private SkillCheckUI skillCheckPrefab;// Prefab del minijoc de precisió per calcular els atacs
 
-    private Button[] mainButtons;
-    private int selectedIndex = 0;
-    private MenuPhase currentPhase = MenuPhase.Main;
-    private string originalFightText;
+    private Button[] mainButtons;                          // Col·lecció de botons per facilitar la navegació per index
+    private int selectedIndex = 0;                         // Index del botó que actualment està seleccionat
+    private MenuPhase currentPhase = MenuPhase.Main;       // La fase actual del menú de selecció
+    private string originalFightText;                      // Desa el text inicial del botó d'atacar per a restauracions
 
-    private State state;
+    private State state;                                   // L'estat actiu actual de la màquina d'estats
+    /// <summary> Retorna si el combat s'ha donat per finalitzat. </summary>
     public bool IsEnded => state == State.End;
-    private CombatEncounter encounter;
-    private CombatLoader loader;
+    private CombatEncounter encounter;                     // Dades del combat actiu (enemic, projectils...)
+    private CombatLoader loader;                           // Enllaç al carregador per acabar i restaurar l'overworld
     
+    // ─── ESTADÍSTIQUES DE COMBAT ─────────────────────────────────────
     [Header("Stats")]
-    public int playerMaxHP = 100;
-    public int enemyMaxHP = 15;
-    private int playerCurrentHP;
-    private int enemyCurrentHP;
+    public int playerMaxHP = 100;                          // Vida màxima del jugador
+    public int enemyMaxHP = 15;                            // Vida màxima de l'enemic
+    private int playerCurrentHP;                           // Vida actual de l'avatar
+    private int enemyCurrentHP;                            // Vida actual de la criatura rival
     
-    // Variables per controlar el buff de velocitat
-    private int speedBuffRoundsLeft = 0;
-    private float currentSpeedBuffValue = 0f;
+    // Variables de gestió per a les pocions de buff de velocitat de mans
+    private int speedBuffRoundsLeft = 0;                   // Rondes restants de la poti activa
+    private float currentSpeedBuffValue = 0f;              // Percentatge addicional de velocitat aplicat
 
+    // ─── PANELLS DE RETRAT I INFORMACIÓ ──────────────────────────────
     [Header("UI Stats")]
-    [SerializeField] private RectTransform playerUIPanel;
-    [SerializeField] private TMPro.TMP_Text playerNameText;
-    [SerializeField] private TMPro.TMP_Text playerHPText;
-    [SerializeField] private Image playerHPFill;
-    [SerializeField] private Image playerPortraitImage; // NOU CAMP: Aquí poses la imatge a la que aniran les partícules
+    [SerializeField] private RectTransform playerUIPanel;  // Transformador del panell d'informació del jugador
+    [SerializeField] private TMPro.TMP_Text playerNameText;// Nom del jugador a pantalla
+    [SerializeField] private TMPro.TMP_Text playerHPText;  // Text de vida del jugador (HP actual / HP max)
+    [SerializeField] private Image playerHPFill;           // Barra de vida lliscant del jugador
+    [SerializeField] private Image playerPortraitImage;    // Retrat del jugador (rebrà el pop de parry/heals)
     
     [Space]
-    [SerializeField] private RectTransform enemyUIPanel;
-    [SerializeField] private TMPro.TMP_Text enemyNameText;
-    [SerializeField] private TMPro.TMP_Text enemyHPText;
-    [SerializeField] private Image enemyHPFill;
-    [SerializeField] private Image enemyPortraitImage; // <- NOU CAMP PER LA FOTO
+    [SerializeField] private RectTransform enemyUIPanel;    // Transformador del panell d'informació de l'enemic
+    [SerializeField] private TMPro.TMP_Text enemyNameText;  // Nom del rival a pantalla
+    [SerializeField] private TMPro.TMP_Text enemyHPText;    // Text de vida de l'enemic
+    [SerializeField] private Image enemyHPFill;             // Barra de vida lliscant de l'enemic
+    [SerializeField] private Image enemyPortraitImage;      // Retrat visual del monstre (rebrà l'efecte de trencament a pixels)
 
+    // ─── COMPONETS I REFERÈNCIES D'AUDIO ──────────────────────────────
     [Header("Audio Feedback")]
-    [SerializeField] private AudioClip moveMenuSound;
-    [SerializeField] private AudioClip confirmMenuSound; // NOU: So al triar opció
-    [SerializeField] private AudioClip attackSound;      // So al iniciar l'atac (premem E al minijoc)
-    [SerializeField] private AudioClip enemyHitSound;    // So quan l'enemic rep dany
-    [SerializeField] private AudioClip takeDamageSound;
-    [SerializeField] private AudioClip parrySound;
-    [SerializeField] private AudioClip defendParrySound; // NOU: So al fer parry mentre es defensa
-    [SerializeField] private AudioClip explosionSound; // NOU: Soroll de la explosio de pixels
-    [SerializeField] private AudioClip playerMoveSound;
-    [SerializeField] private AudioClip victorySound;    // So de victòria al final del combat
-    [SerializeField] private AudioClip playerActionVoice; // NOU: So del narrador en combat (playerActionText)
-    private AudioSource audioSource;
-    private AudioSource loopAudioSource;
-    private AudioSource voiceAudioSource; // NOU: Una font de so dedicada només a veus per no afectar a la resta de sons
-    private Coroutine activeEnemySpeakCoroutine; // NOU: Registre per poder cancel·lar diàlegs si canvia la fase (específicament la bombolla)
-    private bool isPhaseShiftingThisTurn = false; // NOU: Flag per evitar diàlegs de reacció si hi ha hagut canvi de fase
+    [SerializeField] private AudioClip moveMenuSound;      // So de canvi de botó en navegar
+    [SerializeField] private AudioClip confirmMenuSound;   // So en clicar una de les opcions principals
+    [SerializeField] private AudioClip attackSound;        // So d'inici de l'atac (ruleta)
+    [SerializeField] private AudioClip enemyHitSound;      // So quan l'enemic pateix un cop d'espasa
+    [SerializeField] private AudioClip takeDamageSound;     // So quan el jugador perd punts de vida
+    [SerializeField] private AudioClip parrySound;          // So quan és bloca un projectil amb èxit (Parry)
+    [SerializeField] private AudioClip defendParrySound;   // So per al bloqueig simple d'escut
+    [SerializeField] private AudioClip explosionSound;     // So per a l'efecte visual d'explosió de partícules
+    [SerializeField] private AudioClip playerMoveSound;    // Bucle de moviment de les mans en l'arena
+    [SerializeField] private AudioClip victorySound;       // Música o fanfàrria de victòria final
+    [SerializeField] private AudioClip playerActionVoice;   // Veu de narració per a accions descriptives
+    private AudioSource audioSource;                       // Font de so per a efectes transitoris
+    private AudioSource loopAudioSource;                   // Font de so exclusiva per a bucles de moviment de mans
+    private AudioSource voiceAudioSource;                  // Font per a les veus de personatges (evita solapaments brutals)
+    private Coroutine activeEnemySpeakCoroutine;           // Registre per controlar i poder aturar els diàlegs de l'enemic
+    private bool isPhaseShiftingThisTurn = false;           // Bandera que immunitza contra diàlegs redundants durant transicions de fase
 
+    // ─── CONFIGURACIÓ DE DERROTA (GAME OVER) ─────────────────────────
     [Header("Game Over Settings")]
-    [SerializeField] private AudioClip gameOverMusic;
-    [SerializeField] private AudioClip gameOverVoice;
-    [SerializeField] [TextArea] private string gameOverText = "...";
+    [SerializeField] private AudioClip gameOverMusic;      // So melancòlic en morir
+    [SerializeField] private AudioClip gameOverVoice;      // Narrador final del Game Over
+    [SerializeField] [TextArea] private string gameOverText = "..."; // Text explicatiu de la derrota
 
+    // ─── EFECTES VISUALS I FRAGMENTACIÓ ──────────────────────────────
     [Header("VFX & Limits")]
-    [SerializeField] private GameObject parryParticlePrefab;
-    [SerializeField] private RectTransform projectileDestroyLimit;
+    [SerializeField] private GameObject parryParticlePrefab;// Prefab d'ones de xoc que apareixen en blocar
+    [SerializeField] private RectTransform projectileDestroyLimit; // Línia invisible on es destrueixen els projectils
 
+    // ─── ANIMACIONS DE LLANÇAMENT D'OBJECTES ─────────────────────────
     [Header("Item Animation Settings")]
-    [Tooltip("Punt on neix l'objecte (part baixa de la pantalla)")]
+    [Tooltip("El punt físic de la pantalla (UI) on s'instancia l'objecte abans de ser llançat.")]
     [SerializeField] private RectTransform throwStartPoint;
-    [Tooltip("Alçada màxima de la paràbola")]
+    [Tooltip("L'alçada màxima de la trajectòria parabòlica del llançament.")]
     [SerializeField] private float throwArcHeight = 400f;
-    [Tooltip("Línia de terra on cauen els objectes després d'impactar")]
+    [Tooltip("La línia Y de terra on reposarà l'objecte un cop ha tocat l'enemic.")]
     [SerializeField] private RectTransform itemGroundLine;
 
-    private HandController[] handControllers;
+    private HandController[] handControllers;              // Referències del parell de mans de joc actives
 
-    // Default positions used for Entrance Animations
+    // Desa de seguretat de les posicions de disseny de la UI per realitzar desplaçaments (slides) nets
     private Vector2 playerUIOriginalPos;
     private Vector2 enemyUIOriginalPos;
     private Vector2 playerNameOriginalPos;
@@ -107,35 +132,36 @@ public class CombatManager : MonoBehaviour
     private Vector2 enemyHPTextOriginalPos;
     private Vector2 turnMenuOriginalPos;
     
-    private Sprite softCircleSprite; // Procedural
-    private Image selectionGlowImage; // The mirror glow
+    private Sprite softCircleSprite;                       // Textura radial difuminada generada per codi per a aures
+    private Image selectionGlowImage;                      // Aura luminosa groga/vermella de selecció activa
 
-    private RectTransform enemyBubbleRT;
-    private TMPro.TMP_Text enemyDialogTxt;
-    private RectTransform enemyBubblePromptRT;
-    private CanvasGroup enemyBubblePromptCG;
-    private bool isEnemySpeaking;
-    private Sprite generatedRoundedSprite;
+    private RectTransform enemyBubbleRT;                   // Transform de la bombolla de diàleg procedural de l'enemic
+    private TMPro.TMP_Text enemyDialogTxt;                 // Text dins de la bombolla de l'enemic
+    private RectTransform enemyBubblePromptRT;             // Marc per al prompt [E] a la bombolla de text
+    private CanvasGroup enemyBubblePromptCG;               // Control de transparència per al prompt de la bombolla
+    private bool isEnemySpeaking;                          // Bandera que bloqueja interaccions mentre l'enemic parla
+    private Sprite generatedRoundedSprite;                 // Sprite de cantonades tallades en 9-slice generat per codi
 
+    // Indexadors per controlar les respostes orals lògiques seqüencials de l'enemic en cada circumstància
     private int attackReactionIndex = 0;
     private int healReactionIndex = 0;
     private int fleeFailReactionIndex = 0;
 
-    // Social BT
+    // Estat actiu del graf de diàleg social (Raonar)
     private SocialBTState socialState;
-    private GameObject socialMenuGO;
+    private GameObject socialMenuGO;                       // Objecte contenidor del menú d'opcions de conversa
 
-    // Recompensa de reclutament pendent (es mostra fora del combat)
+    // Desa el perfil del reclutat per disparar el panell de premi en finalitzar de debò la pantalla
     private EnemyProfile pendingRecruitReward;
 
-    // Control de fases de combat
+    // Control de progressió de fases per dany
     private int currentPhaseIndex = -1;
-    private EnemyAttackPattern[] currentPhaseAttacks;
-    
-    // Control de no repetir l'últim atac
-    private EnemyAttackPattern? lastUsedPattern = null;
+    private EnemyAttackPattern[] currentPhaseAttacks;      // Conjunt d'atacs assignats a la fase activa
+    private EnemyAttackPattern? lastUsedPattern = null;    // Evita la repetició idèntica consecutiva de patrons
 
-    /// <summary>Retorna i neteja la recompensa pendent (si n'hi ha).</summary>
+    /// <summary>
+    /// Entrega la recompensa pendent de reclutament i neteja el camp per evitar dobles instàncies.
+    /// </summary>
     public EnemyProfile ConsumeRecruitReward()
     {
         var r = pendingRecruitReward;
@@ -143,12 +169,14 @@ public class CombatManager : MonoBehaviour
         return r;
     }
 
+    // Inicialització primerenca
     private void Awake()
     {
-        CreateSoftCircle(); // Generem la textura de la cervesa circular difuminada
+        CreateSoftCircle(); // Genera de manera dinàmica la textura circular suavitzada per a partícules i aures de selecció
 
         if (enemyPortraitImage != null) enemyPortraitImage.enabled = false;
 
+        // Instanciació segura de fonts d'àudio dedicades
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
@@ -162,19 +190,20 @@ public class CombatManager : MonoBehaviour
         voiceAudioSource.playOnAwake = false;
         voiceAudioSource.spatialBlend = 0f;
 
+        // Emmagatzemem totes les posicions de disseny per poder fer-les lliscar correctament des de fora dels marges visibles
         if (turnMenu != null) 
         {
             var rt = turnMenu.GetComponent<RectTransform>();
             turnMenuOriginalPos = rt.anchoredPosition;
-            rt.anchoredPosition = turnMenuOriginalPos + new Vector2(0, -500f);
+            rt.anchoredPosition = turnMenuOriginalPos + new Vector2(0, -500f); // Neix amagat cap avall
         }
         
         if (playerUIPanel != null) 
         {
             playerUIOriginalPos = playerUIPanel.anchoredPosition;
-            playerUIPanel.anchoredPosition = playerUIOriginalPos + new Vector2(0, 300f);
+            playerUIPanel.anchoredPosition = playerUIOriginalPos + new Vector2(0, 300f); // Neix amagat cap amunt
         }
-        else if (playerHPText != null) // Fallback al text si et descuides del panel
+        else if (playerHPText != null)
         {
             var rt = playerHPText.GetComponent<RectTransform>();
             playerUIOriginalPos = rt.anchoredPosition;
@@ -187,21 +216,25 @@ public class CombatManager : MonoBehaviour
             enemyUIPanel.anchoredPosition = enemyUIOriginalPos + new Vector2(0, 300f);
         }
 
-        // Emmagatzemem les posicions originals de tots els textos per fer slide in/out
+        // Posicions per a textos individuals del combat
         if (playerNameText != null) playerNameOriginalPos = playerNameText.rectTransform.anchoredPosition;
         if (playerHPText != null) playerHPTextOriginalPos = playerHPText.rectTransform.anchoredPosition;
         if (enemyNameText != null) enemyNameOriginalPos = enemyNameText.rectTransform.anchoredPosition;
         if (enemyHPText != null) enemyHPTextOriginalPos = enemyHPText.rectTransform.anchoredPosition;
         
-        // Inicialment els desplacem fora (cap amunt)
         if (playerNameText != null) playerNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (playerHPText != null) playerHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyNameText != null) enemyNameText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         if (enemyHPText != null) enemyHPText.rectTransform.anchoredPosition += new Vector2(0, 300f);
         
+        // Construeix de manera completament procedural la bombolla del rival sobre el seu cap
         BuildEnemyBubble();
     }
     
+    /// <summary>
+    /// Genera per programació un sprite de cantonades pixlades tallades en 9-slice.
+    /// Ideal per donar format RPG retro a la bombolla del monstre.
+    /// </summary>
     private Sprite GetRoundedSprite()
     {
         if (generatedRoundedSprite != null) return generatedRoundedSprite;
@@ -215,6 +248,7 @@ public class CombatManager : MonoBehaviour
         {
             for (int x = 0; x < size; x++)
             {
+                // Tallem els extrems per simular una arrodoniment pixel-art clàssic
                 bool corner = false;
                 if (x==0 && y<=2) corner = true;
                 else if (x==1 && y<=1) corner = true;
@@ -238,6 +272,10 @@ public class CombatManager : MonoBehaviour
         return generatedRoundedSprite;
     }
 
+    /// <summary>
+    /// Construeix de forma procedural els components visuals de la bombolla de diàleg de l'enemic
+    /// (cua de direcció, caixa de fons 9-sliced, text auto-ajustable i la tecla [E] premible).
+    /// </summary>
     private void BuildEnemyBubble()
     {
         if (enemyPortraitImage == null) return;
@@ -250,6 +288,7 @@ public class CombatManager : MonoBehaviour
         enemyBubbleRT.anchorMax = new Vector2(1.25f, 1.25f);
         enemyBubbleRT.offsetMin = enemyBubbleRT.offsetMax = Vector2.zero;
         
+        // Cua de la bombolla (la punta que senyala la boca de la imatge)
         var tailGO = new GameObject("Tail");
         tailGO.transform.SetParent(enemyBubbleRT, false);
         var tailRT = tailGO.AddComponent<RectTransform>();
@@ -260,6 +299,7 @@ public class CombatManager : MonoBehaviour
         var tailImg = tailGO.AddComponent<Image>();
         tailImg.color = new Color(1f, 1f, 1f, 0.95f);
 
+        // Fons blanc semi-transparent
         var bgGO = new GameObject("BG");
         bgGO.transform.SetParent(enemyBubbleRT, false);
         var bgRT = bgGO.AddComponent<RectTransform>();
@@ -271,6 +311,7 @@ public class CombatManager : MonoBehaviour
         bgImg.type = Image.Type.Sliced;
         bgImg.pixelsPerUnitMultiplier = 0.5f;
         
+        // Text del diàleg en negreta i autoescalable preventiu
         var txtGO = new GameObject("DialogText");
         txtGO.transform.SetParent(enemyBubbleRT, false);
         var tRT = txtGO.AddComponent<RectTransform>();
@@ -292,7 +333,7 @@ public class CombatManager : MonoBehaviour
             enemyDialogTxt.font = playerNameText.font;
         }
 
-        // --- NOU: PROMPT DE [E] ---
+        // Tecla E de prompt de continuació de text
         var promptGO = new GameObject("EPrompt");
         promptGO.transform.SetParent(enemyBubbleRT, false);
         enemyBubblePromptRT = promptGO.AddComponent<RectTransform>();
@@ -305,6 +346,7 @@ public class CombatManager : MonoBehaviour
         enemyBubblePromptCG = promptGO.AddComponent<CanvasGroup>();
         enemyBubblePromptCG.alpha = 0f;
 
+        // Ombra inferior del botonet
         var pBase = new GameObject("Base");
         pBase.transform.SetParent(enemyBubblePromptRT, false);
         var pbRT = pBase.AddComponent<RectTransform>();
@@ -312,6 +354,7 @@ public class CombatManager : MonoBehaviour
         var pbImg = pBase.AddComponent<Image>();
         pbImg.color = new Color(0.2f, 0.2f, 0.2f, 1f);
         
+        // Cos premible del botó
         var pTop = new GameObject("Top");
         pTop.transform.SetParent(enemyBubblePromptRT, false);
         var ptRT = pTop.AddComponent<RectTransform>();
@@ -332,6 +375,10 @@ public class CombatManager : MonoBehaviour
         enemyBubbleRT.gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Genera en memòria una textura de cercle difuminat (Gaussiana) 
+    /// per a ser utilitzada proceduralment com a partícula o glow de selecció de la UI.
+    /// </summary>
     private void CreateSoftCircle()
     {
         int size = 64;
@@ -343,7 +390,6 @@ public class CombatManager : MonoBehaviour
                 float dx = (x - size / 2f) / (size / 2f);
                 float dy = (y - size / 2f) / (size / 2f);
                 float d = Mathf.Sqrt(dx * dx + dy * dy);
-                // Falloff tipus Gaussià per un difuminat de "Premium" real
                 float alpha = Mathf.Exp(-4f * d * d) * Mathf.Clamp01(1f - d);
                 tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
             }
@@ -352,6 +398,9 @@ public class CombatManager : MonoBehaviour
         softCircleSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
     }
 
+    /// <summary>
+    /// Càrrega ràpida de la imatge de l'enemic abans d'iniciar el combat per evitar flaixos de fons blancs buits.
+    /// </summary>
     public void PreSetup(CombatEncounter encounter)
     {
         Sprite finalEnemySprite = encounter != null ? encounter.enemyPortrait : null;
@@ -365,7 +414,7 @@ public class CombatManager : MonoBehaviour
             if (finalEnemySprite != null)
             {
                 enemyPortraitImage.sprite = finalEnemySprite;
-                enemyPortraitImage.preserveAspect = true; // Manté les proporcions naturals
+                enemyPortraitImage.preserveAspect = true;
                 enemyPortraitImage.enabled = true;
             }
             else
@@ -375,17 +424,23 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina inicializadora de la batalla. Restaura punts de vida, enllaça de forma asíncrona
+    /// els perfils enemics, inicialitza els nodes del graf social de diàleg (BT),
+    /// bloqueja la interacció del ratolí dels botons, i comença les animacions d'entrada tipus Slide.
+    /// </summary>
     public IEnumerator BeginRoutine(CombatEncounter encounter, CombatLoader loader)
     {
         this.encounter = encounter;
         this.loader = loader;
 
+        // Registrem que ens hem enfrontat a aquest enemic en l'inventari permanent de cara al TFG
         if (PlayerInventory.Instance != null && encounter != null && encounter.enemyProfile != null)
         {
             PlayerInventory.Instance.EncounterEnemy(encounter.enemyProfile.enemyName);
         }
 
-        // Llegeix HP de l'inventari persistent (si existeix i té vida > 0)
+        // Recuperació persistent dels HP de la partida de cara a l'overworld
         if (PlayerInventory.Instance != null && PlayerInventory.Instance.CurrentHP > 0)
         {
             playerMaxHP = PlayerInventory.Instance.MaxHP;
@@ -395,14 +450,11 @@ public class CombatManager : MonoBehaviour
         {
             playerCurrentHP = playerMaxHP;
         }
-
-        // Nota: El bonus de vida de reclutament ja està inclòs a PlayerInventory.Instance.MaxHP
-        // i es manté persistentment. No cal aplicar-lo manualment cada combat.
         
-        // Sobreescriu valors base d'enemic si heu fet algun perfil (ScriptableObject) personalitzat
         string finalEnemyName = "MONSTER";
         Sprite finalEnemySprite = encounter != null ? encounter.enemyPortrait : null;
         
+        // Configurem els punts de vida i sprite reals extrets del perfil (ScriptableObject)
         if (encounter != null && encounter.enemyProfile != null)
         {
             enemyMaxHP = Random.Range(encounter.enemyProfile.minHP, encounter.enemyProfile.maxHP + 1);
@@ -412,12 +464,12 @@ public class CombatManager : MonoBehaviour
 
         enemyCurrentHP = enemyMaxHP;
         
-        // Inicialitzar fases
+        // Inicialització dels atacs associats a la fase 1 (per defecte)
         currentPhaseIndex = -1;
         currentPhaseAttacks = (encounter?.enemyProfile != null) ? encounter.enemyProfile.attackPatterns : null;
         CheckPhaseShift(true); 
 
-        // Inicialitzar Social BT si l'enemic en té un (això permet que l'enemic "recordi" atacs fins i tot si no hem obert el menú de raonar)
+        // Inicialitzem l'Arbre de Comportament Social (BT)
         if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.socialBT != null)
         {
             socialState = new SocialBTState(encounter.enemyProfile.socialBT.startNodeId);
@@ -427,10 +479,9 @@ public class CombatManager : MonoBehaviour
             socialState = null;
         }
 
-        lastUsedPattern = null; // Resetejar el control de repetició d'atacs
-        UpdateStatsUI(true); // Posa les barres completes de cop a l'inci
+        lastUsedPattern = null;
+        UpdateStatsUI(true); // Actualitza barres de HP instantàniament a l'inici
 
-        // Aplica l'sprite visual
         if (enemyPortraitImage != null && finalEnemySprite != null)
         {
             enemyPortraitImage.sprite = finalEnemySprite;
@@ -449,15 +500,16 @@ public class CombatManager : MonoBehaviour
             if (string.IsNullOrEmpty(originalFightText)) originalFightText = "FIGHT";
         }
 
+        // Bloquegem el ratolí dels botons ja que el disseny obliga a control exclusiu de teclat retro (A/D/E)
         SetupButtonInteractions();
 
-        // Find and disable hands initially
+        // Enllaç de les mans de combat
         handControllers = FindObjectsByType<HandController>(FindObjectsSortMode.None);
         SetHandsActive(false);
 
         state = State.PlayerTurn;
 
-        // Si l'enemic ha començat parlant (per canvi de fase o inici), esperem que acabi abans de posar el menú
+        // Esperem fins que acabi de parlar si s'ha disparat una transició de diàleg de fase al Begin
         if (isPhaseShiftingThisTurn)
         {
             while (isEnemySpeaking) yield return null;
@@ -466,32 +518,33 @@ public class CombatManager : MonoBehaviour
 
         ShowTurnMenu(true);
 
-        // Configura noms
         if (playerNameText != null) playerNameText.text = "Me";
         if (enemyNameText != null) enemyNameText.text = finalEnemyName;
 
-        // Dispara les animacions d'entrada tipus Slide UI per tota la resta de text/panells
+        // Llancem les animacions d'entrada (Slide-in de tipus EaseOut) de tots els panells visuals del combat
         if (playerUIPanel != null) StartCoroutine(SlideInRect(playerUIPanel, playerUIOriginalPos, new Vector2(0, 300f), 0.7f));
         if (enemyUIPanel != null) StartCoroutine(SlideInRect(enemyUIPanel, enemyUIOriginalPos, new Vector2(0, 300f), 0.7f));
         
-        // També els textos individuals si existeixen
         if (playerNameText != null) StartCoroutine(SlideInRect(playerNameText.rectTransform, playerNameOriginalPos, new Vector2(0, 300f), 0.7f));
         if (playerHPText != null) StartCoroutine(SlideInRect(playerHPText.rectTransform, playerHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
         if (enemyNameText != null) StartCoroutine(SlideInRect(enemyNameText.rectTransform, enemyNameOriginalPos, new Vector2(0, 300f), 0.7f));
         if (enemyHPText != null) StartCoroutine(SlideInRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, new Vector2(0, 300f), 0.7f));
 
-        // ── Botons de debug (proves) ────────────────────────────────
+        // ── BOTONS DE CHEATS D'EDITOR (Només sota #if UNITY_EDITOR per evitar fallades de Build) ──
         #if UNITY_EDITOR
         SpawnDebugButtons();
         #endif
     }
 
     #if UNITY_EDITOR
+    /// <summary>
+    /// Genera botons flotants de depuració a l'Editor que permeten finalitzar el combat
+    /// immediatament en mode pacífic (Perdonar) o violant (Matar), facilitant el test del TFG.
+    /// </summary>
     private void SpawnDebugButtons()
     {
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
 
-        // Botó "PERDONAR" (victòria pacífica)
         CreateDebugButton(canvasParent, "DBG_Peace", "✓ PERDONAR", new Vector2(-100f, -30f),
             new Color(0.15f, 0.5f, 0.15f, 0.85f), () =>
         {
@@ -501,7 +554,6 @@ public class CombatManager : MonoBehaviour
             StartCoroutine(FriendVictoryRoutine());
         });
 
-        // Botó "MATAR" (victòria agressiva)
         CreateDebugButton(canvasParent, "DBG_Kill", "✗ MATAR", new Vector2(100f, -30f),
             new Color(0.5f, 0.15f, 0.15f, 0.85f), () =>
         {
@@ -513,6 +565,7 @@ public class CombatManager : MonoBehaviour
         });
     }
 
+    /// <summary> Instancia proceduralment cadascun dels botons de depuració de l'editor. </summary>
     private void CreateDebugButton(Transform parent, string name, string label, Vector2 pos, Color bgColor, UnityEngine.Events.UnityAction onClick)
     {
         var go = new GameObject(name);
@@ -545,6 +598,9 @@ public class CombatManager : MonoBehaviour
     }
     #endif
 
+    /// <summary>
+    /// Corrutina de desplaçament d'entrada (Slide-in) de RectTransforms basat en la corba Cubic Ease Out.
+    /// </summary>
     private IEnumerator SlideInRect(RectTransform rect, Vector2 targetPos, Vector2 startOffset, float duration)
     {
         if (rect == null) yield break;
@@ -557,7 +613,6 @@ public class CombatManager : MonoBehaviour
         {
             time += Time.deltaTime;
             float t = time / duration;
-            // Cubic Ease Out per un moviment suau i polit cap al final
             float easeT = 1f - Mathf.Pow(1f - t, 3f);
             rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, easeT);
             yield return null;
@@ -566,6 +621,9 @@ public class CombatManager : MonoBehaviour
         rect.anchoredPosition = targetPos;
     }
 
+    /// <summary>
+    /// Corrutina de desplaçament de sortida (Slide-out) de RectTransforms basada en la corba Cubic Ease In.
+    /// </summary>
     private IEnumerator SlideOutRect(RectTransform rect, Vector2 originalPos, Vector2 exitOffset, float duration)
     {
         if (rect == null) yield break;
@@ -576,7 +634,6 @@ public class CombatManager : MonoBehaviour
         {
             time += Time.deltaTime;
             float t = time / duration;
-            // Cubic Ease In per una sortida que s'accelera
             float easeT = t * t * t;
             rect.anchoredPosition = Vector2.Lerp(originalPos, targetPos, easeT);
             yield return null;
@@ -584,16 +641,16 @@ public class CombatManager : MonoBehaviour
         rect.anchoredPosition = targetPos;
     }
 
+    // Comprovació lògica en cada fotograma
     private void Update()
     {
-        // Animació del Prompt de [E] a la bombolla de l'enemic
+        // Anima el botó de continuació [E] de la bombolla tipus pulsació 3D
         if (enemyBubblePromptCG != null && enemyBubblePromptRT != null)
         {
             if (enemyBubbleRT != null && enemyBubbleRT.gameObject.activeSelf && enemyBubblePromptCG.alpha > 0.5f)
             {
                 float cycle = Time.unscaledTime * 1.5f;
                 bool isPressed = (cycle % 1f) > 0.7f;
-                // Accedim al "Top" (fill 1) per moure'l com si fos una tecla
                 if (enemyBubblePromptRT.childCount > 1)
                 {
                     var topRT = enemyBubblePromptRT.GetChild(1).GetComponent<RectTransform>();
@@ -602,7 +659,7 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        // --- Handle Player Movement Sound looping centrally ---
+        // Gestiona el bucle de so quan les mans es mouen per l'arena
         bool anyHandMoving = false;
         if (handControllers != null)
         {
@@ -632,12 +689,13 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        // --- Handle UI Input ---
+        // Si no és el torn del jugador o hi ha diàlegs actius de transició, ignorem inputs
         if (state != State.PlayerTurn || isPhaseShiftingThisTurn || isEnemySpeaking) return;
 
-        // Bloquejar input del combat mentre l'inventari o el menú de pausa són oberts
+        // Bloquegem tecles si tenim el menú de pausa o d'inventari obert per sobre de la Canvas
         if (InventoryMenuUI.IsOpen || PauseMenuUI.IsOpen) return;
 
+        // Navegació de menú clàssica retro (horitzontal mitjançant A/D o fletxes)
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MoveSelection(-1);
@@ -652,6 +710,7 @@ public class CombatManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Escape))
         {
+            // Permet desfer la selecció d'objectiu i tornar al panell principal
             if (currentPhase == MenuPhase.Target)
             {
                 SetMenuPhase(MenuPhase.Main);
@@ -659,12 +718,10 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-
-
-    // =========================
-    // UI Helpers
-    // =========================
-
+    // ─── DESPLAÇAMENT I NAVEGACIÓ EN ELS BOTONS DE COMBAT ─────────────
+    /// <summary>
+    /// Canvia l'opció seleccionada actual, reprodueix el so de desplaçament i actualitza el contorn lluminós.
+    /// </summary>
     private void MoveSelection(int direction)
     {
         int maxOptions = currentPhase == MenuPhase.Main ? mainButtons.Length : 1;
@@ -677,13 +734,16 @@ public class CombatManager : MonoBehaviour
         UpdateSelectionVisuals();
     }
 
+    /// <summary>
+    /// Confirma l'opció de menú triada i redirigeix l'execució al mètode d'acció corresponent.
+    /// </summary>
     private void ConfirmSelection()
     {
         if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);
         
         if (currentPhase == MenuPhase.Main)
         {
-            // Saltem el pas de Targejar l'Enemic (TargetPhase) entrant directament a l'Atac (La Ruleta)
+            // Saltem la fase d'objectiu innecessària quan només hi ha un sol enemic, accelerant el gameplay
             if (selectedIndex == 0) StartCoroutine(PerformAttackRoutine());
             else if (selectedIndex == 1) OnReason();
             else if (selectedIndex == 2) OnItem();
@@ -698,6 +758,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary> Bloqueja interaccions de ratolí per als botons per obligar al control estricte de teclat. </summary>
     private void SetupButtonInteractions()
     {
         for (int i = 0; i < mainButtons.Length; i++)
@@ -705,12 +766,12 @@ public class CombatManager : MonoBehaviour
             Button btn = mainButtons[i];
             if (btn != null)
             {
-                // Disable all mouse interaction
                 btn.interactable = false;
             }
         }
     }
 
+    /// <summary> Retorna el text interior d'un component botó de forma segura independentment de la font o TMPro. </summary>
     private string GetButtonText(Button btn)
     {
         var tmp = btn.GetComponentInChildren<TMPro.TMP_Text>();
@@ -720,6 +781,7 @@ public class CombatManager : MonoBehaviour
         return "";
     }
 
+    /// <summary> Modifica de manera dinàmica el contingut d'un botó. </summary>
     private void SetButtonText(Button btn, string text)
     {
         var tmp = btn.GetComponentInChildren<TMPro.TMP_Text>();
@@ -728,6 +790,7 @@ public class CombatManager : MonoBehaviour
         if (txt != null) { txt.text = text; return; }
     }
 
+    /// <summary> Alterna entre les fases de selecció principal i selecció d'objectius rivals. </summary>
     private void SetMenuPhase(MenuPhase newPhase)
     {
         currentPhase = newPhase;
@@ -747,6 +810,11 @@ public class CombatManager : MonoBehaviour
 
     private RectTransform selectionCursorFrame;
 
+    /// <summary>
+    /// Actualitza la presentació gràfica premium de selecció (Highlights / Aures de colors).
+    /// Instancia una aura especial de fons dinàmica que hereta el color temàtic del botó triat
+    /// (Vermell = Atacar, Groc = Conversa, Lila = Objectes, Blau = Fugir) i llança un bucle de partícules de fons.
+    /// </summary>
     private void UpdateSelectionVisuals()
     {
         for (int i = 0; i < mainButtons.Length; i++)
@@ -772,6 +840,7 @@ public class CombatManager : MonoBehaviour
 
         if (selectionCursorFrame == null)
         {
+            // Creació procedural del component de ressaltat de disseny
             GameObject go = new GameObject("SelectionFX_VibrantYellowHighlight");
             selectionCursorFrame = go.AddComponent<RectTransform>();
             selectionGlowImage = go.AddComponent<Image>();
@@ -781,17 +850,15 @@ public class CombatManager : MonoBehaviour
         }
 
         selectionCursorFrame.gameObject.SetActive(true);
-
-        // El posem com a primer fill del botó (perquè quedi darrere del text i la icona)
         selectionCursorFrame.SetParent(selBtn.transform, false);
-        selectionCursorFrame.SetAsFirstSibling();
+        selectionCursorFrame.SetAsFirstSibling(); // Es dibuixa darrere dels textos/icones
         
         selectionCursorFrame.anchorMin = Vector2.zero;
         selectionCursorFrame.anchorMax = Vector2.one;
         selectionCursorFrame.pivot = new Vector2(0.5f, 0.5f);
         selectionCursorFrame.anchoredPosition = Vector2.zero;
         
-        // El fem créixer un pèl per fora del botó per fer l'efecte de "contorn" (només 4-5px)
+        // Escalat de 5 píxels per sobresortir netament a les vores
         selectionCursorFrame.offsetMin = new Vector2(-5, -5);
         selectionCursorFrame.offsetMax = new Vector2(5, 5);
         selectionCursorFrame.localScale = Vector3.one;
@@ -803,14 +870,14 @@ public class CombatManager : MonoBehaviour
             selectionGlowImage.type = btnImg.type;
             selectionGlowImage.preserveAspect = btnImg.preserveAspect;
             
-            // Assignem el color segons el botó
+            // Assignem una paleta de colors HSL premium per a cada acció per donar un gran acabat gràfic al TFG
             Color selectionColor = Color.yellow;
             switch(selectedIndex)
             {
-                case 0: selectionColor = new Color(1f, 0.2f, 0.2f, 0.9f); break; // Vermell (Atacar)
-                case 1: selectionColor = new Color(1f, 0.9f, 0f, 0.9f);   break; // Groc (Raonar)
-                case 2: selectionColor = new Color(0.7f, 0.3f, 1f, 0.9f); break; // Lila (Objectes)
-                case 3: selectionColor = new Color(0.2f, 0.6f, 1f, 0.9f); break; // Blau (Fugir)
+                case 0: selectionColor = new Color(1f, 0.2f, 0.2f, 0.9f); break; // Atacar (Vermell)
+                case 1: selectionColor = new Color(1f, 0.9f, 0f, 0.9f);   break; // Raonar (Groc)
+                case 2: selectionColor = new Color(0.7f, 0.3f, 1f, 0.9f); break; // Objectes (Lila)
+                case 3: selectionColor = new Color(0.2f, 0.6f, 1f, 0.9f); break; // Fugir (Blau)
             }
             selectionGlowImage.color = selectionColor;
         }
@@ -818,16 +885,19 @@ public class CombatManager : MonoBehaviour
 
     private Color currentHighlightColor = Color.yellow;
 
+    /// <summary>
+    /// Corrutina de respiració ("breathing") de l'opacitat (Alpha) de l'aura
+    /// i instanciació aleatòria de partícules de brillantor (sparkles) per sobre del botó.
+    /// </summary>
     private IEnumerator PremiumGlowRoutine(RectTransform rt, Image glowImg)
     {
         while (true)
         {
             if (rt == null || glowImg == null) yield break;
 
-            // Llegim el color actual del glow per passar-lo a les partícules
             currentHighlightColor = glowImg.color;
 
-            // Un detall fix però amb un alpha que "respira" molt subtilment per donar vida
+            // Oscil·lació harmònica del canal Alpha (breathing glow)
             float t = (Mathf.Sin(Time.unscaledTime * 3f) + 1f) / 2f;
             Color c = glowImg.color;
             c.a = Mathf.Lerp(0.5f, 0.9f, t);
@@ -835,7 +905,7 @@ public class CombatManager : MonoBehaviour
 
             rt.localScale = Vector3.one;
 
-            // Més quantitat de partícules (frequència augmentada)
+            // Llançament de guspires (sparkles) de tant en tant
             if (rt.gameObject.activeInHierarchy && Random.value < 0.25f)
             {
                 SpawnPremiumCircleParticle(rt);
@@ -845,6 +915,10 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Genera una guspira a sobre del botó seleccionat. Neix a la vora superior 
+    /// del panell i es desplaça lentament cap amunt.
+    /// </summary>
     private void SpawnPremiumCircleParticle(RectTransform parent)
     {
         GameObject p = new GameObject("P_Sparkle");
@@ -853,12 +927,10 @@ public class CombatManager : MonoBehaviour
         
         RectTransform partRT = p.AddComponent<RectTransform>();
         
-        // Ara neixen de la bora superior del botó
         float randX = Random.Range(-parent.rect.width / 2.2f, parent.rect.width / 2.2f);
         float topEdgeY = parent.rect.height / 2f; 
         partRT.anchoredPosition = new Vector2(randX, topEdgeY);
 
-        // Més petites, com una ebullició de llum
         float size = Random.Range(1.5f, 4f); 
         partRT.sizeDelta = new Vector2(size, size);
         
@@ -870,9 +942,12 @@ public class CombatManager : MonoBehaviour
         StartCoroutine(AnimatePremiumParticle(partRT, img));
     }
 
+    /// <summary>
+    /// Corrutina de moviment de la guspira: flota en zig-zag (funció sinusoide) 
+    /// cap amunt i va pampalluguejant ("twinkle") fins a esvair-se completament de la memòria.
+    /// </summary>
     private IEnumerator AnimatePremiumParticle(RectTransform rt, Image img)
     {
-        // Velocitat gairebé nul·la (com si suressin pràcticament quietes)
         Vector2 vel = new Vector2(Random.Range(-1f, 1f), Random.Range(1f, 5f)); 
         float life = Random.Range(1.8f, 2.8f);
         float elapsed = 0f;
@@ -885,19 +960,16 @@ public class CombatManager : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / life;
             
-            // Moviment molt més controlat i arran de la vora
             Vector2 pos = rt.anchoredPosition;
             pos += vel * Time.unscaledDeltaTime;
             pos.x += Mathf.Sin(elapsed * waveFreq) * waveAmp * Time.unscaledDeltaTime;
             rt.anchoredPosition = pos;
             
-            // "Twinkle" effect ràpid
             float twinkle = Mathf.Sin(elapsed * 15f) * 0.3f + 0.7f;
             Color c = img.color;
             c.a = (1f - t) * 0.7f * twinkle;
             img.color = c;
             
-            // Escalat eteri molt petit
             rt.localScale = Vector3.one * (0.9f + Mathf.PingPong(elapsed * 1.5f, 0.3f));
             
             yield return null;
@@ -909,6 +981,9 @@ public class CombatManager : MonoBehaviour
     private Coroutine playerHPAnim;
     private Coroutine enemyHPAnim;
 
+    /// <summary>
+    /// Actualitza la interfície de HP (barres de vida lliscants d'amortiment i textos informatius).
+    /// </summary>
     private void UpdateStatsUI(bool instant = false)
     {
         if (playerHPText) playerHPText.text = $"HP {playerCurrentHP} / {playerMaxHP}";
@@ -941,9 +1016,14 @@ public class CombatManager : MonoBehaviour
             SetButtonText(fightButton, $"Enemy ({enemyCurrentHP} HP)");
         }
 
+        // Comprova si la reducció de vida de l'enemic ha desencadenat una transició de fase (boss phase)
         CheckPhaseShift(instant);
     }
 
+    /// <summary>
+    /// Comprova si el percentatge de vida de l'enemic és inferior a algun dels llindars (thresholds)
+    /// definits a les seves fases del ScriptableObject. En cas afirmatiu, dispara el canvi de fase.
+    /// </summary>
     private void CheckPhaseShift(bool immediate = false)
     {
         if (encounter == null || encounter.enemyProfile == null || encounter.enemyProfile.phases == null || encounter.enemyProfile.phases.Length == 0) return;
@@ -951,7 +1031,7 @@ public class CombatManager : MonoBehaviour
         float hpPercent = (float)enemyCurrentHP / enemyMaxHP * 100f;
         int bestPhase = -1;
 
-        // Trobem la fase més alta (menor threshold) que encara és activa
+        // Triem el llindar més limitant que compleixi la condició
         for (int i = 0; i < encounter.enemyProfile.phases.Length; i++)
         {
             if (hpPercent <= encounter.enemyProfile.phases[i].hpThresholdPercent)
@@ -967,9 +1047,13 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Activa la fase de boss seleccionada, canviant el sprite actiu de l'enemic,
+    /// reproduint un efecte sonor i disparant els respectius diàlegs asíncrons.
+    /// </summary>
     private void ApplyPhase(int index, bool immediate)
     {
-        // Cancel·lem qualsevol diàleg actiu (bombolla) si canviem de fase
+        // Netegem qualsevol diàleg d'enemic que s'estigués escrivint a mitges per evitar barreges visuals
         if (activeEnemySpeakCoroutine != null)
         {
             StopCoroutine(activeEnemySpeakCoroutine);
@@ -981,7 +1065,6 @@ public class CombatManager : MonoBehaviour
         if (immediate)
         {
             SetPhaseVisuals(index);
-            // Si hi ha diàlegs en aquesta fase, marquem el flag perquè l'escena s'esperi (Begin o turns)
             var phase = (index >= 0) ? encounter.enemyProfile.phases[index] : default;
             if (index >= 0 && phase.transitionDialogues != null && phase.transitionDialogues.Length > 0)
                 isPhaseShiftingThisTurn = true;
@@ -990,14 +1073,13 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            // Canvi d'sprite immediat al rebre el dany
             SetPhaseVisuals(index);
-            // El diàleg espera a que acabi el shake (0.35s) + 1 segon extra per petició usuari
-            isPhaseShiftingThisTurn = true; // Bloquegem reaccions immediatament
+            isPhaseShiftingThisTurn = true; // Bloquegem l'input immediatament
             StartCoroutine(ApplyPhaseDialogueRoutine(index));
         }
     }
 
+    /// <summary> Assigna els valors de sprite i coreografies d'atac associades a la fase activa. </summary>
     private void SetPhaseVisuals(int index)
     {
         if (index < 0) 
@@ -1019,6 +1101,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary> Inicia l'escriptura dels diàlegs propis del canvi de fase de l'enemic. </summary>
     private void ShowPhaseDialogue(int index)
     {
         if (index < 0) return;
@@ -1030,11 +1113,11 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            // Si l'índex és vàlid però no hi havia diàlegs, cal alliberar el flag de bloqueig d'input
             isPhaseShiftingThisTurn = false;
         }
     }
 
+    /// <summary> Recorre seqüencialment les línies de diàleg de la fase, esperant el retorn de cadascuna. </summary>
     private IEnumerator ShowMultiplePhaseDialogues(PhaseDialogueLine[] lines)
     {
         foreach (var line in lines)
@@ -1043,25 +1126,26 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Rutina asíncrona de fase: espera que el batut de dany finalitzi i reprodueix els diàlegs de boss.
+    /// Si la fase de destí finalitza pacíficament (endFightFriendly), inicia un fade-out musical i acaba el combat.
+    /// </summary>
     private IEnumerator ApplyPhaseDialogueRoutine(int index)
     {
         yield return new WaitForSeconds(1.35f);
 
-        // NOU: Si l'enemic és rendit amistosament, la música ja comença a baixar aquí
         if (index >= 0)
         {
             var phase = encounter.enemyProfile.phases[index];
             if (phase.endFightFriendly && loader != null)
-                StartCoroutine(loader.FadeCombatMusic(false, 4f)); // Un fade una mica més llarg perquè dura el temps de diàleg
+                StartCoroutine(loader.FadeCombatMusic(false, 4f));
         }
         
         ShowPhaseDialogue(index);
         
-        // Esperem que realment acabi de parlar (si hi ha diàlegs)
         while (isEnemySpeaking) yield return null;
-        yield return null; // Frame de seguretat
+        yield return null;
 
-        // NOU: Friendly End si la fase ho indica
         if (index >= 0)
         {
             var phase = encounter.enemyProfile.phases[index];
@@ -1075,26 +1159,26 @@ public class CombatManager : MonoBehaviour
         isPhaseShiftingThisTurn = false;
     }
 
+    /// <summary>
+    /// Gestiona el final amistós o pacífic de la batalla (resolució per diàleg/negociació).
+    /// Incrementa els valors de reclutament de la criatura, atura la música, llança un efecte visual
+    /// de lliscament (slide out) de tota la UI de combat i presenta el VictoryPanel procedimental.
+    /// </summary>
     private IEnumerator FriendlyVictoryRoutine()
     {
-        // El fade de música ja s'hauria d'haver iniciat a l'ApplyPhaseDialogueRoutine
-        // Però per seguretat (si no hi hagués hagut diàleg), mirem de mantenir-lo
         if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 1.5f));
         
-        // So de victòria
         if (victorySound != null && audioSource != null) audioSource.PlayOneShot(victorySound);
 
         yield return new WaitForSeconds(0.5f);
 
         ShowTurnMenu(false);
 
-        // Reclutem l'enemic directament per ser final pacífic (si hi ha inventari)
         if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
         {
             PlayerInventory.Instance.RecruitEnemy(encounter.enemyProfile.enemyName);
         }
 
-        // Slide Out UI
         float outDur = 0.5f;
         Vector2 outOff = new Vector2(0, 400f);
         if (playerUIPanel != null) StartCoroutine(SlideOutRect(playerUIPanel, playerUIOriginalPos, outOff, outDur));
@@ -1104,16 +1188,16 @@ public class CombatManager : MonoBehaviour
         if (enemyNameText != null) StartCoroutine(SlideOutRect(enemyNameText.rectTransform, enemyNameOriginalPos, outOff, outDur));
         if (enemyHPText != null) StartCoroutine(SlideOutRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, outOff, outDur));
 
-        // Mostrem el panell animat de victòria sense haver matat a ningú (0 or, sense drops matança)
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
         bool done = false;
         VictoryPanelUI.Create(canvasParent, 0, new System.Collections.Generic.List<string>(), 
-                              PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : 0, () => done = true);
+                               PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : 0, () => done = true);
 
         yield return new WaitUntil(() => done);
         loader.EndCombat();
     }
 
+    /// <summary> Animació d'amortiment suau (Cúbica EaseOut) de la variació de vida de les barres. </summary>
     private IEnumerator AnimateHPBar(Image hpImage, float targetFill, float duration)
     {
         if (hpImage == null) yield break;
@@ -1123,7 +1207,6 @@ public class CombatManager : MonoBehaviour
         while (time < duration)
         {
             time += Time.deltaTime;
-            // Moviment Cúbic suau però directe
             float t = time / duration;
             float easeT = 1f - Mathf.Pow(1f - t, 3f);
             hpImage.fillAmount = Mathf.Lerp(startFill, targetFill, easeT);
@@ -1132,6 +1215,7 @@ public class CombatManager : MonoBehaviour
         hpImage.fillAmount = targetFill;
     }
 
+    /// <summary> Truc de depuració o pocions que regenera completament la vida del jugador. </summary>
     public void DebugHealPlayerToMax()
     {
         playerCurrentHP = playerMaxHP;
@@ -1140,20 +1224,24 @@ public class CombatManager : MonoBehaviour
             PlayerInventory.Instance.SetHP(playerCurrentHP);
     }
 
+    /// <summary>
+    /// Resta vida al jugador considerant els perfils de defensa o resistència del jugador (TFG).
+    /// Si els punts de vida són menors o iguals a zero, dispara la corrutina de Game Over de debò.
+    /// </summary>
     public void PlayerTakeDamage(int damage)
     {
-        if (state == State.End) return; // Evitem dany si ja hem mort o acabat
+        if (state == State.End) return;
 
         int finalDamage = damage;
 
-        // Aplica bonus de defensa per reclutament completat
+        // Comprovem si el jugador posseeix bonificacions permanents de defensa degut a enemics reclutats
         if (PlayerInventory.Instance != null)
         {
             float defBonus = PlayerInventory.Instance.GetTotalDefenseBonus();
             if (defBonus > 0f)
             {
                 int reduction = Mathf.RoundToInt(finalDamage * (defBonus / 100f));
-                finalDamage = Mathf.Max(1, finalDamage - reduction); // Mínim 1 de dany
+                finalDamage = Mathf.Max(1, finalDamage - reduction);
             }
         }
 
@@ -1162,18 +1250,17 @@ public class CombatManager : MonoBehaviour
 
         if (takeDamageSound) audioSource.PlayOneShot(takeDamageSound);
 
-        // Guarda HP actualitzat a l'inventari persistent
         if (PlayerInventory.Instance != null)
             PlayerInventory.Instance.SetHP(playerCurrentHP);
 
-        // Si el jugador mor
+        // CONDICIÓ DE DERROTA
         if (playerCurrentHP <= 0)
         {
             playerCurrentHP = 0;
             state = State.End;
-            SetHandsActive(false); // Desactivem les mans i el seu soroll immediatament
+            SetHandsActive(false); // Atura moviments de mans immediatament
             
-            // Destruïm tots els projectils en pantalla perquè no continuïn fent efectes
+            // Destrucció preventiva de projectils que quedin flotant per l'arena
             var activeProjs = FindObjectsByType<ProjectileUI>(FindObjectsSortMode.None);
             foreach(var p in activeProjs) 
             {
@@ -1185,9 +1272,14 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina de Game Over Premium. Esvaeix la pantalla a negre sòlid, reprodueix música
+    /// orquestral i melancòlica de Game Over, invoca un diàleg personalitzat amb veu,
+    /// adapta les dimensions del text a format massiu (150px) i esborra el progrés persistent
+    /// de la partida abans de redirigir l'usuari cap al menú principal del TFG.
+    /// </summary>
     private IEnumerator GameOverRoutine()
     {
-        // 1. Pantalla negra i silenci
         GameObject blackScreenGO = new GameObject("GameOverScreen");
         Canvas c = blackScreenGO.AddComponent<Canvas>();
         c.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -1196,18 +1288,15 @@ public class CombatManager : MonoBehaviour
         UnityEngine.UI.Image img = blackScreenGO.AddComponent<UnityEngine.UI.Image>();
         img.color = new Color(0, 0, 0, 0f); 
 
-        // Aturarem el combat loader i els audios de cop
         loader.StartCoroutine(loader.FadeCombatMusic(false, 0f));
         if (audioSource) audioSource.Stop();
         if (loopAudioSource) loopAudioSource.Stop();
         if (voiceAudioSource) voiceAudioSource.Stop();
 
-        // 2. Pantalla negra de cop i espera un breu moment de silenci
         img.color = Color.black;
 
         yield return new WaitForSecondsRealtime(1.5f);
 
-        // 3. Música de game over amb fade in
         if (gameOverMusic != null)
         {
             audioSource.clip = gameOverMusic;
@@ -1227,10 +1316,10 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSecondsRealtime(2f); // Espera si no hi ha música
+            yield return new WaitForSecondsRealtime(2f);
         }
 
-        // 4. Dialeg (tipus overworld)
+        // Recuperem el component de diàleg de l'escena
         DialogueUI dialogueUI = FindFirstObjectByType<DialogueUI>();
         if (dialogueUI == null)
         {
@@ -1242,13 +1331,10 @@ public class CombatManager : MonoBehaviour
         gameOverLine.text = string.IsNullOrEmpty(gameOverText) ? "GAME OVER" : gameOverText;
         gameOverLine.customVoiceSound = gameOverVoice;
 
-        // Reduïm dràsticament la velocitat del text (per ex. a un 15% de la velocitat normal)
-        dialogueUI.SetSpeedMultiplier(0.15f);
+        dialogueUI.SetSpeedMultiplier(0.15f); // Text super lent pel drama
 
-        // Desactivem l'animació d'entrada passant un 'false' al nou paràmetre
         dialogueUI.StartDialogue(new Interactable.DialogueLine[] { gameOverLine }, false);
 
-        // Forçar que el diàleg estigui per davant de la pantalla negra
         GameObject dialogPanel = GameObject.Find("DynamicDialoguePanel");
         if (dialogPanel != null)
         {
@@ -1257,7 +1343,6 @@ public class CombatManager : MonoBehaviour
             panelCanvas.overrideSorting = true;
             panelCanvas.sortingOrder = 10000;
 
-            // Retocs visuals per mostrar només text i botó al centre per al Game Over
             UnityEngine.UI.Image bgImg = dialogPanel.GetComponent<UnityEngine.UI.Image>();
             if (bgImg != null) bgImg.enabled = false;
             
@@ -1267,7 +1352,6 @@ public class CombatManager : MonoBehaviour
             RectTransform prt = dialogPanel.GetComponent<RectTransform>();
             if (prt != null)
             {
-                // Ampliem el requadre a gairebé tota la pantalla per aprofitar millor l'espai
                 prt.anchorMin = new Vector2(0.1f, 0.1f);
                 prt.anchorMax = new Vector2(0.9f, 0.9f);
             }
@@ -1279,11 +1363,8 @@ public class CombatManager : MonoBehaviour
                 if (tmp != null)
                 {
                     tmp.alignment = TMPro.TextAlignmentOptions.Top;
-                    
-                    // Com que ara l'àrea és més gran, l'hi aixequem el límit màxim (abans estava ancorat a 50px de base)
                     tmp.fontSizeMax = 150f;
 
-                    // I força el recàlcul d'autoescalat un altre cop amagant la lletra correctament, doncs el límit inicial l'havia bloquejat.
                     string typedSoFar = tmp.text;
                     tmp.enableAutoSizing = true;
                     tmp.text = gameOverLine.text;
@@ -1296,19 +1377,17 @@ public class CombatManager : MonoBehaviour
             Transform eBtn = dialogPanel.transform.Find("E_Button");
             if (eBtn != null)
             {
-                // Canviem el pare cap al Canvas arrel de la pantalla negra per a posar-ho a la cantonada real inferior-dreta
                 eBtn.SetParent(blackScreenGO.transform, false);
                 RectTransform ert = eBtn.GetComponent<RectTransform>();
                 if (ert != null)
                 {
                     ert.anchorMin = new Vector2(1f, 0f);
                     ert.anchorMax = new Vector2(1f, 0f);
-                    ert.anchoredPosition = new Vector2(-50f, 50f); // marge des de la vora de la pantalla
+                    ert.anchoredPosition = new Vector2(-50f, 50f);
                 }
             }
         }
 
-        // Esperem fins que el text hagi acabat de mostrar-se, i permetem saltar-lo
         while (dialogueUI.IsTyping)
         {
             if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return))
@@ -1318,24 +1397,20 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        // Purgar un frame per evitar que la mateixa pulsació compti pel salt i per tancar
         yield return null; 
 
         while (!Input.GetKeyDown(KeyCode.E) && !Input.GetKeyDown(KeyCode.Return))
         {
             yield return null;
         }
-        
-        // No cridem "dialogueUI.Hide();" per evitar que el text faci el desplaçament de sortida cap a sota.
-        // D'aquesta manera, es quedarà rígid mentre es fa el fade out superior.
 
-        // FADE OUT ABANS DE CANVIAR D'ESCENA (Pintem un llençol negre per damunt de tot)
+        // FADE OUT final abans de tornar al menú principal del TFG
         GameObject fadeOutGO = new GameObject("FadeOutScreen");
         Canvas fadeCanvas = fadeOutGO.AddComponent<Canvas>();
         fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         fadeCanvas.sortingOrder = 10005; 
         UnityEngine.UI.Image fadeImg = fadeOutGO.AddComponent<UnityEngine.UI.Image>();
-        fadeImg.color = new Color(0, 0, 0, 0f); // Comença transparent
+        fadeImg.color = new Color(0, 0, 0, 0f);
         
         float fadeTime = 0f;
         float fadeDuration = 1.0f;
@@ -1345,7 +1420,6 @@ public class CombatManager : MonoBehaviour
         {
             fadeTime += Time.unscaledDeltaTime;
             fadeImg.color = new Color(0, 0, 0, fadeTime / fadeDuration);
-            // També fem fade out lent a la música del llop si n'hi ha.
             if (audioSource != null && startVolume > 0)
             {
                 audioSource.volume = Mathf.Lerp(startVolume, 0f, fadeTime / fadeDuration);
@@ -1353,36 +1427,38 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        // Esborrar progres al overworld
+        // Purga d'inventari per no heretar punts de vida o estat de mort a la propera partida
         if (PlayerInventory.Instance != null)
         {
             Destroy(PlayerInventory.Instance.gameObject);
         }
         
-        // Netejar la flag global de combat per no deixar el jugador bloquejat
         CombatLoader.IsInCombat = false;
-
-        // Torna a l'escena d'inici
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 
+    /// <summary> Reprodueix el so de bloqueig crític de tipus Parry. </summary>
     public void PlayParrySound()
     {
         if (parrySound && audioSource) audioSource.PlayOneShot(parrySound);
     }
 
+    /// <summary> Reprodueix un efecte sonor qualsevol de forma local a l'arena. </summary>
     public void PlayLocalSound(AudioClip clip)
     {
         if (clip && audioSource) audioSource.PlayOneShot(clip);
     }
 
+    /// <summary> Retorna l'efecte de so de recepció de dany. </summary>
     public AudioClip DamageSound => takeDamageSound;
 
+    /// <summary> Reprodueix so d'explosió gràfica. </summary>
     public void PlayExplosionSound()
     {
         if (explosionSound && audioSource) audioSource.PlayOneShot(explosionSound);
     }
 
+    /// <summary> Instancia un efecte visual de bloqueig d'escut (partícula parry). </summary>
     public void SpawnParryEffect(Vector3 position, Sprite projectileSprite = null)
     {
         if (parryParticlePrefab)
@@ -1395,14 +1471,18 @@ public class CombatManager : MonoBehaviour
                 if (img) 
                 {
                     img.sprite = projectileSprite;
-                    img.color = new Color(0.2f, 1f, 0.2f, 1f); // Verd ara que el parry ens cura sempre
+                    img.color = new Color(0.2f, 1f, 0.2f, 1f); // Verd: en aquest joc fer parry ens cura!
                 }
             }
 
-            Destroy(effect, 3f); // Auto-cleanup: desapareixen al cap de 3 segons
+            Destroy(effect, 3f);
         }
     }
 
+    /// <summary>
+    /// S'executa quan el jugador atura un projectil vermell amb èxit gràcies a l'escut.
+    /// Recupera un punt de vida del jugador (cura) i llança efectes flotants ("+1").
+    /// </summary>
     public void OnParrySuccess(Vector3 pos, Sprite projectileSprite)
     {
         PlayParrySound();
@@ -1412,32 +1492,30 @@ public class CombatManager : MonoBehaviour
         if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
         UpdateStatsUI();
 
-        // Mostrem FX de curació sobre la barra de vida per reforçar el feedback
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
         Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
         HealFXUI.ShowAboveBar(canvasParent, targetImg, "+1", new Color(0.25f, 1f, 0.35f), 1f);
     }
 
+    /// <summary> Retorna la línia de límit Y inferior on moren els projectils que cauen. </summary>
     public float GetDestroyLimitY()
     {
         return projectileDestroyLimit != null ? projectileDestroyLimit.anchoredPosition.y : -1200f;
     }
 
-    // =========================
-    // Player actions
-    // =========================
-
+    // ─── LÒGICA I ACCIONS DEL JUGADOR (PLAYER ACTIONS) ───────────────
+    /// <summary>
+    /// Corrutina d'acció d'atac de tipus Fight: oculta el menú, instancia el minijoc de la ruleta,
+    /// llegeix les bonificacions permanents de dany del jugador acumulades a l'inventari persistent,
+    /// rep la puntuació calculada, aplica batut d'enemic i passa al torn de l'enemic.
+    /// </summary>
     private IEnumerator PerformAttackRoutine()
     {
-        // Changing state to something else avoids PlayerTurn triggering ConfirmSelection via Space again.
         state = State.Resolve;
-        
-        // Amaguem el menú amb la seva animació de sortida instantàniament en decidir atacar perque el centre d'atenció sigui la ruleta
         ShowTurnMenu(false);
 
         int finalDmg = 0;
 
-        // Perform Skill Check if available
         if (skillCheckPrefab != null && turnMenu != null)
         {
             SkillCheckUI skillCheck = Instantiate(skillCheckPrefab, turnMenu.transform.parent);
@@ -1448,13 +1526,12 @@ public class CombatManager : MonoBehaviour
             RectTransform rt = skillCheck.GetComponent<RectTransform>();
             if (rt != null)
             {
-                rt.anchoredPosition = new Vector2(0, 150); // Més amunt dels botons
+                rt.anchoredPosition = new Vector2(0, 150);
             }
 
-            // Wait until skill check finishes and returns damage via callback
             bool checkFinished = false;
 
-            // Passar multiplicador de dany segons els reclutaments completats
+            // Transmetem el multiplicador acumulat pel jugador basat en enemics reclutats
             if (PlayerInventory.Instance != null)
             {
                 float atkBonus = PlayerInventory.Instance.GetTotalAttackBonus();
@@ -1467,12 +1544,10 @@ public class CombatManager : MonoBehaviour
                 checkFinished = true;
             });
             
-            // Aturam l'execució d'aquest IEnumerator fins que la funcio onDamage callback hagi set cridada.
             yield return new WaitUntil(() => checkFinished);
-            
             Destroy(skillCheck.gameObject); 
 
-            // NOU: Si el dany és -1, vol dir que l'usuari ha cancel·lat el minijoc
+            // Codi especial -1 indica cancel·lació del minijoc amb Escape/Backspace
             if (finalDmg == -1)
             {
                 state = State.PlayerTurn;
@@ -1482,27 +1557,22 @@ public class CombatManager : MonoBehaviour
         }
         else 
         {
-            // Fallback just in case no UI
             finalDmg = Random.Range(5, 15);
             yield return new WaitForSeconds(1f);
         }
 
         Debug.Log($"FIGHT! Dealt {finalDmg} damage.");
-
-        // El bonus d'atac ja s'ha aplicat dins el SkillCheckUI per mostrar el número real boostat
-        // finalDmg ja inclou el multiplicador del PlayerInventory. GetTotalAttackBonus()
         
         enemyCurrentHP -= finalDmg;
         if (enemyCurrentHP < 0) enemyCurrentHP = 0;
         UpdateStatsUI();
 
-        // So i tremolor de l'enemic en rebre dany
         if (enemyHitSound) audioSource.PlayOneShot(enemyHitSound);
         if (enemyPortraitImage != null) StartCoroutine(ShakeEnemySprite(enemyPortraitImage.rectTransform, 0.35f, 14f));
 
-        // Esperem un petit instant curt fins passar al torn enemic un cop ha donat l'espasada
         yield return new WaitForSeconds(0.6f);
 
+        // Si la vida de l'enemic és zero, el combat ha acabat!
         if (enemyCurrentHP == 0)
         {
             state = State.End;
@@ -1511,6 +1581,7 @@ public class CombatManager : MonoBehaviour
             yield break;
         }
 
+        // Canvis de nodes socials paral·lels per respostes mecàniques
         if (socialState != null)
         {
             var bt = encounter?.enemyProfile?.socialBT;
@@ -1528,7 +1599,9 @@ public class CombatManager : MonoBehaviour
         EndPlayerTurn("ATTACK");
     }
 
-    // Tremolor de l'sprite de l'enemic en rebre dany
+    /// <summary>
+    /// Corrutina que tremola l'sprite de l'enemic per donar feedback orgànic d'impacte i dany rebut.
+    /// </summary>
     private IEnumerator ShakeEnemySprite(RectTransform rt, float duration, float magnitude)
     {
         if (rt == null) yield break;
@@ -1537,7 +1610,7 @@ public class CombatManager : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float damping = 1f - Mathf.Clamp01(elapsed / duration); // Va decreixent
+            float damping = 1f - Mathf.Clamp01(elapsed / duration);
             float x = Random.Range(-1f, 1f) * magnitude * damping;
             float y = Random.Range(-1f, 1f) * magnitude * damping;
             rt.anchoredPosition = originalPos + new Vector2(x, y);
@@ -1546,16 +1619,18 @@ public class CombatManager : MonoBehaviour
         rt.anchoredPosition = originalPos;
     }
 
-    /// Quan l'enemic mor: primer l'escapcem en pixels, despres la pantalla de victoria.
+    /// <summary>
+    /// Executa la seqüència de derrota completa de l'enemic. Llegeix diàlegs finals orals,
+    /// llisca la UI cap a dalt, reprodueix el so de mort, i executa l'explosió procedural
+    /// desintegrant la imatge de l'enemic en fragments de píxels.
+    /// </summary>
     private IEnumerator DefeatAndVictoryRoutine()
     {
-        // Baixem la música lentament en donar el cop definitiu (petició usuari)
         if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 2.5f));
 
-        // Esperem a que la darrera animació de dany (shake) estigui cap al final
         yield return new WaitForSeconds(0.4f);
 
-        // Els enemics ara poden dir unes últimes paraules abans de morir (E per seguir)
+        // Diàlegs finals de mort orals
         if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.deathReactions != null && encounter.enemyProfile.deathReactions.Length > 0)
         {
             string deathMsg = encounter.enemyProfile.deathReactions[Random.Range(0, encounter.enemyProfile.deathReactions.Length)];
@@ -1564,7 +1639,6 @@ public class CombatManager : MonoBehaviour
 
         ShowTurnMenu(false);
 
-        // Slide Out de tota la UI de combat cap amunt
         float outDur = 0.5f;
         Vector2 outOff = new Vector2(0, 400f);
         if (playerUIPanel != null) StartCoroutine(SlideOutRect(playerUIPanel, playerUIOriginalPos, outOff, outDur));
@@ -1574,36 +1648,35 @@ public class CombatManager : MonoBehaviour
         if (enemyNameText != null) StartCoroutine(SlideOutRect(enemyNameText.rectTransform, enemyNameOriginalPos, outOff, outDur));
         if (enemyHPText != null) StartCoroutine(SlideOutRect(enemyHPText.rectTransform, enemyHPTextOriginalPos, outOff, outDur));
 
-        // So de mort de l'enemic (des del seu perfil)
         AudioClip deathClip = encounter?.enemyProfile?.deathSound;
         if (deathClip) audioSource.PlayOneShot(deathClip);
 
         if (enemyPortraitImage != null && enemyPortraitImage.enabled)
         {
             bool fxDone = false;
-            // Determina el canvas pare (el mateix que el panell de victoria usara)
-            Transform canvasParent = enemyPortraitImage.transform.parent;
             EnemyDestroyFX.Play(enemyPortraitImage, () => fxDone = true);
             yield return new WaitUntil(() => fxDone);
-            yield return new WaitForSeconds(0.25f); // petit respir
+            yield return new WaitForSeconds(0.25f);
         }
 
         StartCoroutine(VictoryRoutine());
     }
 
+    /// <summary>
+    /// Corrutina de victòria (violenta). Calcula l'or guanyat de forma aleatòria
+    /// basat en els valors mínim i màxim definits pel disseny, obté la llista de drops
+    /// aleatoris de l'enemic, desa les dades en l'inventari persistent i llança el VictoryPanel.
+    /// </summary>
     private IEnumerator VictoryRoutine()
     {
         ShowTurnMenu(false);
-        // Baixem la música lentament per la victòria
         if (loader != null) StartCoroutine(loader.FadeCombatMusic(false, 3f));
 
-        // So de victòria
         if (victorySound) audioSource.PlayOneShot(victorySound);
 
         if (enemyHPText) enemyHPText.text = "";
         if (playerHPText) playerHPText.text = "";
 
-        // Càlcul de premis segons el perfil
         int gold = 0;
         System.Collections.Generic.List<string> earnedItems = new System.Collections.Generic.List<string>();
 
@@ -1618,7 +1691,6 @@ public class CombatManager : MonoBehaviour
             gold = Random.Range(30, 80);
         }
 
-        // Guarda HP restant del jugador i recompenses a l'inventari persistent
         if (PlayerInventory.Instance != null)
         {
             if (encounter != null && encounter.enemyProfile != null)
@@ -1637,7 +1709,6 @@ public class CombatManager : MonoBehaviour
 
         int totalGold = PlayerInventory.Instance != null ? PlayerInventory.Instance.Gold : gold;
 
-        // Mostra el panell animat de victòria
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
         bool done = false;
         VictoryPanelUI.Create(canvasParent, gold, earnedItems, totalGold, () => done = true);
@@ -1647,12 +1718,15 @@ public class CombatManager : MonoBehaviour
         loader.EndCombat();
     }
 
+    /// <summary>
+    /// Acció de Raonar: llança el diàleg social or des de l'arbre si és disponible.
+    /// En cas contrari, reprodueix diàlegs orals preventius de fallback per evitar softlocks gràfics.
+    /// </summary>
     private void OnReason()
     {
         var bt = encounter?.enemyProfile?.socialBT;
         if (bt == null || bt.playerActions == null || bt.playerActions.Length == 0)
         {
-            // NOU: Fallback amb narrador si no hi ha BT configurat
             string fallback = (encounter?.enemyProfile != null) ? encounter.enemyProfile.reasonFallbackDialogue : "";
             if (string.IsNullOrEmpty(fallback)) fallback = "Tractes de parlar amb l'enemic, però no sembla haver-hi resposta.";
             
@@ -1668,39 +1742,42 @@ public class CombatManager : MonoBehaviour
         StartCoroutine(SocialActionMenuRoutine(bt));
     }
 
+    /// <summary> Rutina de fallback asíncrona per a l'acció de Raonar en cas de no tenir graf associat. </summary>
     private IEnumerator ReasonFallbackRoutine(string text)
     {
         ShowTurnMenu(false);
         state = State.Resolve;
         
-        // Ús del so de veu personalitzat per aquest enemic si està definit
         AudioClip voice = (encounter?.enemyProfile != null) ? encounter.enemyProfile.reasonFallbackSound : null;
         
-        // El text de Game Over es mostra molt lentament (x4 de temps, o sigui x0.25 de velocitat)
+        // Multiplicador 4.0f per mostrar la línia de diàleg de forma dramàtica/lenta
         yield return ShowPlayerActionDialogue(text, voice, 4.0f);
-        EndPlayerTurn(""); // Simplement perdem el torn
+        EndPlayerTurn("");
     }
 
-    // ─── Menú d'accions socials (node-graph) ─────────────────────────────────
-
+    // ─── GESTIÓ DEL DIÀLEG SOCIAL PROCEDURAL DEL TFG (NODE-GRAPH) ──────
+    /// <summary>
+    /// Corrutina del menú d'accions socials: genera de manera completament procedural a l'esquerra de la pantalla
+    /// un panell retro vertical, col·loca els botons d'acció del graf del node actual, implementa navegació per teclat,
+    /// valida si es tenen els objectes de l'inventari exigits com a precondició (mostrant vibracions d'error en vermell en cas negatiu),
+    /// i finalment consumeix l'objecte de la transició abans de reproduir els diàlegs dels personatges.
+    /// </summary>
     private IEnumerator SocialActionMenuRoutine(SocialBehaviorTree bt)
     {
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
         TMPro.TextMeshProUGUI headerTxt = null;
 
-        // Mostrem el text d'entrada del node actual (si n'hi ha)
         SocialNode currentNode = bt.GetNode(socialState.currentNodeId);
         if (currentNode != null && !string.IsNullOrEmpty(currentNode.enemyEntryText))
             yield return EnemySpeakRoutine(currentNode.enemyEntryText);
 
-        // Construïm la llista d'accions final (accions BT + possible Perdonar)
         System.Collections.Generic.List<string> displayedActions = new System.Collections.Generic.List<string>(bt.playerActions);
         if (currentNode != null && currentNode.enableApology)
         {
             displayedActions.Add("Apologize");
         }
 
-        // Construïm el panell d'accions (PANEL LATERAL ESQUERRA)
+        // Construcció procedural del panell esquerra
         socialMenuGO = new GameObject("SocialActionMenu");
         socialMenuGO.transform.SetParent(canvasParent, false);
 
@@ -1710,9 +1787,8 @@ public class CombatManager : MonoBehaviour
         panelRT.pivot = new Vector2(0f, 0.5f);
         panelRT.sizeDelta = new Vector2(400f, 700f);
         
-        // Comença fora de la pantalla per l'esquerra
         Vector2 finalPos = new Vector2(50f, 0f);
-        panelRT.anchoredPosition = new Vector2(-500f, 0f);
+        panelRT.anchoredPosition = new Vector2(-500f, 0f); // Llançament des de l'esquerra
 
         var panelBg = socialMenuGO.AddComponent<Image>();
         panelBg.color = new Color(0.08f, 0.08f, 0.12f, 0.96f);
@@ -1723,7 +1799,7 @@ public class CombatManager : MonoBehaviour
         outline.effectColor = new Color(0.95f, 0.8f, 0.15f, 0.6f);
         outline.effectDistance = new Vector2(5, -5);
 
-        // Header
+        // Capçalera
         var headerGO = new GameObject("Header");
         headerGO.transform.SetParent(panelRT, false);
         var headerRT = headerGO.AddComponent<RectTransform>();
@@ -1737,7 +1813,7 @@ public class CombatManager : MonoBehaviour
         headerTxt.color = new Color(1f, 0.92f, 0.2f);
         if (playerNameText != null && playerNameText.font != null) headerTxt.font = playerNameText.font;
 
-        // Contenidor vertical de botons
+        // Contenidor per al llistat vertical de botons d'acció
         var buttonsContainer = new GameObject("ButtonsContainer");
         buttonsContainer.transform.SetParent(panelRT, false);
         var bcRT = buttonsContainer.AddComponent<RectTransform>();
@@ -1768,11 +1844,10 @@ public class CombatManager : MonoBehaviour
             btnImg.sprite = GetRoundedSprite();
             btnImg.type = Image.Type.Sliced;
             
-            // Color base depenent de si és "Apologize"
             if (actionName == "Apologize")
-                btnImg.color = new Color(0.1f, 0.35f, 0.15f, 1f); // Verd fosc
+                btnImg.color = new Color(0.1f, 0.35f, 0.15f, 1f);
             else
-                btnImg.color = new Color(0.18f, 0.18f, 0.32f, 1f); // Blau fosc estàndard
+                btnImg.color = new Color(0.18f, 0.18f, 0.32f, 1f);
             
             btnImages[i] = btnImg;
 
@@ -1795,10 +1870,9 @@ public class CombatManager : MonoBehaviour
             btnComp.onClick.AddListener(() => { chosenActionIndex = capturedI; });
         }
 
-        // Animació d'entrada (Slide in de l'esquerra)
+        // Moviment de desplaçament d'entrada de la llista
         StartCoroutine(AnimateSideMenu(panelRT, finalPos, 0.5f));
 
-        // Navegació per teclat (VERTICAL)
         int keyboardIndex = 0;
         void UpdateHighlight()
         {
@@ -1836,22 +1910,22 @@ public class CombatManager : MonoBehaviour
                 string actionName = displayedActions[keyboardIndex];
                 var trans = bt.GetTransition(currentNode, actionName);
                 
+                // VALIDACIÓ DE L'OBJECTE REQUERIT PER L'ACCIÓ
                 if (trans != null && trans.requiredItem != null)
                 {
                     if (PlayerInventory.Instance == null || PlayerInventory.Instance.CountItem(trans.requiredItem.itemName) <= 0)
                     {
-                        // Mostrem l'error al propi panell d'accions (al header)
+                        // Text de capçalera en vermell indicant error
                         headerTxt.text = $"No tens: {trans.requiredItem.itemName}!";
-                        headerTxt.color = new Color(1f, 0.3f, 0.3f); // Vermell d'error
+                        headerTxt.color = new Color(1f, 0.3f, 0.3f);
                         
-                        // Petit efecte de vibrat per donar feedback d'error
+                        // Vibració lateral d'avís
                         StartCoroutine(ShakeSideMenu(panelRT, finalPos));
                         
                         if (audioSource && takeDamageSound) audioSource.PlayOneShot(takeDamageSound, 0.5f);
                         
                         yield return new WaitForSeconds(1.2f);
                         
-                        // Restaurem el header
                         headerTxt.text = bt.menuHeader;
                         headerTxt.color = new Color(1f, 0.92f, 0.2f);
                         continue; 
@@ -1861,7 +1935,7 @@ public class CombatManager : MonoBehaviour
             }
             else if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace))
             {
-                // Animació de sortida i tanca
+                // Sortida instantània amb lliscament
                 yield return StartCoroutine(AnimateSideMenu(panelRT, new Vector2(-400f, 0f), 0.3f));
                 Destroy(socialMenuGO);
                 state = State.PlayerTurn;
@@ -1871,18 +1945,15 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        // Animació de sortida abans d'executar l'acció
         yield return StartCoroutine(AnimateSideMenu(panelRT, new Vector2(-400f, 0f), 0.3f));
         Destroy(socialMenuGO);
 
-        // Processem l'acció
         string chosen = displayedActions[chosenActionIndex];
         if (confirmMenuSound && audioSource) audioSource.PlayOneShot(confirmMenuSound);
 
-        // Busquem la transició al node actual
         SocialTransition transition = bt.GetTransition(currentNode, chosen);
 
-        // NOU: Restar l'objecte si era necessari
+        // Descomptem preventivament l'objecte utilitzat de l'inventari persistent
         if (transition != null && transition.requiredItem != null)
         {
             if (PlayerInventory.Instance != null)
@@ -1902,25 +1973,24 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            // Acció sense transició definida → reacció per defecte, quedem al mateix node
             reactionText = currentNode != null ? currentNode.defaultReactionText : "...";
             nextNodeId   = "";
         }
 
-        // Mostrem diàleg narratiu del jugador (estil overworld) abans de la reacció de l'enemic
+        // 1. Narra a la part baixa l'acció descriptiva del jugador (ShowPlayerActionDialogue)
         string playerText = transition != null ? transition.playerActionText : null;
         if (!string.IsNullOrEmpty(playerText))
         {
             yield return StartCoroutine(ShowPlayerActionDialogue(playerText));
         }
 
-        // Mostra reacció
+        // 2. Dispara la resposta parlada o reacció de l'enemic a la bombolla del seu retrat
         if (!string.IsNullOrEmpty(reactionText))
             yield return EnemySpeakRoutine(reactionText);
 
-        // Moure a nou node
         socialState.MoveTo(nextNodeId);
 
+        // Si hem aconseguit entablar amistat permanent
         if (socialState.IsFriend)
         {
             state = State.End;
@@ -1932,6 +2002,9 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina de desplaçament suau d'un menú lateral per posició Lerp.
+    /// </summary>
     private IEnumerator AnimateSideMenu(RectTransform rect, Vector2 targetPos, float duration)
     {
         Vector2 startPos = rect.anchoredPosition;
@@ -1940,13 +2013,16 @@ public class CombatManager : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
-            float ease = 1f - Mathf.Pow(1f - t, 3f); // Ease out cubic
+            float ease = 1f - Mathf.Pow(1f - t, 3f);
             rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, ease);
             yield return null;
         }
         rect.anchoredPosition = targetPos;
     }
 
+    /// <summary>
+    /// Corrutina que fa vibrar lateralment un RectTransform per aportar feedback de retroacció d'errors.
+    /// </summary>
     private IEnumerator ShakeSideMenu(RectTransform rect, Vector2 basePos)
     {
         float elapsed = 0f;
@@ -1963,11 +2039,13 @@ public class CombatManager : MonoBehaviour
         rect.anchoredPosition = basePos;
     }
 
+    /// <summary>
+    /// Gestiona la victòria pacífica en finalitzar l'arbre social.
+    /// </summary>
     private IEnumerator FriendVictoryRoutine()
     {
         ShowTurnMenu(false);
 
-        // Mostrem el diàleg d'amistat (ara a través de la bombolla de l'enemic)
         var bt = encounter?.enemyProfile?.socialBT;
         if (bt != null && !string.IsNullOrEmpty(bt.friendshipText))
         {
@@ -1987,14 +2065,12 @@ public class CombatManager : MonoBehaviour
 
         yield return new WaitForSeconds(outDur + 0.3f);
 
-        // Càlcul d'or i drops per resolució amistosa
         int friendGold = 0;
         System.Collections.Generic.List<string> earnedItems = new System.Collections.Generic.List<string>();
         
         if (encounter?.enemyProfile != null)
         {
             var p = encounter.enemyProfile;
-            // Prioritat als valors de l'EnemyProfile, fallback al BT per compatibilitat
             if (p.amicableGoldRewardMax > 0)
             {
                 friendGold = Random.Range(p.amicableGoldRewardMin, p.amicableGoldRewardMax + 1);
@@ -2029,8 +2105,7 @@ public class CombatManager : MonoBehaviour
 
         yield return new WaitUntil(() => done);
 
-        // ── Comprova si s'ha completat la barra de reclutament ──────
-        // Guardem les dades per mostrar la recompensa UN COP FORA del combat
+        // Control de reclutament finalitzat per a bonificacions permanents
         if (PlayerInventory.Instance != null && encounter?.enemyProfile != null)
         {
             var completedProfile = PlayerInventory.Instance.CheckRecruitmentJustCompleted(encounter.enemyProfile.enemyName);
@@ -2048,6 +2123,7 @@ public class CombatManager : MonoBehaviour
         loader.EndCombat();
     }
 
+    /// <summary> Obre les accions associades a intentar escapar del combat. </summary>
     private void OnFlee()
     {
         ShowTurnMenu(false);
@@ -2055,6 +2131,10 @@ public class CombatManager : MonoBehaviour
         StartCoroutine(FleeRoutine());
     }
 
+    /// <summary>
+    /// Corrutina de fugida: calcula dinàmicament la probabilitat d'escapar.
+    /// En cas d'èxit finalitza el combat immediatament; en cas contrari narrar l'error i perdem el torn.
+    /// </summary>
     private IEnumerator FleeRoutine()
     {
         float fleeChance = 0.5f;
@@ -2065,19 +2145,21 @@ public class CombatManager : MonoBehaviour
 
         if (Random.value <= fleeChance)
         {
-            // Fugida exitosa
             yield return ShowPlayerActionDialogue("You try to run away... and you make it!");
             state = State.End;
             loader.EndCombat();
         }
         else
         {
-            // Falla
             yield return ShowPlayerActionDialogue("You try to run away... but you can't escape!");
             EndPlayerTurn("FLEE_FAIL");
         }
     }
 
+    /// <summary>
+    /// Acció d'inventari: obre el menú general d'inventari en format combat,
+    /// intercepta l'objecte triat i executa els seus efectes interactius a la batalla.
+    /// </summary>
     private void OnItem()
     {
         ShowTurnMenu(false);
@@ -2093,6 +2175,7 @@ public class CombatManager : MonoBehaviour
         });
     }
 
+    /// <summary> Corrutina seqüencial que resol l'ús d'un objecte i canvia al torn de l'enemic. </summary>
     private IEnumerator ProcessItemSequence(ItemProfile profile)
     {
         yield return StartCoroutine(ApplyItemEffect(profile));
@@ -2104,12 +2187,15 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            // Si l'objecte ha servit per fer mal, la reacció ha de ser d'atac (hit), no de healing
             string reaction = (profile.effectType == ItemEffectType.DamageEnemy) ? "ATTACK" : "HEAL";
             EndPlayerTurn(reaction);
         }
     }
 
+    /// <summary>
+    /// Aplica els efectes directes dels objectes en el combat: pocions de curació (HealPlayer) amb fullscreen pop,
+    /// ampolles de dany (DamageEnemy) disparant trajectòries parabòliques, o pocions de boost de velocitat (SpeedUpHands).
+    /// </summary>
     private IEnumerator ApplyItemEffect(ItemProfile profile)
     {
         Debug.Log($"Utilitzant objecte en combat: {profile.itemName}");
@@ -2128,20 +2214,17 @@ public class CombatManager : MonoBehaviour
             playerCurrentHP += profile.effectValue;
             if (playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
 
-            // Text verd + partícules verdes (barra)
             Image targetImg = playerPortraitImage != null ? playerPortraitImage : playerHPFill;
             HealFXUI.ShowAboveBar(canvasParent, targetImg, $"+{profile.effectValue} HP",
                                   new Color(0.25f, 1f, 0.35f));
 
-            // NOU: Efecte a pantalla completa
             HealFXUI.ShowHealFullscreen(canvasParent);
         }
         else if (profile.effectType == ItemEffectType.DamageEnemy)
         {
-            // --- ANIMACIÓ DE TIRAR OBJECTE ---
-            // Ara li passem un callback o esperem a que impacti per restar vida
+            // Llançament parabòlic de l'objecte de dany
             yield return StartCoroutine(AnimateItemThrow(profile, () => {
-                // AQUEST CODI S'EXECUTA JUST EN EL MOMENT DE L'IMPACTE
+                // EXECUTAT AL MOMENT EXACTE DE L'IMPACTE DE LA MONEDA/OBJECTE
                 enemyCurrentHP -= profile.effectValue;
                 if (enemyCurrentHP < 0) enemyCurrentHP = 0;
                 UpdateStatsUI();
@@ -2149,7 +2232,6 @@ public class CombatManager : MonoBehaviour
                 if (enemyHitSound != null) audioSource.PlayOneShot(enemyHitSound);
                 if (enemyPortraitImage != null) StartCoroutine(ShakeEnemySprite(enemyPortraitImage.rectTransform, 0.35f, 14f));
 
-                // Taronja sobre la barra de l'enemic
                 HealFXUI.ShowAboveBar(canvasParent, enemyHPFill, $"-{profile.effectValue} HP",
                                       new Color(1f, 0.45f, 0.1f));
             }));
@@ -2175,13 +2257,18 @@ public class CombatManager : MonoBehaviour
             speedBuffRoundsLeft = profile.buffDurationRounds;
             HealFXUI.Show(canvasParent, $"SPEED +{profile.effectValue}% ({speedBuffRoundsLeft} TURNS)", new Color(1f, 0.9f, 0.15f));
             
-            // NOU: Efecte fletxes a pantalla completa
             HealFXUI.ShowSpeedFullscreen(canvasParent);
         }
         UpdateStatsUI();
         yield return null;
     }
 
+    /// <summary>
+    /// Corrutina premium que anima la trajectòria en 2D d'un objecte llançat.
+    /// Realitza un moviment Lerp acompanyat d'una paràbola en Y (funció quadràtica),
+    /// rota l'objecte ràpidament durant el vol, crida el callback d'impacte,
+    /// i simula la caiguda física fins a terra acabant amb petits rebots elàstics de gravetat.
+    /// </summary>
     private IEnumerator AnimateItemThrow(ItemProfile profile, System.Action onImpact)
     {
         Transform canvasParent = turnMenu != null ? turnMenu.transform.parent : transform;
@@ -2195,16 +2282,13 @@ public class CombatManager : MonoBehaviour
         
         RectTransform rt = go.GetComponent<RectTransform>();
 
-        // 1. Punt d'Inici (Des del Inspector o fallback)
         Vector2 startPos = throwStartPoint != null ? throwStartPoint.anchoredPosition : new Vector2(0, -700f); 
 
-        // 2. Punt de Col·lisió (Directament el centre del rival)
         Vector2 impactPos;
         if (enemyPortraitImage != null) impactPos = enemyPortraitImage.rectTransform.anchoredPosition;
         else if (enemyUIPanel != null) impactPos = enemyUIPanel.anchoredPosition;
         else impactPos = new Vector2(0, 300f);
 
-        // 3. Línia de terra (On cau després de col·lisionar)
         float groundY = itemGroundLine != null ? itemGroundLine.anchoredPosition.y : impactPos.y - 150f;
         Vector2 groundPos = new Vector2(impactPos.x + Random.Range(-100f, 100f), groundY);
 
@@ -2222,7 +2306,7 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        // --- FASE 1: VOL FINS L'IMPACTE ---
+        // ── FASE 1: VOL EN PARÀBOLA ──
         float duration = 0.5f;
         float elapsed = 0f;
         while (elapsed < duration)
@@ -2230,7 +2314,7 @@ public class CombatManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             Vector2 currentPos = Vector2.Lerp(startPos, impactPos, t);
-            float parabola = 4f * t * (1f - t);
+            float parabola = 4f * t * (1f - t); // Paràbola invertida
             currentPos.y += parabola * throwArcHeight;
             rt.anchoredPosition = currentPos;
             rt.localScale = Vector3.one * Mathf.Lerp(startScale, endScale, t);
@@ -2238,10 +2322,10 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        // --- MOMENT DE L'IMPACTE ---
+        // IMPACTE DEL CÀLCUL DE DANY
         onImpact?.Invoke();
 
-        // --- FASE 2: CAURE AL TERRA ---
+        // ── FASE 2: CAIGUDA DESPRÉS DE COL·LIDIR ──
         elapsed = 0f;
         float fallDuration = 0.3f;
         Vector2 posAtImpact = rt.anchoredPosition;
@@ -2249,13 +2333,12 @@ public class CombatManager : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = elapsed / fallDuration;
-            // Cau de forma més directa (Ease In)
             rt.anchoredPosition = Vector2.Lerp(posAtImpact, groundPos, t * t);
             rt.Rotate(0, 0, -200f * Time.deltaTime);
             yield return null;
         }
 
-        // Petit rebot al terra
+        // Rebot elàstic en xocar a terra
         float bounce = 0f;
         while(bounce < 0.2f)
         {
@@ -2268,6 +2351,7 @@ public class CombatManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
         
+        // Desaparició suau (fade out) de l'objecte de la pantalla
         float fade = 1f;
         while(fade > 0f)
         {
@@ -2279,12 +2363,11 @@ public class CombatManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Mostra un diàleg estil overworld a la part inferior del combat
-    /// per narrar l'acció del jugador. Espera que el jugador l'avanci amb E/Enter.
+    /// Mostra un diàleg a la part inferior en format overworld de combat,
+    /// ideal per narrar accions. Suporta avançar lletra a lletra asíncronament.
     /// </summary>
     private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null, float speedMultiplier = 1f)
     {
-        // Primer busquem si ja hi ha un DialogueUI a l'escena (el que l'usuari ha configurat)
         var dialogUI = FindFirstObjectByType<DialogueUI>();
         GameObject dialogGO = null;
 
@@ -2300,13 +2383,11 @@ public class CombatManager : MonoBehaviour
         
         dialogUI.canSkip = false;
         
-        // Apliquem la velocitat si és diferent a la normal
         if (speedMultiplier != 1f)
         {
             dialogUI.SetSpeedMultiplier(speedMultiplier); 
         }
 
-        // Personalització de la veu: Prioritat al de l'enemic, fallback al global del combat
         AudioClip voice = (overrideVoice != null) ? overrideVoice : playerActionVoice;
         if (voice != null)
         {
@@ -2317,10 +2398,8 @@ public class CombatManager : MonoBehaviour
         dialogUI.OnDialogueClosed += () => closed = true;
         dialogUI.Show(text);
 
-        // Purgar un frame per evitar que la mateixa pulsació de tecla de selecció de menú se salti l'animació de text a l'instant
         yield return null;
 
-        // Esperem que el jugador avanci/tanqui el diàleg
         while (!closed)
         {
             if (!PauseMenuUI.IsOpen && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)))
@@ -2330,12 +2409,18 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        // Petit respir abans de la reacció de l'enemic
         yield return new WaitForSeconds(0.15f);
 
         if (dialogGO != null) Destroy(dialogGO);
     }
 
+    /// <summary>
+    /// Corrutina de Typewriter or de la bombolla del rival: escriu lletra a lletra el text,
+    /// reprodueix sons de veu asíncrons cada dos caràcters per evitar solapaments sonors,
+    /// suporta retards especials segons signes de puntuació (. , ! ?),
+    /// permet al jugador saltar (skip) completament l'escriptura clicant E/Intro,
+    /// i finalment mostra un prompt inferior abans de tancar.
+    /// </summary>
     private IEnumerator EnemySpeakRoutine(string text, float speedMultiplier = 1f, bool shake = false)
     {
         if (enemyBubbleRT == null || enemyDialogTxt == null || string.IsNullOrEmpty(text)) yield break;
@@ -2348,11 +2433,9 @@ public class CombatManager : MonoBehaviour
 
         AudioClip voice = encounter?.enemyProfile?.voiceSound;
         
-        // Paràmetres orgànics idèntics a DialogueUI
         float charsPerSecond = 45f;
         float delay = (1f / charsPerSecond) * speedMultiplier;
 
-        // Purgar un frame per evitar que la mateixa pulsació de tecla de selecció de menú se salti l'animació de text a l'instant
         yield return null;
 
         for (int i = 0; i < cleanText.Length; i++)
@@ -2360,7 +2443,7 @@ public class CombatManager : MonoBehaviour
             char c = cleanText[i];
             if (enemyDialogTxt != null) enemyDialogTxt.text += c;
             
-            // So de veu (cada 2 caràcters per no saturar)
+            // So de veu seqüencial
             if (!char.IsWhiteSpace(c) && voice != null && voiceAudioSource != null)
             {
                 if (i % 2 == 0)
@@ -2374,7 +2457,6 @@ public class CombatManager : MonoBehaviour
             if (c == '.' || c == '?' || c == '!') currentDelay = delay * 10f;
             else if (c == ',' || c == ';' || c == ':') currentDelay = delay * 5f;
 
-            // Espera amb possibilitat de saltar (skip) immediat
             float elapsed = 0f;
             bool skipped = false;
             while (elapsed < currentDelay)
@@ -2397,12 +2479,10 @@ public class CombatManager : MonoBehaviour
 
         if (voiceAudioSource != null) voiceAudioSource.pitch = 1f;
 
-        // Mostrem el prompt de [E]
         if (enemyBubblePromptCG != null) enemyBubblePromptCG.alpha = 1f;
 
-        // Esperem input del jugador per tancar
         bool advance = false;
-        yield return new WaitForSeconds(0.15f); // Prevenir tancat instantani si estavem pitjant
+        yield return new WaitForSeconds(0.15f);
         while (!advance)
         {
             if (!PauseMenuUI.IsOpen && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)))
@@ -2418,6 +2498,7 @@ public class CombatManager : MonoBehaviour
         isEnemySpeaking = false;
     }
 
+    /// <summary> Tanca el torn del jugador i inicia la corrutina del torn de l'enemic. </summary>
     private void EndPlayerTurn(string reactionType = "")
     {
         ShowTurnMenu(false);
@@ -2427,6 +2508,7 @@ public class CombatManager : MonoBehaviour
 
     private Coroutine turnMenuAnim;
 
+    /// <summary> Alterna la visibilitat del menú general amb lliscaments dinàmics (Cubic Ease Out). </summary>
     private void ShowTurnMenu(bool show)
     {
         if (turnMenu == null) return;
@@ -2441,7 +2523,6 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            // Amagar cap avall només si està de fet a l'escena:
             if (turnMenu.activeInHierarchy)
             {
                 turnMenuAnim = StartCoroutine(SlideOutAndHide(turnMenu.GetComponent<RectTransform>(), turnMenuOriginalPos + new Vector2(0, -500f), 0.5f));
@@ -2449,6 +2530,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary> Corrutina per lliscar el menú de forma controlada per Lerp. </summary>
     private IEnumerator SlideMenuTo(RectTransform rect, Vector2 targetPos, float duration, bool easeOut)
     {
         if (rect == null) yield break;
@@ -2467,12 +2549,14 @@ public class CombatManager : MonoBehaviour
         rect.anchoredPosition = targetPos;
     }
 
+    /// <summary> Lliscament de sortida que en finalitzar desactiva completament el GameObject de la UI. </summary>
     private IEnumerator SlideOutAndHide(RectTransform rect, Vector2 targetPos, float duration)
     {
         yield return SlideMenuTo(rect, targetPos, duration, false);
         turnMenu.SetActive(false);
     }
 
+    /// <summary> Activa/Desactiva la capacitat de control de les mans. </summary>
     private void SetHandsActive(bool active)
     {
         if (handControllers == null) return;
@@ -2482,6 +2566,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary> Retorna si alguna de les mans gaudeix actualment d'immunitat transitòria. </summary>
     public bool IsPlayerImmune()
     {
         if (handControllers == null) return false;
@@ -2492,6 +2577,7 @@ public class CombatManager : MonoBehaviour
         return false;
     }
 
+    /// <summary> Concedeix immunitat temporal general a totes les mans. </summary>
     public void TriggerGlobalImmunity(float duration)
     {
         if (handControllers == null) return;
@@ -2501,10 +2587,14 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    // =========================
-    // Enemy turn
-    // =========================
-
+    // ─── TORN DE L'ENEMIC (ENEMY TURN ROUTINE) ───────────────────────
+    /// <summary>
+    /// Corrutina del torn enemic: reprodueix diàlegs orals orals segons si el jugador ha atacat o s'ha curat,
+    /// activa el moviment de les mans dins l'arena de combat, tria de forma pseudoaleatòria 
+    /// un dels patrons de projectils de la fase activa evitant la repetició idèntica de l'anterior torn,
+    /// espera que s'executi la coreografia del Bullet Hell (EnemyAttackSpawner),
+    /// i un cop destruïts tots els projectils, dedueix els buffs de velocitat transitoris i retorna al torn del jugador.
+    /// </summary>
     private IEnumerator EnemyTurnRoutine(string reactionType)
     {
         Debug.Log("ENEMY TURN started");
@@ -2535,10 +2625,10 @@ public class CombatManager : MonoBehaviour
             yield return EnemySpeakRoutine(comment);
         }
 
-        // Si hi havia un diàleg de fase en curs o pendent, esperem que s'alliberi el flag
-        // El flag s'allibera a ApplyPhaseDialogueRoutine un cop s'ha tancat la bombolla
+        // Si teníem un canvi de fase pendent de resoldre la seva bombolla, s'espera fins a quedar lliure
         while (isPhaseShiftingThisTurn) yield return null;
 
+        // Reactivem el moviment de les mans per esquivar bales a l'arena de combat
         SetHandsActive(true);
 
         float dur = 2f;
@@ -2573,10 +2663,9 @@ public class CombatManager : MonoBehaviour
             spawner.Configure(prefab, chosenPattern);
             yield return spawner.Run(dur);
             
-            // Esperem un instant per assegurar que els últims projectils s'han registrat be
             yield return new WaitForSeconds(0.1f);
 
-            // Wait until all projectiles have finished traveling and are destroyed
+            // Wait: el torn no canvia fins que s'ha esvaït fins a l'últim projectil de l'arena de combat
             yield return new WaitUntil(() => ProjectileUI.activeProjectiles <= 0);
         }
         else
@@ -2586,15 +2675,14 @@ public class CombatManager : MonoBehaviour
 
         Debug.Log("ENEMY TURN ended");
 
-        SetHandsActive(false);
+        SetHandsActive(false); // Bloquegem el moviment de mans en el torn del jugador
 
-        // Disminuïm i revisem l'estat del buff de velocitat en tornar al torn del jugador
+        // Decrementem la durada de buffs de poció
         if (speedBuffRoundsLeft > 0)
         {
             speedBuffRoundsLeft--;
             if (speedBuffRoundsLeft == 0)
             {
-                // El buff s'ha esgotat, el traiem!
                 var hands = FindObjectsByType<HandController>(FindObjectsSortMode.None);
                 foreach (var h in hands) h.speedMultiplier -= currentSpeedBuffValue;
                 currentSpeedBuffValue = 0f;
@@ -2602,7 +2690,6 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        // Assegurem que qualsevol diàleg de l'enemic es tanca abans de mostrar el menú del jugador
         if (enemyBubbleRT != null && enemyBubbleRT.gameObject.activeSelf)
         {
             enemyBubbleRT.gameObject.SetActive(false);
@@ -2610,7 +2697,7 @@ public class CombatManager : MonoBehaviour
             isPhaseShiftingThisTurn = false;
         }
 
-        // Si el jugador ha mort durant el torn de l'enemic (projectils), aturem-ho tot abans de donar-li el torn.
+        // Si el jugador ha mort degut als projectils rebuts, ens aturem
         if (state == State.End)
         {
             yield break;
@@ -2620,6 +2707,10 @@ public class CombatManager : MonoBehaviour
         ShowTurnMenu(true);
     }
 
+    /// <summary>
+    /// Selecciona de manera aleatòria un dels patrons d'atac de la llista 
+    /// assegurant-se de no repetir el mateix d'abans si hi ha prou ventall d'opcions.
+    /// </summary>
     private EnemyAttackPattern GetRandomPattern(EnemyAttackPattern[] patterns)
     {
         if (patterns == null || patterns.Length == 0) return EnemyAttackPattern.RandomDrop;
@@ -2640,6 +2731,10 @@ public class CombatManager : MonoBehaviour
         return chosen;
     }
 
+    /// <summary>
+    /// Processa les llistes de probabilitats d'obtenició de drops
+    /// per decidir quins objectes reals s'agreguen a l'inventari.
+    /// </summary>
     private System.Collections.Generic.List<string> CalculateDrops(DropItemProbability[] drops)
     {
         var earned = new System.Collections.Generic.List<string>();

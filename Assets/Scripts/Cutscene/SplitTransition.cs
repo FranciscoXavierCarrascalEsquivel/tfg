@@ -1,19 +1,28 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Gestiona l'animació de transició gràfica de tall o tancament lateral de pantalla (Split Transition).
+/// És una alternativa simplificada en dues meitats (esquerra/dreta RectTransform) utilitzant
+/// funcions de suavitzat (smoothstep) natiu, i temporitzat basat en unscaledDeltaTime per a funcionar
+/// independentment de si el temps del joc està pausat (Time.timeScale = 0).
+/// </summary>
 public class SplitTransition : MonoBehaviour
 {
-    [SerializeField] RectTransform left;
-    [SerializeField] RectTransform right;
-    [SerializeField] float closeDuration = 0.35f;
-    [SerializeField] float openDuration = 0.35f;
+    [Header("Panells de la Transició (UI)")]
+    [SerializeField] private RectTransform left;  // RectTransform esquerre
+    [SerializeField] private RectTransform right; // RectTransform dret
+    
+    [Header("Temps de Transició")]
+    [SerializeField] private float closeDuration = 0.35f; // Temps de tancament lateral
+    [SerializeField] private float openDuration = 0.35f;  // Temps d'obertura cap als costats
 
-    // distància fora de pantalla (px). Com més gran, més segur.
-    [SerializeField] float offscreen = 2500f;
+    [Tooltip("Distància en píxels fora de la pantalla per col·locar els panells invisibles.")]
+    [SerializeField] private float offscreen = 2500f;
 
-    void Reset()
+    private void Reset()
     {
-        // Intenta auto-assignar si els noms coincideixen
+        // Provem d'auto-assignar dinàmicament els fills per nom per a facilitar la creació de prefabs
         var t = transform;
         if (t.childCount >= 2)
         {
@@ -22,22 +31,27 @@ public class SplitTransition : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina per a reproduir el tancament (els panells llisquen cap al centre fins a col·lidir).
+    /// </summary>
     public IEnumerator Close()
     {
-        // Left ve des de fora esquerra -> centre, Right des de fora dreta -> centre
         Vector2 leftFrom = new Vector2(-offscreen, 0);
         Vector2 leftTo   = Vector2.zero;
 
         Vector2 rightFrom = new Vector2(offscreen, 0);
         Vector2 rightTo   = Vector2.zero;
 
-        // Posa'ls al punt inicial
+        // Situem els elements als extrems
         left.anchoredPosition = leftFrom;
         right.anchoredPosition = rightFrom;
 
         yield return Move(leftFrom, leftTo, rightFrom, rightTo, closeDuration);
     }
 
+    /// <summary>
+    /// Corrutina per a reproduir l'obertura (els panells es separen del centre cap als extrems) i destruir el canvas temporal.
+    /// </summary>
     public IEnumerator Open()
     {
         Vector2 leftFrom = Vector2.zero;
@@ -48,22 +62,26 @@ public class SplitTransition : MonoBehaviour
 
         yield return Move(leftFrom, leftTo, rightFrom, rightTo, openDuration);
 
-        Destroy(gameObject); // neteja
+        // Alliberem l'objecte en acabar l'obertura
+        Destroy(gameObject); 
     }
 
-    IEnumerator Move(Vector2 l0, Vector2 l1, Vector2 r0, Vector2 r1, float duration)
+    /// <summary>
+    /// Corrutina genèrica de moviment d'interpolació basat en una corba smoothstep de suavitzat.
+    /// </summary>
+    private IEnumerator Move(Vector2 l0, Vector2 l1, Vector2 r0, Vector2 r1, float duration)
     {
         float t = 0f;
         while (t < duration)
         {
             float a = t / duration;
-            // easing suau (smoothstep)
+            // Funció smoothstep matemàtica per a suavitzar acceleració i desacceleració gràfica
             a = a * a * (3f - 2f * a);
 
             left.anchoredPosition = Vector2.LerpUnclamped(l0, l1, a);
             right.anchoredPosition = Vector2.LerpUnclamped(r0, r1, a);
 
-            t += Time.unscaledDeltaTime;
+            t += Time.unscaledDeltaTime; // Unscaled per funcionar en pantalles de Pausa o càrrega
             yield return null;
         }
 

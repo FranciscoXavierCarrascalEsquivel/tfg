@@ -3,39 +3,54 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Seqüència de Finalització de la Demo (DemoEndSequence).
+/// Aquest script és el cervell cinematogràfic que orquestra la transició de final de joc.
+/// Bloqueja completament el control del jugador i de la música, genera un glitch amb sacsejada
+/// de pantalla, desencadena una explosió digital i genera dinàmicament una animació retro de
+/// transmissió de dades via xarxa (Ordinador A -> Ordinador B a través d'un sobre de correu).
+/// Posteriorment, recull les estadístiques de la partida de l'inventari (Kills vs Recruits)
+/// i calcula quin dels 4 finals ha assolit el jugador (Observer, Genocide, Pacifist o Mixed).
+/// Finalment, manipula i personalitza la DialogueUI per mostrar un monòleg centrat en pantalla,
+/// un art conceptual en primer pla, els crèdits finals de "To Be Continued" i carrega el menú principal.
+/// </summary>
 public class DemoEndSequence : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public CanvasGroup glitchCanvasGroup;
-    public Image glitchOverlay;
-    public TextMeshProUGUI systemText;
-    
-    [Header("Sprites Personalitzats (Opcional)")]
-    public Sprite hostASprite;
-    public Sprite hostBSprite;
-    public Sprite packetSprite;
-    public Sprite oblivionFinalSprite;
+    [Header("Elements de la Interfície (UI)")]
+    public CanvasGroup glitchCanvasGroup; // Grup de Canvas per controlar opacitat dels glitches i fons
+    public Image glitchOverlay;           // Imatge de fons que pot canviar de blanc a negre
+    public TextMeshProUGUI systemText;    // Text d'estat de terminal verda
 
-    [Header("Imatges dels Finals")]
-    public Sprite endingObserverSprite;
-    public Sprite endingGenocideSprite;
-    public Sprite endingPacifistSprite;
-    public Sprite endingMixedSprite;
+    [Header("Sprites Personalitzats de l'Animació (Opcional)")]
+    public Sprite hostASprite;           // Icona d'ordinador origen
+    public Sprite hostBSprite;           // Icona d'ordinador destí
+    public Sprite packetSprite;          // Icona del sobre de correu/dades
+    public Sprite oblivionFinalSprite;   // Imatge genèrica per a l'Oblit
 
-    [Header("Audio")]
-    public AudioClip glitchSound;
-    public AudioClip travelSound;
-    public AudioClip packetArrivedSound;
-    public AudioClip explosionSound;
-    public AudioClip finalMonologueMusic;
-    public AudioSource audioSource;
+    [Header("Il·lustracions de cadascun dels Finals")]
+    public Sprite endingObserverSprite;  // Final Observador (0 morts, 0 reclutats)
+    public Sprite endingGenocideSprite;  // Final Genocida (només morts, tothom eliminat)
+    public Sprite endingPacifistSprite;  // Final Pacifista (només reclutats, tothom estalviat)
+    public Sprite endingMixedSprite;     // Final Mixte (una barreja de tots dos)
 
-    [Header("Camera Shake")]
-    public Camera mainCamera;
-    public float shakeIntensity = 0.5f;
+    [Header("Àudios i Efectes Sonors")]
+    public AudioClip glitchSound;        // Soroll de glitch de circuit elèctric
+    public AudioClip travelSound;        // Soroll continu de transferència
+    public AudioClip packetArrivedSound; // Xiulet de connexió establerta
+    public AudioClip explosionSound;     // Esclat final del bucle de codi
+    public AudioClip finalMonologueMusic;// Música dramàtica de fons per al monòleg
+    public AudioSource audioSource;      // Emissor d'àudio dedicat
 
+    [Header("Sacsejada de Càmera")]
+    public Camera mainCamera;            // Càmera principal que tremolarà
+    public float shakeIntensity = 0.5f;  // Intensitat màxima del tremolor
+
+    /// <summary>
+    /// Punt d'entrada de la seqüència. Bloqueja controls i arrenca la corrutina mestra.
+    /// </summary>
     public void StartEndingSequence()
     {
+        // Setup de seguretat de l'AudioSource
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -45,7 +60,7 @@ public class DemoEndSequence : MonoBehaviour
             }
         }
 
-        // Bloquegem el jugador i les seves interaccions
+        // Congelem el jugador i desactivem preventivament tots els seus sistemes d'input i detecció
         var player = FindFirstObjectByType<PlayerController2D>();
         if (player != null)
         {
@@ -65,10 +80,13 @@ public class DemoEndSequence : MonoBehaviour
             interactor.enabled = false;
         }
 
+        // Engeguem la seqüència
         StartCoroutine(SequenceRoutine());
     }
 
-    // Afegeix això al Unity Event del primer diàleg (o On Requirement Met) per parar la música de fons
+    /// <summary>
+    /// Atura gradualment qualsevol font de música o bucles d'àudio actius en el mapa de joc actual.
+    /// </summary>
     public void StopBackgroundMusic()
     {
         var sceneMusic = FindFirstObjectByType<SceneMusic>();
@@ -84,18 +102,23 @@ public class DemoEndSequence : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Seqüència de passes temporitzades que componen la cinemàtica de final de la demo.
+    /// </summary>
     private IEnumerator SequenceRoutine()
     {
         var dialogueUI = FindFirstObjectByType<DialogueUI>();
         
-        // Bloquegem el diàleg perquè l'usuari no el pugui tancar manualment
+        // Bloquegem el panell de diàleg perquè el jugador no pugui tancar-lo abans d'hora premint la barra o la E
         if (dialogueUI != null)
         {
             dialogueUI.canAdvance = false;
             dialogueUI.canSkip = false;
         }
 
-        // 1. Inici del Glitch (Tremolor i Soroll en Bucle MENTRE el diàleg és visible)
+        // ==========================================
+        // 1. INICI DEL GLITCH I SACSEJADA
+        // ==========================================
         if (audioSource != null && glitchSound != null)
         {
             audioSource.clip = glitchSound;
@@ -103,11 +126,10 @@ public class DemoEndSequence : MonoBehaviour
             audioSource.Play();
         }
 
-        // Assegurem que el canvas del glitch no tapa el diàleg encara, però deixem que la càmera tremoli
         glitchCanvasGroup.alpha = 0f; 
 
         Vector3 originalCamPos = mainCamera != null ? mainCamera.transform.position : Vector3.zero;
-        float glitchDuration = 4.5f; // Temps que l'usuari té per llegir l'últim diàleg mentre tremola
+        float glitchDuration = 4.5f; // Durada dels tremolors mentre la línia de diàleg d'esclat és en pantalla
         float elapsed = 0f;
 
         while (elapsed < glitchDuration)
@@ -124,30 +146,30 @@ public class DemoEndSequence : MonoBehaviour
             yield return null;
         }
 
-        // Tancar el diàleg automàticament
+        // Tanquem de forma forçada la interfície de diàlegs ordinaris i en restaurem els valors normals
         if (dialogueUI != null)
         {
             dialogueUI.Hide();
-            // Restaurem els controls del diàleg pel futur
             dialogueUI.canAdvance = true;
             dialogueUI.canSkip = true;
         }
 
-        // Aturar el tremolor i el so
         if (mainCamera != null) mainCamera.transform.position = originalCamPos;
         if (audioSource != null) audioSource.Stop();
 
-        // 2. EXPLOSIÓ I FADE A NEGRE
+        // ==========================================
+        // 2. DETONACIÓ FÍSICA I TRANSICIÓ A FOS
+        // ==========================================
         if (audioSource != null && explosionSound != null)
         {
             audioSource.PlayOneShot(explosionSound);
         }
 
         glitchOverlay.color = Color.white;
-        systemText.text = ""; // Netegem qualsevol text previ
+        systemText.text = ""; 
         glitchCanvasGroup.alpha = 0f; 
 
-        // Flash In molt ràpid (blanca)
+        // Ràpid esclat de llum blanca (0.05 segons)
         float flashInDuration = 0.05f;
         float elapsedF = 0f;
         while (elapsedF < flashInDuration)
@@ -158,7 +180,7 @@ public class DemoEndSequence : MonoBehaviour
         }
         glitchCanvasGroup.alpha = 1f;
 
-        // Fade Out de blanc cap a negre lentament
+        // Fos gradual de blanc a negre absolut
         float flashOutDuration = 2.5f;
         elapsedF = 0f;
         while (elapsedF < flashOutDuration)
@@ -169,17 +191,20 @@ public class DemoEndSequence : MonoBehaviour
         }
         glitchOverlay.color = Color.black;
 
-        yield return new WaitForSeconds(1f); // Pausa dramàtica en negre
+        yield return new WaitForSeconds(1f); // Pausa dramàtica en el buit fosc
 
-        systemText.color = new Color(0.2f, 0.8f, 0.2f); // Verd terminal
+        // ==========================================
+        // 3. SECCIÓ TERMINAL GREEN (Transferència de Dades)
+        // ==========================================
+        systemText.color = new Color(0.2f, 0.8f, 0.2f); // Verd tipus matriu/terminal retro
         systemText.text = "ESTABLISHING CONNECTION TO NEW HOST...";
 
         yield return new WaitForSeconds(2f);
         systemText.text = "SENDING PACKET VIA EMAIL...";
         yield return new WaitForSeconds(1f);
-        systemText.text = ""; // Amaguem el text durant l'animació per no embrutar
+        systemText.text = ""; 
         
-        // -- CREACIÓ DINÀMICA DE L'ANIMACIÓ DE VIATGE --
+        // -- CREACIÓ COMPONENT A COMPONENT DE L'ANIMACIÓ DE VIATGE EN PANTALLA --
         GameObject animContainer = new GameObject("TravelAnimation");
         animContainer.transform.SetParent(glitchCanvasGroup.transform, false);
         RectTransform animRT = animContainer.AddComponent<RectTransform>();
@@ -188,9 +213,9 @@ public class DemoEndSequence : MonoBehaviour
         animRT.offsetMin = animRT.offsetMax = Vector2.zero;
         
         CanvasGroup animCanvasGroup = animContainer.AddComponent<CanvasGroup>();
-        animCanvasGroup.alpha = 0f; // Comencem transparents per fer el Fade In
+        animCanvasGroup.alpha = 0f; 
 
-        // Crear Línia de Connexió
+        // Dibuix de la Línia de Viatge (Cable)
         GameObject lineObj = new GameObject("ConnectionLine");
         lineObj.transform.SetParent(animRT, false);
         RectTransform lineRT = lineObj.AddComponent<RectTransform>();
@@ -199,7 +224,7 @@ public class DemoEndSequence : MonoBehaviour
         Image lineImg = lineObj.AddComponent<Image>();
         lineImg.color = new Color(0.2f, 0.6f, 0.2f, 0.5f);
 
-        // Crear Ordinador A (Esquerra)
+        // Instanciació de l'Ordinador A (Esquerra)
         GameObject hostA = new GameObject("HostA");
         hostA.transform.SetParent(animRT, false);
         RectTransform hostART = hostA.AddComponent<RectTransform>();
@@ -210,9 +235,9 @@ public class DemoEndSequence : MonoBehaviour
         else hostAImg.color = Color.gray;
         hostAImg.preserveAspect = true;
 
-        // Reseguir el d'origen (Outline) a l'inici
+        // Ombrejat verd actiu inicial
         Outline outlineA = hostA.AddComponent<Outline>();
-        outlineA.effectColor = new Color(0.2f, 0.8f, 0.2f, 1f); // Verd
+        outlineA.effectColor = new Color(0.2f, 0.8f, 0.2f, 1f); 
         outlineA.effectDistance = new Vector2(4f, -4f);
         
         GameObject textAGO = new GameObject("TextA");
@@ -225,7 +250,7 @@ public class DemoEndSequence : MonoBehaviour
         SetFont(textA);
         textA.rectTransform.anchoredPosition = new Vector2(0, 100f);
 
-        // Crear Ordinador B (Dreta)
+        // Instanciació de l'Ordinador B (Dreta)
         GameObject hostB = new GameObject("HostB");
         hostB.transform.SetParent(animRT, false);
         RectTransform hostBRT = hostB.AddComponent<RectTransform>();
@@ -246,7 +271,7 @@ public class DemoEndSequence : MonoBehaviour
         SetFont(textB);
         textB.rectTransform.anchoredPosition = new Vector2(0, 100f);
 
-        // Crear el Paquet (Correu)
+        // Sobre de correu volant (Paquet de dades)
         GameObject packetObj = new GameObject("EmailPacket");
         packetObj.transform.SetParent(animRT, false);
         RectTransform packetRT = packetObj.AddComponent<RectTransform>();
@@ -257,7 +282,7 @@ public class DemoEndSequence : MonoBehaviour
         else packetImg.color = Color.yellow;
         packetImg.preserveAspect = true;
 
-        // FADE IN DE L'ANIMACIÓ
+        // FADE IN del quadre d'animació complet
         float fadeDuration = 1.5f;
         float fElapsed = 0f;
         while (fElapsed < fadeDuration)
@@ -268,10 +293,8 @@ public class DemoEndSequence : MonoBehaviour
         }
         animCanvasGroup.alpha = 1f;
 
-        // Treiem el verd de l'equip d'origen al començar a viatjar
         if (outlineA != null) Destroy(outlineA);
 
-        // Reproduïm l'efecte de so de viatge només ara
         if (audioSource != null && travelSound != null)
         {
             audioSource.clip = travelSound;
@@ -279,7 +302,7 @@ public class DemoEndSequence : MonoBehaviour
             audioSource.Play();
         }
 
-        // Animar el sobre movent-se de A a B MÉS LENTAMENT
+        // Animar el trajecte del sobre de A a B (7 segons, lent per generar tensió)
         float travelDuration = 7f; 
         float tElapsed = 0f;
         Vector2 startPos = new Vector2(-400f, -50f);
@@ -290,10 +313,9 @@ public class DemoEndSequence : MonoBehaviour
             tElapsed += Time.deltaTime;
             float t = tElapsed / travelDuration;
             
-            // Moviment suau i constant
             packetRT.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
             
-            // Parpelleig de la línia
+            // Efecte estroboscòpic/parpelleig del canal verd
             lineImg.color = new Color(0.2f, 0.8f, 0.2f, Random.Range(0.4f, 1f));
 
             yield return null;
@@ -301,26 +323,24 @@ public class DemoEndSequence : MonoBehaviour
 
         packetRT.anchoredPosition = endPos;
         
-        // Aturem el so de viatge només arribar
         if (audioSource != null && audioSource.clip == travelSound)
         {
             audioSource.Stop();
         }
 
-        // Reproduïm l'àudio d'arribada si el tenim
         if (audioSource != null && packetArrivedSound != null)
         {
             audioSource.PlayOneShot(packetArrivedSound);
         }
 
-        // Reseguir el de destí en acabar
+        // Ombrejat verd actiu a l'ordinador B de destí
         Outline outlineB = hostB.AddComponent<Outline>();
-        outlineB.effectColor = new Color(0.2f, 0.8f, 0.2f, 1f); // Verd
+        outlineB.effectColor = new Color(0.2f, 0.8f, 0.2f, 1f); 
         outlineB.effectDistance = new Vector2(4f, -4f);
 
         yield return new WaitForSeconds(2f);
 
-        // FADE OUT DE L'ANIMACIÓ DE VIATGE
+        // FADE OUT de la connexió
         fElapsed = 0f;
         while (fElapsed < fadeDuration)
         {
@@ -334,19 +354,21 @@ public class DemoEndSequence : MonoBehaviour
         
         yield return new WaitForSeconds(1.5f);
 
-        // 3. Monòleg final de l'Oblit amb els 4 finals
+        // ==========================================
+        // 4. PROCESSAMENT DE CÀLCULS I TRIADE DE FINALS
+        // ==========================================
         int totalKills = 0;
         int totalRecruits = 0;
         int totalMaxPopulation = 0;
 
-        // Carreguem tots els perfils d'enemic per calcular la població total del joc (sumant els seus límits)
+        // Obtenim de forma robusta la població total per comprovar final Pacifista/Genocida absolut
         EnemyProfile[] allEnemies = Resources.LoadAll<EnemyProfile>("Enemies");
         foreach (var p in allEnemies)
         {
             totalMaxPopulation += p.maxRecruitLimit;
         }
         
-        // Restem 1 per no comptar el boss final (o un enemic especial) segons petició de l'usuari
+        // Es treu de l'equació el boss per mantenir-se en els paràmetres de reclutament de l'Overworld ordinari
         totalMaxPopulation = Mathf.Max(1, totalMaxPopulation - 1);
         
         if (PlayerInventory.Instance != null)
@@ -358,32 +380,33 @@ public class DemoEndSequence : MonoBehaviour
         string finalMonologue = "";
         Sprite finalSprite = null;
 
+        // Triem diàlegs i gràfics segons les accions i l'ètica de joc de l'usuari
         if (totalKills == 0 && totalRecruits == 0)
         {
-            // Ignorant (No reclutar i no matar)
+            // final 1: OBSERVADOR (Passivitat absoluta)
             finalMonologue = "A true observer. You drifted through this world without taking a single life, nor saving one. You simply watched as the code unfolded. Did you think your inaction makes you innocent? When the Great Deletion comes, your hands will be clean, but you will be just as empty.";
             finalSprite = endingObserverSprite;
         }
         else if (totalRecruits == 0 && totalKills >= totalMaxPopulation && totalMaxPopulation > 0)
         {
-            // Genocida (Matar-los a tots i no reclutar ningú)
+            // final 2: GENOCIDA (Neteja total)
             finalMonologue = "Oh, look at you... tearing through them like a virus. You've purged every single one of them. You're doing my job for me, little anomaly! If you keep slaughtering with such efficiency, perhaps when the Great Deletion comes, you will be rewarded. It's so entertaining to watch the world bleed out through your hands.";
             finalSprite = endingGenocideSprite;
         }
         else if (totalKills == 0 && totalRecruits >= totalMaxPopulation && totalMaxPopulation > 0)
         {
-            // Reclutador (Reclutar a tothom i no matar ningú)
+            // final 3: PACIFISTA / RECLUTADOR (Amistat i rescat total)
             finalMonologue = "Hah. You actually think saving every single one of them matters? You've collected them like toys, believing you can rescue a world already marked for deletion. It's almost poetic... how desperately you fight the inevitable. But make no mistake: your little 'friends' will be erased just the same. And I will be watching.";
             finalSprite = endingPacifistSprite;
         }
         else
         {
-            // Mixte (Fer una mica de tot, o no arribar al màxim d'un sol tipus)
+            // final 4: MIXTE (Gris/Pragmàtic)
             finalMonologue = "How amusing. You spare some, yet you ruthlessly delete others when they stand in your way. You mock me, but every life you take only feeds your strength... making you more like ME. Keep playing the hero while you feast on their code. Who knows? One day, we might just be on the same side.";
             finalSprite = endingMixedSprite;
         }
 
-        // Nova música pel monòleg final
+        // Reprodueix el so dramàtic propi del monòleg
         if (audioSource != null && finalMonologueMusic != null)
         {
             audioSource.clip = finalMonologueMusic;
@@ -391,9 +414,12 @@ public class DemoEndSequence : MonoBehaviour
             audioSource.Play();
         }
 
+        // ==========================================
+        // 5. MANIPULACIÓ EXCLUSIVA DE DIÀLEG I TEATRALITAT
+        // ==========================================
         if (dialogueUI != null)
         {
-            // Ocultem la targeta de fons
+            // Ocultem la targeta de diàleg convencional
             var panelTransform = dialogueUI.transform.Find("DynamicDialoguePanel");
             if (panelTransform != null)
             {
@@ -401,24 +427,21 @@ public class DemoEndSequence : MonoBehaviour
                 if (bgImage != null) bgImage.enabled = false;
             }
 
-            // Fem el text molt més lent (guardem l'original per si de cas)
+            // Reduïm la velocitat de text a nivells didàctics molt expressius
             float originalSpeed = dialogueUI.charsPerSecond;
-            dialogueUI.charsPerSecond = 10f; // Bastant lent
+            dialogueUI.charsPerSecond = 10f; 
 
             Interactable.DialogueLine oblivLine = new Interactable.DialogueLine();
-            oblivLine.speakerName = ""; // Sense nom, directament l'Oblit
-            // No necessitem \n\n perquè usarem TextAlignmentOptions.Center
+            oblivLine.speakerName = ""; 
             oblivLine.text = finalMonologue;
             oblivLine.delayBeforeLine = 0f;
-            oblivLine.showOnTop = false; // Al mig de la pantalla en negre
+            oblivLine.showOnTop = false; 
 
-            // Bloquegem que es pugui tancar automàticament o amb la E de forma estàndard
             dialogueUI.canAdvance = false;
 
-            // Esperem que es mostri i comenci a escriure el diàleg final
+            // Arrenquem la bafarada modificant paràmetres visuals internament
             dialogueUI.StartDialogue(new Interactable.DialogueLine[] { oblivLine }, animateIn: true);
 
-            // Ara que ja s'ha creat (StartDialogue), l'ocultem i centrem
             if (dialogueUI.dialogueText != null)
             {
                 dialogueUI.dialogueText.alignment = TextAlignmentOptions.Center;
@@ -430,7 +453,7 @@ public class DemoEndSequence : MonoBehaviour
             var dynamicPanel = GameObject.Find("DynamicDialoguePanel");
             if (dynamicPanel != null)
             {
-                // Fem que el panell ocupi tota la pantalla perquè el text quedi al centre real
+                // Forcem que el panell de diàleg s'estiri a pantalla sencera per a un centrat de text correcte
                 var panelRT = dynamicPanel.GetComponent<RectTransform>();
                 if (panelRT != null)
                 {
@@ -440,7 +463,7 @@ public class DemoEndSequence : MonoBehaviour
                     panelRT.offsetMax = Vector2.zero;
                 }
 
-                // Baixem una mica el text cap a la meitat inferior perquè la imatge tingui molt espai
+                // Ubiquem el bloc de text a la meitat inferior
                 if (dialogueUI.dialogueText != null)
                 {
                     var textRT = dialogueUI.dialogueText.GetComponent<RectTransform>();
@@ -459,27 +482,28 @@ public class DemoEndSequence : MonoBehaviour
                 var bgOutline = dynamicPanel.GetComponent<Outline>();
                 if (bgOutline != null) bgOutline.enabled = false;
                 
-                // Ocultar separador si existeix
                 var divider = dynamicPanel.transform.Find("DividerLine");
                 if (divider != null) divider.gameObject.SetActive(false);
 
-                // Creem la imatge molt més gran i a la part superior
+                // Creem el quadre per dibuixar la il·lustració final en gran a la meitat superior de la pantalla
                 oblImgObj = new GameObject("OblivionImage");
                 oblImgObj.transform.SetParent(dynamicPanel.transform, false);
                 var oblRT = oblImgObj.AddComponent<RectTransform>();
                 oblRT.anchorMin = new Vector2(0.5f, 0.75f);
                 oblRT.anchorMax = new Vector2(0.5f, 0.75f);
-                oblRT.anchoredPosition = new Vector2(0f, 0f); // Just al centre del 75% superior
-                oblRT.sizeDelta = new Vector2(700f, 700f); // Molt més gran!
+                oblRT.anchoredPosition = new Vector2(0f, 0f); 
+                oblRT.sizeDelta = new Vector2(700f, 700f); 
                 oblImg = oblImgObj.AddComponent<Image>();
+                
                 if (finalSprite != null) oblImg.sprite = finalSprite;
-                else if (oblivionFinalSprite != null) oblImg.sprite = oblivionFinalSprite; // Imatge per defecte
+                else if (oblivionFinalSprite != null) oblImg.sprite = oblivionFinalSprite; 
+                
                 oblImg.preserveAspect = true;
-                oblImg.color = new Color(1, 1, 1, 0f); // Invisible inicialment
+                oblImg.color = new Color(1, 1, 1, 0f); // Inicialment invisible per fer fade-in amb el text
             }
 
-            // FADE IN DE LA IMATGE mentre s'escriu el text
-            float typingTime = (float)finalMonologue.Length / 10f; // Temps estimat
+            // FADE IN DE LA IMATGE: augmenta opacitat en paral·lel al ritme d'escriptura del text
+            float typingTime = (float)finalMonologue.Length / 10f; 
             float el = 0f;
             
             while (dialogueUI.IsOpen && dialogueUI.IsTyping)
@@ -487,23 +511,22 @@ public class DemoEndSequence : MonoBehaviour
                 el += Time.deltaTime;
                 float progress = Mathf.Clamp01(el / typingTime);
                 
-                // Apliquem una corba exponencial (ex: quadrat o cub) perquè triga molt a veure's al principi
+                // Corba d'acceleració cúbica per fer el fade-in de l'art molt dramàtic i fluid
                 float easedAlpha = Mathf.Pow(progress, 3f); 
                 
                 if (oblImg != null) oblImg.color = new Color(1, 1, 1, easedAlpha);
                 yield return null;
             }
 
-            // Assegurem alpha complet un cop acabi d'escriure
             if (oblImg != null) oblImg.color = new Color(1, 1, 1, 1f);
 
-            // Esperar que l'usuari premi la E per tancar
+            // Quedem bloquejats a l'espera que l'usuari finalitzi premint la tecla d'acció ('E')
             while (!Input.GetKeyDown(KeyCode.E))
             {
                 yield return null;
             }
 
-            // FADE OUT DEL TEXT I LA IMATGE
+            // FADE OUT global del text i la imatge
             float fadeOutDur = 2f;
             float f = 0f;
             var txt = dialogueUI.dialogueText;
@@ -518,16 +541,15 @@ public class DemoEndSequence : MonoBehaviour
                 yield return null;
             }
 
-            // Un cop ha fet fade out, netegem i tanquem oficialment el diàleg sense restaurar el color
             dialogueUI.canAdvance = true;
             dialogueUI.Hide();
-
-            // Restaurem la velocitat al tancar
-            dialogueUI.charsPerSecond = originalSpeed;
+            dialogueUI.charsPerSecond = originalSpeed; // Restaurem la velocitat de text
 
             yield return new WaitForSeconds(1.5f);
 
-            // TÍTOL FINAL: TO BE CONTINUED...
+            // ==========================================
+            // 6. TARGETA DE CRÈDITS (To Be Continued...)
+            // ==========================================
             GameObject tbcObj = new GameObject("ToBeContinuedText");
             tbcObj.transform.SetParent(systemText.transform.parent, false);
             var tbcRT = tbcObj.AddComponent<RectTransform>();
@@ -555,7 +577,7 @@ public class DemoEndSequence : MonoBehaviour
 
             yield return new WaitForSeconds(1f);
 
-            // TÍTOL SECUNDARI: OR NOT
+            // SUBTÍTOL SORPRESA (Or Not)
             GameObject orNotObj = new GameObject("OrNotText");
             orNotObj.transform.SetParent(tbcObj.transform, false);
             var orRT = orNotObj.AddComponent<RectTransform>();
@@ -583,7 +605,7 @@ public class DemoEndSequence : MonoBehaviour
 
             yield return new WaitForSeconds(3f);
 
-            // FADE OUT DE TOTS DOS TEXTOS I MÚSICA
+            // FADE OUT de la lletra i de la cançó de final simultàniament
             float finalFadeOut = 2f;
             float initialVolume = (audioSource != null) ? audioSource.volume : 0f;
             timeCount = 0f;
@@ -603,13 +625,14 @@ public class DemoEndSequence : MonoBehaviour
 
             yield return new WaitForSeconds(1f);
 
-            // Finalment, passem al Main Menu
+            // Carrega de tornada segura del Menú Principal del joc
             UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
-
-        // Quan s'acabi el viatge i el monòleg de the oblivion, s'ocuparà ell mateix de canviar d'escena.
     }
 
+    /// <summary>
+    /// Intenta carregar la font pixelada retro en la build de forma robusta i segura de fallades.
+    /// </summary>
     private void SetFont(TextMeshProUGUI t)
     {
         TMP_FontAsset f = null;

@@ -4,15 +4,31 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Panell de depuració de combats, trucs i consola de proves del desenvolupador (CombatDebugUI).
+/// Dissenyat de forma que s'instancia automàticament al carregar el joc gràcies a mètodes de retrocàrrega.
+/// Aquest component permet provar ràpidament el comportament físic dels enemics, simular els finals,
+/// i concedir objectes o diners de forma instantània (Cheats) durant les fases de test del TFG.
+/// 
+/// CARACTERÍSTIQUES CLAU DEL TFG:
+/// - **Auto-instanciació silenciosa**: Engegament automàtic sense embrutar la jerarquia de les escenes de disseny.
+/// - **Compatibilitat de punter i clics directes**: Força la creació del sistema d'esdeveniments si manca en l'escena.
+/// - **Interfície dinàmica sense scroll**: Tota la informació i generació de botons es dibuixa directament a pantalla
+///   mitjançant distribucions lineals (Layouts) per a un ús òptim en dispositius mòbils/tàctils o amb punter.
+/// - **Predicció dinàmica del final**: Analitza l'inventari per predir en temps real si l'usuari obtindrà el final Pacifista, Genocida o Mixte.
+/// </summary>
 public class CombatDebugUI : MonoBehaviour
 {
     private PlayerController2D player;
     private CombatLoader combatLoader;
 
-    private bool showDebug = false;
-    private GameObject debugCanvasObj;
+    private bool showDebug = false; // Flag que determina la visibilitat activa del menú
+    private GameObject debugCanvasObj; // Contenidor pare de tota la UI
     
-    // Auto-generació a la Build i a l'Editor just quan arrenca el joc
+    /// <summary>
+    /// Mètode d'inicialització automàtica executat immediatament després de carregar la primera escena.
+    /// Això garanteix que la consola de debug estigui sempre disponible, fins i tot si provem escenes aïllades.
+    /// </summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoSpawn()
     {
@@ -23,18 +39,19 @@ public class CombatDebugUI : MonoBehaviour
         }
     }
 
-    // UI elements
+    // Elements gràfics de text actualitzables
     private TextMeshProUGUI statsText;
     private TextMeshProUGUI endingText;
     
+    // Contenidors lineals de botons
     private Transform itemContentContainer;
     private Transform enemyContentContainer;
-    private bool itemsPopulated = false;
+    private bool itemsPopulated = false; // Control de càrrega d'objectes per no duplicar accessos a disc
 
     private void Start()
     {
-        // Unity només permet DontDestroyOnLoad en objectes que no tinguin pare.
-        // Si l'has posat com a fill d'algun altre objecte, això ho solucionarà.
+        // DontDestroyOnLoad només es pot aplicar sobre GameObjects que es trobin a l'arrel de la jerarquia.
+        // Assegurem que l'objecte sigui orfe per evitar errors de Unity.
         transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
         BuildUI();
@@ -42,11 +59,12 @@ public class CombatDebugUI : MonoBehaviour
 
     private void Update()
     {
+        // Permitir alternar el menú utilitzant dreceres típiques de depuració (F12, F10 o F8)
         if (Input.GetKeyDown(KeyCode.F12) || Input.GetKeyDown(KeyCode.F10) || Input.GetKeyDown(KeyCode.F8))
         {
             showDebug = !showDebug;
             
-            // Re-generate if lost (e.g. script recompile)
+            // Re-generem els elements si l'objecte del Canvas ha estat destruït accidentalment
             if (debugCanvasObj == null) 
             {
                 BuildUI();
@@ -58,16 +76,22 @@ public class CombatDebugUI : MonoBehaviour
                 debugCanvasObj.SetActive(showDebug);
                 if (showDebug) 
                 {
+                    // Si el menú s'obre, ens assegurem que el cursor del ratolí sigui visible i es pugui interactuar
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
-                    EnsureEventSystem();
-                    RefreshDynamicData();
-                    PopulateContent();
+                    
+                    EnsureEventSystem();   // Verificació d'Events de Unity actius
+                    RefreshDynamicData();  // Actualització del nivell de vida, or, etc.
+                    PopulateContent();     // Re-ompliment del llistat de botons de combat i items
                 }
             }
         }
     }
 
+    /// <summary>
+    /// Comprova que existeixi un mòdul de control de ratolí (EventSystem) a l'escena activa.
+    /// Si no n'hi ha cap, l'instancia procedimentalment per garantir que els botons rebin els clics o gestos tàctils.
+    /// </summary>
     private void EnsureEventSystem()
     {
         if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
@@ -79,11 +103,16 @@ public class CombatDebugUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Recull les dades actuals del jugador i actualitza les cadenes de text en pantalla.
+    /// Afegeix la lògica predictiva d'avaluació de finals a partir dels assassinats o reclutaments.
+    /// </summary>
     private void RefreshDynamicData()
     {
         if (player == null) player = FindFirstObjectByType<PlayerController2D>();
         if (combatLoader == null) combatLoader = FindFirstObjectByType<CombatLoader>();
 
+        // Actualització de vida i monedes
         if (statsText != null)
         {
             if (PlayerInventory.Instance != null)
@@ -97,17 +126,20 @@ public class CombatDebugUI : MonoBehaviour
             }
         }
 
+        // ── PREDICCIÓ DE FINALS (ANÀLISI D'INVENTARI) ──
         if (endingText != null)
         {
             int totalKills = 0;
             int totalRecruits = 0;
             int totalMaxPopulation = 0;
 
+            // Llegim la totalitat dels enemics creats al joc a la carpeta Resources
             EnemyProfile[] allEnemies = Resources.LoadAll<EnemyProfile>("Enemies");
             foreach (var p in allEnemies)
             {
                 if (p != null) totalMaxPopulation += p.maxRecruitLimit;
             }
+            // Evitem divisions per zero o índexs buits
             totalMaxPopulation = Mathf.Max(1, totalMaxPopulation - 1);
 
             if (PlayerInventory.Instance != null)
@@ -118,6 +150,8 @@ public class CombatDebugUI : MonoBehaviour
 
             string endingType = "Mixte";
             string colorHex = "#FFFF55"; 
+            
+            // Heurística de predicció del TFG
             if (totalKills == 0 && totalRecruits == 0)
             {
                 endingType = "Ignorant / Observador";
@@ -141,14 +175,19 @@ public class CombatDebugUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Escaneja la base de dades d'objectes (ScriptableObjects) del joc i genera els botons dinàmics per demanar-los.
+    /// També escaneja els enemics de la zona activa del jugador per permetre batalles forçades a l'acte.
+    /// </summary>
     private void PopulateContent()
     {
-        // Items
+        // ── GENERACIÓ DINÀMICA DE BOTONS D'ITEMS ──
         if (!itemsPopulated)
         {
             List<ItemProfile> availableItems = new List<ItemProfile>();
             HashSet<string> itemNames = new HashSet<string>();
 
+            // Cerca prioritària d'assets dins de l'Editor de Unity
 #if UNITY_EDITOR
             string[] guids = UnityEditor.AssetDatabase.FindAssets("t:ItemProfile");
             foreach (string guid in guids)
@@ -163,6 +202,7 @@ public class CombatDebugUI : MonoBehaviour
             }
 #endif
 
+            // Cerca a Resources (imprescindible perquè funcioni a les Builds finals del TFG)
             ItemProfile[] resourcesItems = Resources.LoadAll<ItemProfile>("");
             foreach (var item in resourcesItems)
             {
@@ -173,6 +213,7 @@ public class CombatDebugUI : MonoBehaviour
                 }
             }
             
+            // Cerca addicional a les llistes locals de seguretat de l'inventari
             if (PlayerInventory.Instance != null && PlayerInventory.Instance.itemDatabase != null)
             {
                 foreach (var item in PlayerInventory.Instance.itemDatabase)
@@ -185,12 +226,13 @@ public class CombatDebugUI : MonoBehaviour
                 }
             }
 
-            // Esborrem fills anteriors per evitar duplicats en cas de recompilació
+            // Neteja higiènica dels botons creats anteriorment per evitar pèrdues de memòria
             foreach (Transform child in itemContentContainer)
             {
                 Destroy(child.gameObject);
             }
 
+            // Generem un botó dinàmic per a cada objecte de la base de dades
             foreach (var item in availableItems)
             {
                 if (item == null) continue;
@@ -205,12 +247,13 @@ public class CombatDebugUI : MonoBehaviour
             itemsPopulated = true;
         }
 
-        // Enemies
+        // ── GENERACIÓ DE BOTONS DE LLUITA CONTRA ENEMICS WILD ──
         foreach (Transform child in enemyContentContainer)
         {
             Destroy(child.gameObject);
         }
 
+        // Si el jugador està a sobre d'una zona d'enemics amb criatures assignades, les mostrem
         if (player != null && player.wildEnemies != null && player.wildEnemies.Length > 0)
         {
             foreach (var enemy in player.wildEnemies)
@@ -227,14 +270,19 @@ public class CombatDebugUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Dibuixa procedimentalment tota la finestra de trucs des de zero.
+    /// Organitza tres columnes adaptatives amb fons semitransparents, botons estilitzats
+    /// i controls de tancament per ratolí o gestos tàctils.
+    /// </summary>
     private void BuildUI()
     {
-        // 1. Canvas
+        // 1. Instanciació del Canvas d'alta prioritat
         debugCanvasObj = new GameObject("CombatDebugCanvas");
         DontDestroyOnLoad(debugCanvasObj);
         Canvas canvas = debugCanvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 30000; // Extremadament alt per garantir que rebi els clics
+        canvas.sortingOrder = 30000; // Valors molt alts per assegurar-nos que és el menú més visible
         
         CanvasScaler scaler = debugCanvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -244,7 +292,7 @@ public class CombatDebugUI : MonoBehaviour
         gr.blockingObjects = GraphicRaycaster.BlockingObjects.None;
         gr.ignoreReversedGraphics = true;
 
-        // 2. Background Panel
+        // 2. Fons de pantalla complet de la consola
         GameObject panelObj = new GameObject("BackgroundPanel");
         panelObj.transform.SetParent(debugCanvasObj.transform, false);
         RectTransform panelRT = panelObj.AddComponent<RectTransform>();
@@ -255,13 +303,13 @@ public class CombatDebugUI : MonoBehaviour
         
         Image panelImg = panelObj.AddComponent<Image>();
         panelImg.color = new Color(0.12f, 0.12f, 0.16f, 0.98f); 
-        panelImg.raycastTarget = false; // El fons no bloqueja res
+        panelImg.raycastTarget = false; // No bloquegem clics de fons
         
         Outline outline = panelObj.AddComponent<Outline>();
         outline.effectColor = Color.white;
         outline.effectDistance = new Vector2(4, -4);
 
-        // 3. Title
+        // 3. Títol principal
         GameObject titleObj = new GameObject("Title");
         titleObj.transform.SetParent(panelRT, false);
         RectTransform titleRT = titleObj.AddComponent<RectTransform>();
@@ -271,14 +319,14 @@ public class CombatDebugUI : MonoBehaviour
         titleRT.offsetMax = Vector2.zero;
         
         TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-        titleText.text = "GAME CHEATS & COMBAT DEBUG (F12)";
+        titleText.text = "EINES DE DEPURACIÓ DEL TFG (F12)";
         titleText.alignment = TextAlignmentOptions.Center;
         titleText.fontSize = 32;
         titleText.color = Color.white;
         titleText.raycastTarget = false;
         SetFont(titleText);
 
-        // 4. Columns Container
+        // 4. Contenidor horitzontal de columnes
         GameObject colsObj = new GameObject("Columns");
         colsObj.transform.SetParent(panelRT, false);
         RectTransform colsRT = colsObj.AddComponent<RectTransform>();
@@ -294,11 +342,11 @@ public class CombatDebugUI : MonoBehaviour
         hlg.childForceExpandWidth = true;
         hlg.childForceExpandHeight = true;
 
-        // --- Column 1: Stats & Cheats ---
+        // ── Columna 1: Trucs d'Estadístiques ──
         GameObject col1 = CreateColumn(colsObj.transform, "ESTADÍSTIQUES I TRUCS");
         statsText = CreateText(col1.transform, "Carregant...");
         
-        CreateButton(col1.transform, "Restaurar Vida", () => {
+        CreateButton(col1.transform, "Restaurar Vida al Màxim", () => {
             if (PlayerInventory.Instance != null)
             {
                 PlayerInventory.Instance.SetHP(PlayerInventory.Instance.MaxHP);
@@ -308,7 +356,7 @@ public class CombatDebugUI : MonoBehaviour
             }
         });
         
-        CreateButton(col1.transform, "Afegir +500 Or", () => {
+        CreateButton(col1.transform, "Obtenir +500 Or", () => {
             if (PlayerInventory.Instance != null)
             {
                 PlayerInventory.Instance.AddGold(500);
@@ -319,15 +367,15 @@ public class CombatDebugUI : MonoBehaviour
         CreateText(col1.transform, "\n<size=28>ESTAT DEL FINAL</size>");
         endingText = CreateText(col1.transform, "Carregant...");
 
-        // --- Column 2: Items (SENSE SCROLL) ---
+        // ── Columna 2: Generador d'Objectes (SENSE SCROLL, botons directes) ──
         GameObject col2 = CreateColumn(colsObj.transform, "GENERADOR D'OBJECTES");
         itemContentContainer = CreateDirectContainer(col2.transform);
         
-        // --- Column 3: Enemies (SENSE SCROLL) ---
-        GameObject col3 = CreateColumn(colsObj.transform, "ENEMICS WILD (FIGHT)");
+        // ── Columna 3: Forçar Combats de Prova (SENSE SCROLL) ──
+        GameObject col3 = CreateColumn(colsObj.transform, "FORÇAR BOMBARDERS (FIGHT)");
         enemyContentContainer = CreateDirectContainer(col3.transform);
         
-        // Tancar menú com a botó flotant a la cantonada superior dreta (fora de columnes)
+        // ── Botó Flotant de Tancament ──
         GameObject closeBtnObj = new GameObject("CloseButton");
         closeBtnObj.transform.SetParent(panelRT, false);
         RectTransform closeBtnRT = closeBtnObj.AddComponent<RectTransform>();
@@ -393,16 +441,18 @@ public class CombatDebugUI : MonoBehaviour
         return col;
     }
 
+    /// <summary>
+    /// Genera un contenidor procedimental vertical adaptatiu de mida variable.
+    /// Això elimina la necessitat d'utilitzar barres de desplaçament incòmodes per a pantalles tàctils.
+    /// </summary>
     private Transform CreateDirectContainer(Transform parent)
     {
-        // En comptes d'un ScrollRect, creem un contenidor directe simple amb GridLayoutGroup o VerticalLayoutGroup
         GameObject container = new GameObject("DirectContent");
         container.transform.SetParent(parent, false);
         
         LayoutElement le = container.AddComponent<LayoutElement>();
         le.flexibleHeight = 1f; 
         
-        // Usem un VerticalLayoutGroup de manera que tot s'apili directament i cap avall
         VerticalLayoutGroup vlg = container.AddComponent<VerticalLayoutGroup>();
         vlg.spacing = 10;
         vlg.childControlWidth = true;
@@ -426,6 +476,9 @@ public class CombatDebugUI : MonoBehaviour
         return txt;
     }
 
+    /// <summary>
+    /// Utility procedimental per instanciar botons interactius amb estètica retro.
+    /// </summary>
     private void CreateButton(Transform parent, string textStr, UnityEngine.Events.UnityAction onClick)
     {
         GameObject btnObj = new GameObject("Button");
@@ -436,20 +489,20 @@ public class CombatDebugUI : MonoBehaviour
         
         Image img = btnObj.AddComponent<Image>();
         img.color = new Color(0.15f, 0.15f, 0.2f, 1f);
-        img.raycastTarget = true;
+        img.raycastTarget = true; // Actiu per rebre gestos de punter
         
         Outline outl = btnObj.AddComponent<Outline>();
         outl.effectColor = Color.white;
         outl.effectDistance = new Vector2(2, -2);
         
         Button btn = btnObj.AddComponent<Button>();
-        btn.targetGraphic = img; // Explicitament el configurem perquè detecti el clic
+        btn.targetGraphic = img; // IMPORTANT: Detecta esdeveniments sobre la imatge del botó
         btn.onClick.AddListener(onClick);
         
         TextMeshProUGUI txt = CreateText(btnObj.transform, textStr);
         txt.alignment = TextAlignmentOptions.Center;
         txt.color = Color.white;
-        txt.raycastTarget = false; // Desactivem el text per assegurar que no bloqueja el clic del fons del botó
+        txt.raycastTarget = false; // IMPORTANT: Desactivar Raycast al text per no tapar el clic del fons
         
         ColorBlock cb = btn.colors;
         cb.normalColor = Color.white;
@@ -478,6 +531,9 @@ public class CombatDebugUI : MonoBehaviour
         if (f != null) t.font = f;
     }
 
+    /// <summary>
+    /// Congela l'entorn i desencadena l'inici asíncron d'una batalla contra una criatura concreta.
+    /// </summary>
     private void StartFight(EnemyProfile enemy)
     {
         if (combatLoader == null) combatLoader = FindFirstObjectByType<CombatLoader>();

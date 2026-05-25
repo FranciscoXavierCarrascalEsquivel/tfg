@@ -3,45 +3,60 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
+/// <summary>
+/// Motor central de renderitzat i control de diàlegs convencionals (DialogueUI).
+/// Aquesta classe actua com a "front-end" de l'Overworld, gestionant la maquetació procedimental
+/// del panell de text, els retrats facials animats, les bombolles de pensament, les bifurcacions
+/// de decisions (Choices) i l'efecte de text teclejat progressiu (Typewriter).
+/// 
+/// DISSENY I IMPLEMENTACIÓ PER AL TFG:
+/// - **Dinamisme retro**: Animació per codi de les tecles interactives físiques 'E' i 'F', simulant
+///   pressió tridimensional (3D keypress).
+/// - **Graelles dinàmiques animades**: Les respostes ramificades s'animen de forma asíncrona lliscant
+///   des de l'esquerra de forma escalonada, acompanyades d'un so amb Pitch incremental (escala musical).
+/// - **Fons de núvol procedimental**: Genera píxel a píxel a la memòria una textura tileable en mode pensament.
+/// - **Gestió de prioritat i represa de combat**: Interromp visualment la conversa de forma suau per carregar batalles
+///   i la reprèn automàticament en el punt exacte en finalitzar la contesa.
+/// </summary>
 public class DialogueUI : MonoBehaviour
 {
-    [Header("Typewriter")]
-    public float charsPerSecond = 40f;
-    [SerializeField] private bool skipSpaces = true;
-    [SerializeField] private int soundEveryNChars = 2;
+    [Header("Typewriter (Efecte Tecleig)")]
+    public float charsPerSecond = 40f; // Velocitat estàndard de redacció en lletres/segon
+    [SerializeField] private bool skipSpaces = true; // Si és cert, no reprodueix el so de clic en espais buits
+    [SerializeField] private int soundEveryNChars = 2; // Freqüència amb què sona el so de veu per estalviar soroll
 
-    [Header("Typing Sounds")]
+    [Header("Sons de Tecleig")]
     [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip[] typingClips;
-    [Range(0f, 0.4f)][SerializeField] private float pitchRandom = 0.05f;
+    [SerializeField] private AudioClip[] typingClips; // Col·lecció de sons de murmuri retro
+    [Range(0f, 0.4f)][SerializeField] private float pitchRandom = 0.05f; // Micro-modulació de veu
     [Range(0f, 1f)][SerializeField] private float volume = 0.8f;
 
-    [Header("Choice Appearance Sounds")]
-    [SerializeField] private AudioClip choiceAppearSound; // So quan apareix una opció de diàleg (choices)
+    [Header("Sons de Ramificacions (Choices)")]
+    [SerializeField] private AudioClip choiceAppearSound; // So al dibuixar-se cada botó d'elecció
     [SerializeField] private float choiceBasePitch = 1.0f; // Pitch inicial per a la primera opció
-    [SerializeField] private float choicePitchIncrement = 0.15f; // Quant s'incrementa el pitch per a cada opció següent
+    [SerializeField] private float choicePitchIncrement = 0.15f; // Increment de pitch per crear escala musical en les opcions
 
-    [Header("Panel Animation")]
-    [SerializeField] private float animDuration = 0.4f; 
-    [SerializeField] private bool animateOnShow = true;  
+    [Header("Animació del Panell")]
+    [SerializeField] private float animDuration = 0.4f; // Temps en segons de les foses
+    [SerializeField] private bool animateOnShow = true; // Lliscament d'obertura actiu
     public bool canSkip = true;
     public bool canAdvance = true;
-    public static bool ForceDisableSkipGlobals { get; set; } = false;
+    public static bool ForceDisableSkipGlobals { get; set; } = false; // Flag global de depuració per a cinemàtiques
 
     private Coroutine typingRoutine;
     private Coroutine animRoutine;
-    private Coroutine autoAdvanceRoutine;
+    private Coroutine autoAdvanceRoutine; // Rutina d'avanç automàtic temporitzat
 
-    private string fullText;
+    private string fullText; // Text net final a escriure
     private bool isOpen;
     public bool IsOpen => isOpen;
-    private bool isTyping;
+    private bool isTyping; // Flag que indica si s'està escrivint caràcters actualment
     private int typedCount;
 
-    public bool WasSkipped { get; private set; }
-    public System.Action OnDialogueClosed;
+    public bool WasSkipped { get; private set; } // Si s'ha cancel·lat la conversa prement Skip
+    public System.Action OnDialogueClosed; // Notificador per alliberar el personatge en el mapa
 
-    [Header("UI References (Manual or Dynamic)")]
+    [Header("Referències de la UI (Generades Procedimentalment)")]
     [SerializeField] private GameObject currentPanelGO;
     [SerializeField] private RectTransform panelRect;
     [SerializeField] private CanvasGroup panelGroup;
@@ -50,14 +65,14 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Image portraitImage;
     [SerializeField] private Animator portraitAnimator;
     [SerializeField] private GameObject nameBoxGO;
-    [SerializeField] private CanvasGroup eBtnGroup;
-    [SerializeField] private RectTransform eTextRT;
-    [SerializeField] private CanvasGroup fBtnGroup;
-    [SerializeField] private RectTransform fTextRT;
-    [SerializeField] private RectTransform fContainerRT;
+    [SerializeField] private CanvasGroup eBtnGroup;   // Control d'opacitat indicador "E"
+    [SerializeField] private RectTransform eTextRT;  // Tecla física animada "E"
+    [SerializeField] private CanvasGroup fBtnGroup;   // Control d'opacitat de l'indicador "F"
+    [SerializeField] private RectTransform fTextRT;  // Tecla física animada "F"
+    [SerializeField] private RectTransform fContainerRT; // Contenidor de l'indicador Skip
     private float skipHoldTime;
-    private const float SkipHoldRequired = 0.5f;
-    private Vector3[] panelCorners = new Vector3[4]; // reused buffer
+    private const float SkipHoldRequired = 0.5f; // Temps en segons necessari per saltar
+    private Vector3[] panelCorners = new Vector3[4]; // Buffer reusable per evitar escombraries (Zero Garbage Collector)
 
     private bool lastEPressed;
     private bool lastFPressed;
@@ -67,40 +82,41 @@ public class DialogueUI : MonoBehaviour
     private Outline panelBgOl;
 
     private Vector2 shownPos = Vector2.zero;
-    private bool isHidingForCombat = false;
-    private bool eventAlreadyFired = false;
+    private bool isHidingForCombat = false; // S'activa si tanquem el diàleg temporalment per a una batalla
+    private bool eventAlreadyFired = false; // Evita la re-execució doble d'esdeveniments de Unity en saltar
 
     private float currentSpeedMultiplier = 1f;
 
+    /// <summary>
+    /// Permet alterar de forma temporal la velocitat del typewriter (ex: per a pressa en cinemàtiques).
+    /// </summary>
     public void SetSpeedMultiplier(float multiplier)
     {
-        // Guardem el multiplicador temporalment en comptes de modificar permanentment la base charsPerSecond
         if (multiplier > 0)
             currentSpeedMultiplier = multiplier;
     }
 
-    private Interactable.DialogueLine[] sequence;
+    private Interactable.DialogueLine[] sequence; // Llista ordenada de línies
     private int seqIndex;
     private bool inSequence;
-    private bool isReopening;
-    private bool isCurrentOnTop;
+    private bool isReopening; // Evita conflictes en foses de tancament-reobertura consecutives
+    private bool isCurrentOnTop; // S'ha de mostrar a la vora superior?
     private bool isHiding;
     
     private AudioClip currentLineVoice;
 
-    // Branches
+    // --- Branques de diàleg (Choices) ---
     private Interactable.DialogueLine currentLine;
     private Interactable.DialogueChoice[] currentLineChoices;
-    private bool isSelectingChoice;
-    private int selectedChoiceIdx;
-    private RectTransform choicePanelRT;
+    private bool isSelectingChoice; // Cert si estem esperant la decisió de l'usuari
+    private int selectedChoiceIdx; // Índex seleccionat actualment
+    private RectTransform choicePanelRT; // Panell contenidor de respostes
     private System.Collections.Generic.List<TextMeshProUGUI> choiceTexts = new System.Collections.Generic.List<TextMeshProUGUI>();
     private System.Collections.Generic.List<Interactable.DialogueChoice> visibleChoices = new System.Collections.Generic.List<Interactable.DialogueChoice>();
 
     private void Awake()
     {
         if (!audioSource) audioSource = GetComponent<AudioSource>();
-        // S'ha eliminat la necessitat d'assignar res per inspector, el construim quan fem Show()
     }
 
     private void Update()
@@ -109,18 +125,20 @@ public class DialogueUI : MonoBehaviour
 
         if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
         {
-            // F Button (Skip) Logic
-            bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && (currentLine == null || (!currentLine.cannotSkip && (currentLine.owner == null || !currentLine.owner.CannotSkipDialogue)));
+            // ── LÒGICA VISUAL DE LA TECLA F (SALT DE CONVERSA) ──
+            bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && 
+                (currentLine == null || (!currentLine.cannotSkip && (currentLine.owner == null || !currentLine.owner.CannotSkipDialogue)));
 
             if (lineAllowsSkip)
             {
                 if (Input.GetKey(KeyCode.F))
                 {
                     skipHoldTime += Time.unscaledDeltaTime;
-                    if (fTextRT != null) fTextRT.anchoredPosition = Vector2.zero; // Press down visually
+                    if (fTextRT != null) fTextRT.anchoredPosition = Vector2.zero; // Tecla visualment enfonsada
                     
                     if (skipHoldTime >= SkipHoldRequired)
                     {
+                        // S'ha completat el temps de pressió: cancel·lem la conversa
                         skipHoldTime = 0f;
                         WasSkipped = true;
                         Hide();
@@ -130,6 +148,7 @@ public class DialogueUI : MonoBehaviour
                 else
                 {
                     skipHoldTime = 0f;
+                    // Efecte pampallugues polsat/no-polsat retro
                     float fCycle = Time.unscaledTime * 1.5f + 0.5f; 
                     bool fIsPressed = (fCycle % 1f) > 0.7f;
                     if (fIsPressed != lastFPressed)
@@ -147,7 +166,7 @@ public class DialogueUI : MonoBehaviour
                 skipHoldTime = 0f;
             }
 
-            // E Button Logic
+            // ── LÒGICA VISUAL DE LA TECLA E (AVANÇAR TEXT) ──
             if (eBtnGroup != null && eTextRT != null)
             {
                 if (!isTyping && !isSelectingChoice && canAdvance)
@@ -158,7 +177,7 @@ public class DialogueUI : MonoBehaviour
                     if (isPressed != lastEPressed)
                     {
                         lastEPressed = isPressed;
-                        eTextRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f);
+                        eTextRT.anchoredPosition = isPressed ? Vector2.zero : new Vector2(0f, 4f); // Simula el botó pujant/baixant
                     }
                 }
                 else
@@ -167,11 +186,10 @@ public class DialogueUI : MonoBehaviour
                 }
             }
 
-            // Track F container to follow the panel position (including animations)
+            // Reposicionament dinàmic de la barra de Skip perquè segueixi sempre la cantonada inferior del diàleg
             if (fContainerRT != null && panelRect != null)
             {
-                panelRect.GetWorldCorners(panelCorners); // 0=bottom-left, 1=top-left, 2=top-right, 3=bottom-right
-                // Position below the bottom-left corner of the panel
+                panelRect.GetWorldCorners(panelCorners); 
                 Vector3 bottomLeft = panelCorners[0];
                 fContainerRT.position = new Vector3(bottomLeft.x, bottomLeft.y - 10f, bottomLeft.z);
             }
@@ -183,6 +201,7 @@ public class DialogueUI : MonoBehaviour
             skipHoldTime = 0f;
         }
 
+        // ── NAVEGACIÓ DELS MENÚS DE SELECCIÓ (CHOICES) ──
         if (isSelectingChoice && choiceTexts.Count > 0)
         {
             bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
@@ -191,7 +210,7 @@ public class DialogueUI : MonoBehaviour
             bool down = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
             bool moved = false;
 
-            int cols = 4;
+            int cols = 4; // Distribució en graella de 4 columnes màxim
 
             if (left) { selectedChoiceIdx--; if (selectedChoiceIdx < 0) selectedChoiceIdx = choiceTexts.Count - 1; moved = true; }
             if (right) { selectedChoiceIdx++; if (selectedChoiceIdx >= choiceTexts.Count) selectedChoiceIdx = 0; moved = true; }
@@ -212,10 +231,10 @@ public class DialogueUI : MonoBehaviour
 
             if (moved) 
             {
-                HighlightChoice();
+                HighlightChoice(); // Brillantor contorn opció seleccionada
                 if (PlayerInventory.Instance != null && PlayerInventory.Instance.navSound != null)
                 {
-                    ItemSoundPlayer.Play(PlayerInventory.Instance.navSound);
+                    ItemSoundPlayer.Play(PlayerInventory.Instance.navSound); // So de moviment de cursor
                 }
             }
         }
@@ -229,13 +248,18 @@ public class DialogueUI : MonoBehaviour
         soundEveryNChars = every;
     }
 
+    /// <summary>
+    /// Activa la seqüència ordenada de línies de diàleg de forma lineal.
+    /// </summary>
     public void StartDialogue(Interactable.DialogueLine[] lines, bool animateIn = true)
     {
         WasSkipped = false;
+        
+        // Bloqueig de seguretat en combats actius excepte si la baralla ja s'ha donat per completada
         if (CombatLoader.IsInCombat)
         {
             var cm = FindFirstObjectByType<CombatManager>();
-            if (cm == null || !cm.IsEnded) return; // Permetem el diàleg si és el de Game Over
+            if (cm == null || !cm.IsEnded) return; 
         }
         
         if (lines == null || lines.Length == 0)
@@ -244,12 +268,13 @@ public class DialogueUI : MonoBehaviour
             return;
         }
 
-        BuildDynamicUI();
+        BuildDynamicUI(); // Construcció dynamic procedimental
 
         sequence = lines;
         seqIndex = 0;
         inSequence = true;
 
+        // Si hi ha un delay inicial, desnativem la caixa i programem l'espera
         if (sequence[0].delayBeforeLine > 0f)
         {
             StartCoroutine(FirstLineDelayRoutine(sequence[0], animateIn));
@@ -270,6 +295,9 @@ public class DialogueUI : MonoBehaviour
         ShowInternal(firstLine, playInAnim: animateIn);
     }
 
+    /// <summary>
+    /// Mètode simple legacy per llançar missatges estàtics ràpids.
+    /// </summary>
     public void Show(string text, Sprite portrait = null, RuntimeAnimatorController portraitAnim = null)
     {
         WasSkipped = false;
@@ -287,6 +315,10 @@ public class DialogueUI : MonoBehaviour
         }, playInAnim: true);
     }
 
+    /// <summary>
+    /// Mètode intern d'engegada visual de la caixa de diàleg.
+    /// Actualitza textos, noms, posicions d'avatar i efectua els canvis físics gràfics configurats.
+    /// </summary>
     private void ShowInternal(Interactable.DialogueLine line, bool playInAnim)
     {
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
@@ -296,21 +328,19 @@ public class DialogueUI : MonoBehaviour
         fullText = line?.text ?? "";
         typedCount = 0;
 
-        // Invoca els esdeveniments assignats només si no s'han disparat prèviament en el tancament previ
+        // Executem els UnityEvents si no ho hem fet en el pas previ de preparació
         if (!eventAlreadyFired)
         {
             line?.onLineReached?.Invoke();
         }
-        eventAlreadyFired = false; // Resetegem el flag per a les properes línies
+        eventAlreadyFired = false; 
 
-        // Canvia l'sprite de l'Interactable o del target específic si està configurat
+        // ── CANVI DE SPRITE EMERGENT (INTERACTABLES ACTIUS) ──
         if (line != null)
         {
             if (line.interactableSpriteChange != null)
             {
                 SpriteRenderer sr = line.targetSpriteRenderer;
-                
-                // Si no hi ha target específic, fem servir el de l'Interactable original (Legacy)
                 if (sr == null && line.owner != null)
                 {
                     sr = line.owner.GetComponent<SpriteRenderer>();
@@ -326,6 +356,7 @@ public class DialogueUI : MonoBehaviour
                 }
             }
             
+            // Re-assigna els estats de memòria dels diàlegs
             if (line.setNextInteractionVersion >= 0 && line.owner != null)
             {
                 line.owner.SetNextInteractionVersion(line.setNextInteractionVersion);
@@ -339,9 +370,10 @@ public class DialogueUI : MonoBehaviour
 
         bool hasPortrait = (line != null && line.portrait != null && !line.isThought);
 
+        // Apliquem la distribució dinàmica del panell (esquerra, dreta, núvol, etc.)
         LayoutUI(line != null && line.isRightSide, isCurrentOnTop, hasPortrait, line != null && line.isThought);
 
-        // Nom
+        // Dibuixat de caixes de nom
         if (!string.IsNullOrEmpty(line?.speakerName))
         {
             nameBoxGO.SetActive(true);
@@ -352,7 +384,7 @@ public class DialogueUI : MonoBehaviour
             nameBoxGO.SetActive(false);
         }
 
-        // Retrat (sprite)
+        // Imatge d'avatar
         if (portraitImage != null)
         {
             if (line != null && line.portrait != null)
@@ -373,13 +405,13 @@ public class DialogueUI : MonoBehaviour
         if (playInAnim && animateOnShow) PlayIn();
         else ForceShown();
 
-        // Mostrar text
+        // ── AUTOSIZING DE TEXT PREVI (Evita problemes d'escala amb TextMeshPro) ──
         if (dialogueText != null)
         {
             dialogueText.enableAutoSizing = true;
             dialogueText.text = fullText;
             dialogueText.ForceMeshUpdate();
-            dialogueText.enableAutoSizing = false;
+            dialogueText.enableAutoSizing = false; // Desactivem després de trobar la mida perfecta
             dialogueText.maxVisibleCharacters = 0;
         }
 
@@ -387,9 +419,12 @@ public class DialogueUI : MonoBehaviour
         typingRoutine = StartCoroutine(TypeRoutine(fullText));
     }
 
+    /// <summary>
+    /// Tanca completament la interfície, neteja els subpanells i restableix els multiplicadors.
+    /// </summary>
     public void Hide()
     {
-        currentSpeedMultiplier = 1f; // Reseteja la velocitat per evitar bugs després de combats
+        currentSpeedMultiplier = 1f; // IMPORTANT: Resetejem el multiplicador temporal
 
         if (isHiding) return;
         isHiding = true;
@@ -398,7 +433,7 @@ public class DialogueUI : MonoBehaviour
         sequence = null;
         seqIndex = 0;
 
-        canAdvance = true; // Reset per evitar bloquejos perpetus
+        canAdvance = true; 
         isTyping = false;
         isSelectingChoice = false;
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
@@ -415,16 +450,17 @@ public class DialogueUI : MonoBehaviour
         PlayOut();
     }
 
+    /// <summary>
+    /// Avança a la següent línia de diàleg o escriu de cop el text actiu si estava a mig teclejar.
+    /// </summary>
     public void AdvanceOrSkip()
     {
         if (!isOpen || isReopening || isHiding) return;
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
 
+        // Si està en mig del typewriter, completem el text immediatament
         if (isTyping)
         {
-            // Eliminada la comprovació de cannotSkip aquí per permetre que la E sempre acabi el text ràpid.
-            // La restricció ara s'aplica només al botó F (saltar seqüència completa).
-            
             if (typingRoutine != null) StopCoroutine(typingRoutine);
             typingRoutine = null;
 
@@ -435,6 +471,7 @@ public class DialogueUI : MonoBehaviour
                 dialogueText.maxVisibleCharacters = fullText.Length;
             }
             
+            // Dibuixem eleccions directament
             if (currentLineChoices != null && currentLineChoices.Length > 0)
             {
                 ShowChoices();
@@ -450,10 +487,12 @@ public class DialogueUI : MonoBehaviour
             return;
         }
 
+        // Si estem seleccionant branques de resposta
         if (isSelectingChoice)
         {
             var choice = visibleChoices[selectedChoiceIdx];
 
+            // Reproducció so de selecció
             if (choice.customSelectSound != null)
             {
                 if (audioSource != null) audioSource.PlayOneShot(choice.customSelectSound);
@@ -463,7 +502,7 @@ public class DialogueUI : MonoBehaviour
                 ItemSoundPlayer.Play(PlayerInventory.Instance.selectSound);
             }
 
-            // Marcar com a vist si l'interactable ho demana i no és repetible
+            // Si s'han d'ocultar opcions completes i no és repetible, la guardem a la motxilla
             var currentLine = sequence != null && inSequence && seqIndex < sequence.Length ? sequence[seqIndex] : null;
             bool shouldHideSeen = currentLine != null && currentLine.owner != null && currentLine.owner.HideSeenChoices;
             
@@ -475,7 +514,7 @@ public class DialogueUI : MonoBehaviour
                 }
             }
 
-            choice.onChoiceSelected?.Invoke();
+            choice.onChoiceSelected?.Invoke(); // Execució de l'elecció (ex: iniciar combat)
             
             isSelectingChoice = false;
             foreach(Transform child in choicePanelRT) Destroy(child.gameObject);
@@ -484,6 +523,7 @@ public class DialogueUI : MonoBehaviour
             
             int nextIdx = choice.jumpToLineIndex >= 0 ? choice.jumpToLineIndex : seqIndex + 1;
 
+            // Si hem obert una botiga o un menú congelador de temps, esperem que es tanqui per seguir
             if (ShopMenuUI.IsOpen || Time.timeScale == 0f)
             {
                 StartCoroutine(WaitMenuCloseAndAdvance(nextIdx));
@@ -495,9 +535,10 @@ public class DialogueUI : MonoBehaviour
             return;
         }
 
+        // Navegació lineal estàndard
         if (inSequence && sequence != null)
         {
-            if (currentLineChoices != null && currentLineChoices.Length > 0) return; // Esperem selecció
+            if (currentLineChoices != null && currentLineChoices.Length > 0) return; // Forcem triar opció
             
             var currentLine = sequence[seqIndex];
             if (currentLine.isEndNode)
@@ -508,12 +549,13 @@ public class DialogueUI : MonoBehaviour
 
             int nextIdx = currentLine.jumpToLineIndex >= 0 ? currentLine.jumpToLineIndex : seqIndex + 1;
 
+            // ── PRIORITAT DE TANCAMENT PER COMBATS INMEDIATS ──
             if (nextIdx >= 0 && nextIdx < sequence.Length)
             {
                 var nextLine = sequence[nextIdx];
                 
-                // NOU: Si la SEGÜENT línia té esdeveniments (com iniciar combat),
-                // primer tanquem el diàleg visualment i després l'executem.
+                // Si la següent línia conté UnityEvents (iniciadors de batalles), 
+                // tanquem primer de forma elegant i després processem
                 if (nextLine.onLineReached != null && nextLine.onLineReached.GetPersistentEventCount() > 0)
                 {
                     StartCoroutine(CloseExecuteAndPause(nextLine, nextIdx));
@@ -528,29 +570,36 @@ public class DialogueUI : MonoBehaviour
         Hide();
     }
 
+    /// <summary>
+    /// Corrutina utilitzada per amagar de cop la visual de diàlegs, disparar esdeveniments
+    /// que congelen el temps del món (ex. batalles) i esperar asíncronament a reprendre.
+    /// </summary>
     private IEnumerator CloseExecuteAndPause(Interactable.DialogueLine line, int nextIdx)
     {
         isHidingForCombat = true;
-        seqIndex = nextIdx; // Mantenim l'índex correcte per poder mostrar el text d'aquesta línia en tornar
+        seqIndex = nextIdx; // Deixem l'índex llest
 
-        // 1. Tanquem amb animació (esperem la durada de l'animació de PlayOut)
+        // Tanquem el panell visualment
         PlayOut();
         yield return new WaitForSecondsRealtime(animDuration + 0.05f);
         
         if (currentPanelGO != null) currentPanelGO.SetActive(false);
         isOpen = false;
 
-        // 2. Iniciem l'esdeveniment (combat o el que sigui)
+        // Disparem el combat o animació cinemàtica
         line.onLineReached?.Invoke();
-        eventAlreadyFired = true; // Marquem perquè quan tornem a ShowInternal no es torni a disparar
+        eventAlreadyFired = true; 
 
-        // 3. Si l'esdeveniment no ha iniciat cap combat, tornem a obrir el diàleg immediatament
+        // Si l'esdeveniment no era un combat (i per tant no hem perdut el focus), reactivem dinàmicament
         if (!CombatLoader.IsInCombat)
         {
             ResumeAfterCombat();
         }
     }
 
+    /// <summary>
+    /// Cridat pel CombatLoader al descarregar l'escena de combat per rependre de forma transparent la conversa.
+    /// </summary>
     public void ResumeAfterCombat()
     {
         if (!isHidingForCombat) return;
@@ -558,13 +607,11 @@ public class DialogueUI : MonoBehaviour
 
         if (inSequence && sequence != null && seqIndex < sequence.Length)
         {
-            // Tornem a mostrar el diàleg amb animació d'entrada
             if (currentPanelGO != null) currentPanelGO.SetActive(true);
             ShowInternal(sequence[seqIndex], true);
         }
         else
         {
-            // Si no queden línies, tanquem del tot
             Hide();
         }
     }
@@ -597,36 +644,37 @@ public class DialogueUI : MonoBehaviour
 
     private System.Collections.IEnumerator WaitMenuCloseAndAdvance(int nextIdx)
     {
-        if (currentPanelGO != null) currentPanelGO.SetActive(false); // Ocultem temporalment
+        if (currentPanelGO != null) currentPanelGO.SetActive(false); // Amaguem mentre comprem
 
-        // Esperem fins que tanquis o tornis el rellotge del món a temps real
         while (ShopMenuUI.IsOpen || Time.timeScale == 0f)
         {
             yield return null;
         }
-        AdvanceToLine(nextIdx); // El mostrarà i reproduirà de nou l'animació visual d'aparèixer
+        AdvanceToLine(nextIdx); // Reprenem quan es tanqui la botiga
     }
 
     private IEnumerator ReopenRoutine(Interactable.DialogueLine nextLine)
     {
         isReopening = true;
-        PlayOutForReopen(); // Playout sense llençar el event de tancat total
+        PlayOutForReopen(); 
         yield return new WaitForSecondsRealtime(animDuration + 0.05f);
         isReopening = false;
         ShowInternal(nextLine, playInAnim: true);
     }
 
+    /// <summary>
+    /// Corrutina del typewriter orgànic de lletres.
+    /// Executa salts i esperes més llargues de forma adaptativa en punts o comes per simular ritme de veu.
+    /// </summary>
     private IEnumerator TypeRoutine(string text)
     {
         isTyping = true;
-
         string cleanText = text.Trim();
         
-        // Apliquem el multiplicador temporal a la velocitat base
+        // Calculem velocitat escalada pel multiplicador
         float currentSpeed = Mathf.Max(1f, charsPerSecond * currentSpeedMultiplier);
         float delay = 1f / currentSpeed;
 
-        // Usem maxVisibleCharacters per evitar crear strings nous cada frame (zero GC)
         if (dialogueText)
         {
             dialogueText.text = cleanText;
@@ -650,14 +698,14 @@ public class DialogueUI : MonoBehaviour
 
             float currentDelay = delay;
             
-            // Ritme de lectura orgànic
+            // ── RITME I ENFASI DE VEU RPG (PAUSES ORGÀNIQUES) ──
             if (c == '.' || c == '?' || c == '!')
             {
-                currentDelay = delay * 10f; // Pausa forta
+                currentDelay = delay * 10f; // Pausa gran en fi de frase
             }
             else if (c == ',' || c == ';' || c == ':' || c == '-')
             {
-                currentDelay = delay * 5f; // Pausa breu
+                currentDelay = delay * 5f; // Pausa suau
             }
 
             yield return new WaitForSecondsRealtime(currentDelay);
@@ -685,13 +733,15 @@ public class DialogueUI : MonoBehaviour
     private IEnumerator AutoAdvanceRoutine(float time)
     {
         yield return new WaitForSecondsRealtime(time);
-        
         if (isOpen && !isHiding && !isReopening && !isTyping && !isSelectingChoice)
         {
             AdvanceOrSkip();
         }
     }
 
+    /// <summary>
+    /// Emet un murmuri al teclejar. Selecciona un so a l'atzar de les llistes per donar varietat orgànica.
+    /// </summary>
     private void PlayRandomTypingSound()
     {
         if (currentLineVoice != null)
@@ -733,12 +783,11 @@ public class DialogueUI : MonoBehaviour
         }
     }
 
-    // -----------------------
-    // UI Builder & Layout
-    // -----------------------
+    // =========================================================================
+    // UI Builder Procedimental (Creació Gràfica dels Elements de Diàleg)
+    // =========================================================================
     private void BuildDynamicUI()
     {
-        // Si l'usuari ja ha assignat manualment el panell i els textos, respectem-ho
         if (currentPanelGO != null && dialogueText != null && nameText != null) return;
         
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
@@ -748,10 +797,10 @@ public class DialogueUI : MonoBehaviour
             if (c.name != "EndCanvas" && c.name != "AlertCanvas")
             {
                 targetCanvas = c;
-                break; // Found a valid canvas
+                break;
             }
         }
-        if (targetCanvas == null && canvases.Length > 0) targetCanvas = canvases[0]; // fallback
+        if (targetCanvas == null && canvases.Length > 0) targetCanvas = canvases[0];
         if (targetCanvas == null) return;
         
         var canvas = targetCanvas;
@@ -760,16 +809,15 @@ public class DialogueUI : MonoBehaviour
         panelRect = currentPanelGO.AddComponent<RectTransform>();
         panelRect.SetParent(canvas.transform, false);
 
-        // NOU: Forcem que el panell tingui un Canvas propi per sobre de tot
         Canvas diagCanvas = currentPanelGO.AddComponent<Canvas>();
         diagCanvas.overrideSorting = true;
         diagCanvas.sortingOrder = 9999;
         currentPanelGO.AddComponent<GraphicRaycaster>();
 
         panelRect.anchorMin = new Vector2(0.12f, 0.05f);
-        panelRect.anchorMax = new Vector2(0.88f, 0.35f); // Increased panel height max (from 0.28)
+        panelRect.anchorMax = new Vector2(0.88f, 0.35f); 
         panelRect.offsetMin = panelRect.offsetMax = Vector2.zero;
-        shownPos = panelRect.anchoredPosition; // Guardant la posició 0 default com a shown
+        shownPos = panelRect.anchoredPosition;
 
         panelGroup = currentPanelGO.AddComponent<CanvasGroup>();
         panelGroup.alpha = 0f;
@@ -780,12 +828,12 @@ public class DialogueUI : MonoBehaviour
         panelBgOl.effectColor = new Color(0.8f, 0.8f, 0.8f, 1f);
         panelBgOl.effectDistance = new Vector2(6f, -6f);
 
-        // Portrait container
+        // Retrat caixa
         var portGO = new GameObject("PortraitBox");
         portGO.transform.SetParent(panelRect, false);
         portRT = portGO.AddComponent<RectTransform>();
 
-        // Portrait Image (Fill)
+        // Imatge retrat
         var portImgGO = new GameObject("Img");
         portImgGO.transform.SetParent(portRT, false);
         var piRT = portImgGO.AddComponent<RectTransform>();
@@ -796,7 +844,7 @@ public class DialogueUI : MonoBehaviour
         portraitImage.color = new Color(1, 1, 1, 0); 
         portraitAnimator = portImgGO.AddComponent<Animator>();
 
-        // Text Box
+        // Text caixa
         var txtGO = new GameObject("TextBox");
         txtGO.transform.SetParent(panelRect, false);
         var tRT = txtGO.AddComponent<RectTransform>();
@@ -804,11 +852,11 @@ public class DialogueUI : MonoBehaviour
         dialogueText = txtGO.AddComponent<TextMeshProUGUI>();
         dialogueText.margin = new Vector4(35f, 30f, 35f, 30f);
         dialogueText.textWrappingMode = TextWrappingModes.Normal;
-        dialogueText.fontSizeMax = 80f; dialogueText.fontSizeMin = 40f; // Increased text limits
+        dialogueText.fontSizeMax = 80f; dialogueText.fontSizeMin = 40f; 
         dialogueText.enableAutoSizing = true;
-        SetFont(dialogueText, 60f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft); // Increased initial font size
+        SetFont(dialogueText, 60f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft);
 
-        // Name Box (Background)
+        // Caixa Nom
         nameBoxGO = new GameObject("NameBox");
         nameBoxGO.transform.SetParent(panelRect, false);
         var nbRT = nameBoxGO.AddComponent<RectTransform>();
@@ -818,7 +866,7 @@ public class DialogueUI : MonoBehaviour
         nbOl.effectColor = new Color(0.8f, 0.8f, 0.8f, 1f);
         nbOl.effectDistance = new Vector2(6f, -6f);
 
-        // Name Text
+        // Text Nom
         var nameTextGO = new GameObject("NameText");
         nameTextGO.transform.SetParent(nbRT, false);
         var ntRT = nameTextGO.AddComponent<RectTransform>();
@@ -827,29 +875,28 @@ public class DialogueUI : MonoBehaviour
 
         nameText = nameTextGO.AddComponent<TextMeshProUGUI>();
         nameText.margin = new Vector4(10f, 5f, 10f, 5f);
-        SetFont(nameText, 48f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center); // Increased text base size
-        nameText.enableAutoSizing = true; nameText.fontSizeMin = 30f; nameText.fontSizeMax = 54f; // Increased test limits
+        SetFont(nameText, 48f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
+        nameText.enableAutoSizing = true; nameText.fontSizeMin = 30f; nameText.fontSizeMax = 54f;
 
-        // Divider Line
+        // Línia separadora
         var divGO = new GameObject("DividerLine");
         divGO.transform.SetParent(panelRect, false);
         dividerRT = divGO.AddComponent<RectTransform>();
         var divImg = divGO.AddComponent<Image>();
         divImg.color = new Color(0.8f, 0.8f, 0.8f, 1f);
 
-        // Button E Indicator (Físic)
+        // Indicador de tecla E visual
         var eBoxGO = new GameObject("E_Button");
         eBoxGO.transform.SetParent(panelRect, false);
         var eRT = eBoxGO.AddComponent<RectTransform>();
         eRT.anchorMin = new Vector2(1f, 0f); eRT.anchorMax = new Vector2(1f, 0f);
-        eRT.sizeDelta = new Vector2(48f, 48f); // Increased key size (from 36x36)
+        eRT.sizeDelta = new Vector2(48f, 48f); 
         eRT.pivot = new Vector2(1f, 0f);
         eRT.anchoredPosition = new Vector2(-20f, 15f);
 
         eBtnGroup = eBoxGO.AddComponent<CanvasGroup>();
         eBtnGroup.alpha = 0f;
 
-        // Base Fosca (Ombra inferior tecla 3D)
         var eBase = new GameObject("Base");
         eBase.transform.SetParent(eRT, false);
         var eBaseRT = eBase.AddComponent<RectTransform>();
@@ -861,13 +908,12 @@ public class DialogueUI : MonoBehaviour
         baseOl.effectColor = new Color(0.05f, 0.05f, 0.05f, 1f);
         baseOl.effectDistance = new Vector2(2f, -2f);
 
-        // Cara Superior de la Tecla (Fons blanc)
         var eTop = new GameObject("Top");
         eTop.transform.SetParent(eRT, false);
         eTextRT = eTop.AddComponent<RectTransform>(); 
         eTextRT.anchorMin = Vector2.zero; eTextRT.anchorMax = Vector2.one;
         eTextRT.offsetMin = eTextRT.offsetMax = Vector2.zero;
-        eTextRT.anchoredPosition = new Vector2(0f, 4f); // 4px aixecada
+        eTextRT.anchoredPosition = new Vector2(0f, 4f); 
 
         var topImg = eTop.AddComponent<Image>();
         topImg.color = new Color(0.85f, 0.85f, 0.85f, 1f);
@@ -875,7 +921,6 @@ public class DialogueUI : MonoBehaviour
         topOl.effectColor = new Color(0.05f, 0.05f, 0.05f, 1f);
         topOl.effectDistance = new Vector2(2f, -2f);
 
-        // Lletra "E" separada perquè text i Imatge no col·lisionin al mateix GameObject
         var eLetterGO = new GameObject("Letter");
         eLetterGO.transform.SetParent(eTextRT, false);
         var elRT = eLetterGO.AddComponent<RectTransform>();
@@ -883,18 +928,16 @@ public class DialogueUI : MonoBehaviour
         elRT.offsetMin = elRT.offsetMax = Vector2.zero;
 
         var eTextComp = eLetterGO.AddComponent<TextMeshProUGUI>();
-        SetFont(eTextComp, 36f, new Color(0.05f, 0.05f, 0.05f, 1f), FontStyles.Bold, TextAlignmentOptions.Center); // Increased text
+        SetFont(eTextComp, 36f, new Color(0.05f, 0.05f, 0.05f, 1f), FontStyles.Bold, TextAlignmentOptions.Center); 
         eTextComp.text = "E";
         eTextComp.margin = new Vector4(2f, 2f, 0f, 0f);
 
-        // Button F Indicator (Skip) — parented to canvas, not panel, so it sits outside the box
+        // Indicador de Skip visual (tecla F) - Vinculat al Canvas per sortir del diàleg
         var fContainerGO = new GameObject("F_Container");
         fContainerGO.transform.SetParent(canvas.transform, false);
         fContainerRT = fContainerGO.AddComponent<RectTransform>();
         fContainerRT.sizeDelta = new Vector2(250f, 48f);
-        fContainerRT.pivot = new Vector2(0f, 1f); // top-left pivot so we can place it just below the panel
-        // Position will be set dynamically in LayoutUI
-        var fcRT = fContainerRT;
+        fContainerRT.pivot = new Vector2(0f, 1f); 
 
         fBtnGroup = fContainerGO.AddComponent<CanvasGroup>();
         fBtnGroup.alpha = 0f;
@@ -952,9 +995,9 @@ public class DialogueUI : MonoBehaviour
 
         var stComp = skipTextGO.AddComponent<TextMeshProUGUI>();
         SetFont(stComp, 26f, new Color(0.8f, 0.8f, 0.8f, 1f), FontStyles.Bold, TextAlignmentOptions.Left);
-        stComp.text = "Hold to skip";
+        stComp.text = "Mantenir premut";
 
-        // Branching Choices Box
+        // Panell de seleccions
         var chGO = new GameObject("ChoicePanel");
         chGO.transform.SetParent(panelRect, false);
         choicePanelRT = chGO.AddComponent<RectTransform>();
@@ -969,12 +1012,14 @@ public class DialogueUI : MonoBehaviour
         currentPanelGO.SetActive(false);
     }
 
+    /// <summary>
+    /// Genera la graella dinàmica d'opcions a escollir per a ramificar diàlegs.
+    /// </summary>
     private void ShowChoices()
     {
         isSelectingChoice = true;
         selectedChoiceIdx = 0;
         
-        // Reactivar el GridLayoutGroup (pot estar desactivat per l'animació anterior)
         if (choicePanelRT != null)
         {
             var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
@@ -993,7 +1038,7 @@ public class DialogueUI : MonoBehaviour
         {
             var choice = currentLineChoices[i];
             
-            // Si l'opció ja s'ha vist i no és repetible, i l'interactable ho demana, la ignorem
+            // Oculteu les opcions de diàlegs completats prèviament per a evitar redundància narrativa
             if (shouldHideSeen && inv != null && !choice.repeatable && inv.IsChoiceSeen(choice.text))
             {
                 continue;
@@ -1013,9 +1058,8 @@ public class DialogueUI : MonoBehaviour
             ol.effectColor = new Color(0.8f, 0.8f, 0.8f, 1f);
             ol.effectDistance = new Vector2(3f, -3f);
 
-            // CanvasGroup per controlar l'opacitat de l'animació
             var cg = btnGO.AddComponent<CanvasGroup>();
-            cg.alpha = 0f; // Comença invisible
+            cg.alpha = 0f; // S'inicia invisible per poder aplicar l'animació asíncrona
 
             var txtGO = new GameObject("Txt");
             txtGO.transform.SetParent(btnGO.transform, false);
@@ -1033,7 +1077,6 @@ public class DialogueUI : MonoBehaviour
             choiceTexts.Add(txt);
         }
 
-        // Si per alguna raó no hi ha cap opció visible (error de disseny), tanquem el diàleg
         if (visibleChoices.Count == 0)
         {
             Hide();
@@ -1044,16 +1087,19 @@ public class DialogueUI : MonoBehaviour
         StartCoroutine(AnimateChoicesIn());
     }
 
+    /// <summary>
+    /// Corrutina mestra d'escala musical d'opcions.
+    /// Llissa individualment cada botó amb un lleuger retard dinàmic (Staggered animation)
+    /// i emet sons d'aparició amb Pitch dinàmic per augmentar el feedback visual del TFG.
+    /// </summary>
     private IEnumerator AnimateChoicesIn()
     {
         float slideDistance = 120f;
         float staggerDelay = 0.08f;
         float animTime = 0.25f;
 
-        // Esperar un frame perquè el GridLayoutGroup calculi les posicions correctes
-        yield return null;
+        yield return null; // Un frame d'espera perquè el GridLayoutGroup s'hagi calculat a la GPU
 
-        // Guardar les posicions i tamanys finals calculades pel layout
         var choiceRTs = new System.Collections.Generic.List<RectTransform>();
         var choiceCGs = new System.Collections.Generic.List<CanvasGroup>();
         var targetPositions = new System.Collections.Generic.List<Vector2>();
@@ -1070,11 +1116,10 @@ public class DialogueUI : MonoBehaviour
             targetSizes.Add(rt.sizeDelta);
         }
 
-        // Desactivar el GridLayoutGroup per poder animar lliurement
+        // Desactivem temporalment el GridLayout per a no tenir restriccions visuals en les coordenades
         var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
         if (glg != null) glg.enabled = false;
 
-        // Aplicar tamanys explícits i preparar animació
         for (int i = 0; i < choiceRTs.Count; i++)
         {
             choiceRTs[i].sizeDelta = targetSizes[i];
@@ -1082,7 +1127,7 @@ public class DialogueUI : MonoBehaviour
             choiceCGs[i].alpha = 0f;
         }
 
-        // Animar escalonadament
+        // Llançament dinàmic de les sub-rutines de desplaçament
         for (int i = 0; i < choiceRTs.Count; i++)
         {
             if (choiceAppearSound != null)
@@ -1092,6 +1137,7 @@ public class DialogueUI : MonoBehaviour
                     audioSource = gameObject.AddComponent<AudioSource>();
                     audioSource.spatialBlend = 0f;
                 }
+                // Pitch incremental per crear una escala ascendent a mesura que es dibuixen
                 audioSource.pitch = choiceBasePitch + (i * choicePitchIncrement);
                 audioSource.PlayOneShot(choiceAppearSound);
             }
@@ -1100,7 +1146,6 @@ public class DialogueUI : MonoBehaviour
             yield return new WaitForSecondsRealtime(staggerDelay);
         }
 
-        // Restablir el pitch a 1 per a futurs àudios
         if (audioSource != null)
         {
             audioSource.pitch = 1f;
@@ -1116,8 +1161,7 @@ public class DialogueUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float u = Mathf.Clamp01(t / duration);
-            // Ease out cubic
-            float eased = 1f - Mathf.Pow(1f - u, 3f);
+            float eased = 1f - Mathf.Pow(1f - u, 3f); // OutCubic
 
             rt.anchoredPosition = Vector2.Lerp(startPos, targetPos, eased);
             cg.alpha = eased;
@@ -1128,6 +1172,9 @@ public class DialogueUI : MonoBehaviour
         cg.alpha = 1f;
     }
 
+    /// <summary>
+    /// Brillantor visual de l'opció seleccionada de l'arbre.
+    /// </summary>
     private void HighlightChoice()
     {
         for (int i = 0; i < choiceTexts.Count; i++)
@@ -1143,6 +1190,10 @@ public class DialogueUI : MonoBehaviour
 
     private Sprite generatedCloudSprite;
     
+    /// <summary>
+    /// Generador procedural d'imatges de núvol (tileables) a nivell de píxel.
+    /// Dissenyat per a diàlegs de tipus pensament reduint el consum de vèrtexs (< 65k).
+    /// </summary>
     private Sprite GetCloudSprite()
     {
         if (generatedCloudSprite != null) return generatedCloudSprite;
@@ -1187,10 +1238,14 @@ public class DialogueUI : MonoBehaviour
         return generatedCloudSprite;
     }
 
+    /// <summary>
+    /// Organització de mides, proporcions, retrats i divisions de la caixa de text de forma adaptativa.
+    /// </summary>
     private void LayoutUI(bool rightSide, bool onTop, bool hasPortrait, bool isThought)
     {
         if (currentPanelGO == null) return;
 
+        // ── ALTURA DEL DIÀLEG (DALT O BAIX) ──
         if (onTop)
         {
             panelRect.anchorMin = new Vector2(0.12f, 0.70f);
@@ -1199,29 +1254,27 @@ public class DialogueUI : MonoBehaviour
             {
                 choicePanelRT.anchorMin = new Vector2(0f, 0f);
                 choicePanelRT.anchorMax = new Vector2(1f, 0f);
-                choicePanelRT.pivot = new Vector2(0.5f, 1f); // Grow downwards
+                choicePanelRT.pivot = new Vector2(0.5f, 1f); 
                 var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
                 if (glg != null) glg.childAlignment = TextAnchor.UpperCenter;
-                choicePanelRT.anchoredPosition = new Vector2(0f, -20f); // Just below
-                choicePanelRT.sizeDelta = new Vector2(0f, 20f); // Stretch width
+                choicePanelRT.anchoredPosition = new Vector2(0f, -20f); 
+                choicePanelRT.sizeDelta = new Vector2(0f, 20f); 
             }
-
         }
         else
         {
             panelRect.anchorMin = new Vector2(0.12f, 0.05f);
-            panelRect.anchorMax = new Vector2(0.88f, 0.34f); // Increased panel proportion (from 0.27f)
+            panelRect.anchorMax = new Vector2(0.88f, 0.34f); 
             if (choicePanelRT != null)
             {
                 choicePanelRT.anchorMin = new Vector2(0f, 1f);
                 choicePanelRT.anchorMax = new Vector2(1f, 1f);
-                choicePanelRT.pivot = new Vector2(0.5f, 0f); // Grow upwards
+                choicePanelRT.pivot = new Vector2(0.5f, 0f); 
                 var glg = choicePanelRT.GetComponent<GridLayoutGroup>();
                 if (glg != null) glg.childAlignment = TextAnchor.LowerCenter;
-                choicePanelRT.anchoredPosition = new Vector2(0f, 20f); // Just above
-                choicePanelRT.sizeDelta = new Vector2(0f, 20f); // Stretch width
+                choicePanelRT.anchoredPosition = new Vector2(0f, 20f); 
+                choicePanelRT.sizeDelta = new Vector2(0f, 20f); 
             }
-
         }
         
         panelRect.offsetMin = Vector2.zero;
@@ -1229,19 +1282,20 @@ public class DialogueUI : MonoBehaviour
         
         shownPos = panelRect.anchoredPosition;
 
+        // Estètica de fons segons tipus
         if (panelBgImg != null)
         {
             if (isThought)
             {
                 panelBgImg.sprite = GetCloudSprite();
                 panelBgImg.type = Image.Type.Tiled;
-                panelBgImg.pixelsPerUnitMultiplier = 0.12f; // Incrementem la distància de tile per reduir vèrtex general < 65k
+                panelBgImg.pixelsPerUnitMultiplier = 0.12f; 
                 panelBgOl.effectDistance = new Vector2(4f, -4f); 
             }
             else
             {
                 panelBgImg.sprite = null;
-                panelBgImg.type = Image.Type.Sliced; // Super important per a quad simples sense Tilear
+                panelBgImg.type = Image.Type.Sliced; 
                 panelBgOl.effectDistance = new Vector2(6f, -6f);
             }
         }
@@ -1252,14 +1306,14 @@ public class DialogueUI : MonoBehaviour
         if (portRT != null) portRT.gameObject.SetActive(hasPortrait);
         if (dividerRT != null) dividerRT.gameObject.SetActive(hasPortrait);
 
+        // ── ENQUADRAMENT D'AVATARS I AMPLES (ESQUERRA / DRETA /Complert) ──
         if (!hasPortrait)
         {
-            // Ample Complert sense foto
             tRT.anchorMin = new Vector2(0f, 0f); tRT.anchorMax = new Vector2(1f, 1f);
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(0f, 1f); nbRT.anchorMax = new Vector2(0f, 1f);
-            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
+            nbRT.sizeDelta = new Vector2(320f, 75f); 
             nbRT.pivot = new Vector2(0f, 0f);
             nbRT.anchoredPosition = new Vector2(15f, 8f);
         }
@@ -1272,7 +1326,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(1f, 1f); nbRT.anchorMax = new Vector2(1f, 1f);
-            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
+            nbRT.sizeDelta = new Vector2(320f, 75f); 
             nbRT.pivot = new Vector2(1f, 0f);
             nbRT.anchoredPosition = new Vector2(-10f, 8f);
 
@@ -1293,7 +1347,7 @@ public class DialogueUI : MonoBehaviour
             tRT.offsetMin = tRT.offsetMax = Vector2.zero;
 
             nbRT.anchorMin = new Vector2(0f, 1f); nbRT.anchorMax = new Vector2(0f, 1f);
-            nbRT.sizeDelta = new Vector2(320f, 75f); // Expanded name box
+            nbRT.sizeDelta = new Vector2(320f, 75f); 
             nbRT.pivot = new Vector2(0f, 0f);
             nbRT.anchoredPosition = new Vector2(10f, 8f);
 
@@ -1332,9 +1386,9 @@ public class DialogueUI : MonoBehaviour
         if (cachedFont != null) t.font = cachedFont;
     }
 
-    // -----------------------
-    // Animació del panell
-    // -----------------------
+    // =========================================================================
+    // Animacions del Panell (Lliscaments RPG verticals suaus)
+    // =========================================================================
     private void PlayIn()
     {
         if (panelRect == null || panelGroup == null) return;
@@ -1375,7 +1429,7 @@ public class DialogueUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float u = Mathf.Clamp01(t / Mathf.Max(0.0001f, animDuration));
-            float eased = 1f - Mathf.Pow(1f - u, 3f);
+            float eased = 1f - Mathf.Pow(1f - u, 3f); // OutCubic
 
             panelRect.anchoredPosition = Vector2.Lerp(shownPos + offset, shownPos, eased);
             yield return null;
@@ -1399,7 +1453,7 @@ public class DialogueUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float u = Mathf.Clamp01(t / Mathf.Max(0.0001f, animDuration));
-            float eased = u * u; // Eased de 0 a 1
+            float eased = u * u; // InQuad
 
             panelRect.anchoredPosition = Vector2.Lerp(startPos, endPos, eased);
             yield return null;

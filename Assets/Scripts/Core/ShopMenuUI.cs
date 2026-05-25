@@ -5,24 +5,42 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Interfície gràfica i gestor del sistema de Botiga (ShopMenuUI).
+/// Permet al jugador comprar consumibles i objectes especials, o vendre recursos acumulats
+/// a canvi d'or de forma interactiva mitjançant pestanyes de compra i venda commutables.
+/// 
+/// DISSENY I CARACTERÍSTIQUES DEL TFG:
+/// - **Distribució interactiva asimètrica**: La pantalla es divideix en dues meitats. A l'esquerra es dibuixa
+///   el personatge de la botiga (Shopkeeper) amb la seva bombolla gràfica de xerrada, i a la dreta es maqueten
+///   les pestanyes adaptatives i la llista d'objectes.
+/// - **Temàtiques visuals dinàmiques**: Tota la interfície gràfica de la motxilla s'adapta amb transicions de colors:
+///   Blau profund/celest brillant en mode COMPRAR (Buy), i Vermell acerós/taronja fogós en mode VENDRE (Sell).
+/// - **Efecte sacsejada del botiguer (Juice)**: El retrat de la criatura es sacseja físicament (Shake animation)
+///   en expressar cada frase, lligat a un typewriter amb so de murmuri vocal adaptat per lletres.
+/// - **Comportament de reaccions orgànic**: El botiguer utilitza llistes aleatòries de respostes des de l'inventari
+///   en cas de transaccions correctes, manca de diners, motxilla plena o comiat, donant molta vida al personatge.
+/// - **Graella procedimental sense scroll**: Ajust geomètric instantani en frame inicial compatible amb dispositius tàctils.
+/// </summary>
 public class ShopMenuUI : MonoBehaviour
 {
-    public static bool IsOpen { get; private set; }
+    public static bool IsOpen { get; private set; } // Flag global de bloqueig de moviments
 
     private Action onClose;
 
     private readonly List<ShopEntry> entries = new List<ShopEntry>();
-    private int selIdx = -1;  // -1 = EXIT (defecte)
+    private int selIdx = -1;  // -1 = EXIT (selecció per defecte)
     private const int EXIT_IDX = -1;
-    private const int NCOLS    = 2;
+    private const int NCOLS    = 2; // Graella adaptativa de 2 columnes
 
     private enum ShopMode { Buy, Sell }
-    private ShopMode currentMode = ShopMode.Buy;
+    private ShopMode currentMode = ShopMode.Buy; // Mode per defecte
 
+    // Components visuals procedimentals
     private TextMeshProUGUI hpTxt, goldTxt, capTxt;
     private Image buyTabBg, sellTabBg;
     private TextMeshProUGUI buyTabTxt, sellTabTxt;
-    private RectTransform tabKeyBtnRT;
+    private RectTransform tabKeyBtnRT; // Indicador de tecla TAB
     private Image cardImg, statsImg, detImg, frameImg;
     private Outline cardOl, frameOl;
     private TextMeshProUGUI detNameTxt, detDescTxt, detPriceTxt, dialogTxt;
@@ -37,20 +55,27 @@ public class ShopMenuUI : MonoBehaviour
     private GridLayoutGroup glg;
     private RectTransform   glgRT;
     private Image           divImg;
-    private RectTransform   tabTopRT_Ref;
-    private RectTransform   escTopRT_Ref;
+    private RectTransform   tabTopRT_Ref; // Tecla TAB visual
+    private RectTransform   escTopRT_Ref; // Tecla ESC visual
     private bool            lastTabPressed;
     private bool            lastEscPressed;
 
+    /// <summary>
+    /// Estructura de dades per a cada cel·la d'objecte a la botiga.
+    /// </summary>
     private class ShopEntry
     {
-        public string idName; public ItemProfile profile; public int count;
-        public Image bg; public TextMeshProUGUI txt;
+        public string idName; 
+        public ItemProfile profile; 
+        public int count;
+        public Image bg; 
+        public TextMeshProUGUI txt;
     }
 
-    // ── Factory ──────────────────────────────────────────────────────
+    // ── FACTORY PROCEDIMENTAL (Instanciació i Setup) ──────────────────────
     public static void Show(Action onClose = null)
     {
+        // Seguretat: no es permet xop mentre combatem
         if (CombatLoader.IsInCombat)
         {
             Debug.LogWarning("No es pot obrir la botiga mentre s'està en combat.");
@@ -58,22 +83,35 @@ public class ShopMenuUI : MonoBehaviour
         }
         var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null) return;
+        
         var go = new GameObject("ShopMenuUI");
         var rt = go.AddComponent<RectTransform>();
         rt.SetParent(canvas.transform, false);
         rt.anchorMin = rt.offsetMin = Vector2.zero;
         rt.anchorMax = Vector2.one; rt.offsetMax = Vector2.zero;
+        
         var ui = go.AddComponent<ShopMenuUI>();
+        
+        // Forcem canvas d'alta prioritat gràfica
+        var cv = go.AddComponent<Canvas>();
+        cv.overrideSorting = true;
+        cv.sortingOrder = 30000;
+        go.AddComponent<GraphicRaycaster>();
+        
         ui.onClose = onClose;
-        ui.Build(); IsOpen = true;
+        ui.Build(); 
+        IsOpen = true;
     }
 
-    // ── Construcció ──────────────────────────────────────────────────
+    // ── CONSTRUCCIÓ PROCEDIMENTAL COMPACTA (SENSE PREFABS) ────────────────
+    /// <summary>
+    /// Aixeca la botiga completa per codi, dividint la pantalla en dues columnes (35% Shopkeeper, 65% Graella).
+    /// </summary>
     private void Build()
     {
         var inv = PlayerInventory.Instance;
 
-        // Overlay intercepta clics
+        // Fons semitransparent protector que enfosqueix el món de darrere
         var bgImg = gameObject.AddComponent<Image>();
         bgImg.color = new Color(0f, 0f, 0f, 0.78f);
         bgImg.raycastTarget = true;
@@ -82,7 +120,7 @@ public class ShopMenuUI : MonoBehaviour
         cardRT_Ref = card;
         
         card.anchorMin = new Vector2(0.08f, 0.08f);
-        card.anchorMax = new Vector2(0.92f, 0.92f);
+        card.anchorMax = new Vector2(0.92f, 0.92f); // Centrat amb petits marges visuals
         card.offsetMin = card.offsetMax = Vector2.zero;
         cardImg = card.gameObject.AddComponent<Image>();
         cardImg.color = new Color(0.07f, 0.06f, 0.15f, 1f);
@@ -90,11 +128,12 @@ public class ShopMenuUI : MonoBehaviour
         cardOl.effectColor = new Color(0.15f, 0.85f, 0.95f, 1f);
         cardOl.effectDistance = new Vector2(8f, -8f);
 
-        // ─── Línia Divisora i sub-panells ─────────────────────────
+        // ─── 1. DIVISIÓ HORITZONTAL EN COLUMNES (LeftPanel vs RightPanel) ───
         var leftPanel = MakeRT("LeftPanel", card);
-        leftPanel.anchorMin = new Vector2(0f, 0f); leftPanel.anchorMax = new Vector2(0.35f, 1f);
+        leftPanel.anchorMin = new Vector2(0f, 0f); leftPanel.anchorMax = new Vector2(0.35f, 1f); // 35% ample
         leftPanel.offsetMin = leftPanel.offsetMax = Vector2.zero;
 
+        // Línia vertical brillant d'unió
         var divider = MakeRT("Divider", card);
         divider.anchorMin = new Vector2(0.35f, 0f); divider.anchorMax = new Vector2(0.35f, 1f);
         divider.sizeDelta = new Vector2(4f, 0f);
@@ -103,22 +142,22 @@ public class ShopMenuUI : MonoBehaviour
         divImg.color = new Color(0.15f, 0.85f, 0.95f, 0.25f);
 
         var rightPanel = MakeRT("RightPanel", card);
-        rightPanel.anchorMin = new Vector2(0.35f, 0f); rightPanel.anchorMax = new Vector2(1f, 1f);
+        rightPanel.anchorMin = new Vector2(0.35f, 0f); rightPanel.anchorMax = new Vector2(1f, 1f); // 65% ample
         rightPanel.offsetMin = new Vector2(4f, 0f); rightPanel.offsetMax = Vector2.zero;
 
-        // ─── Botiguer (Shopkeeper) ─────────────────────────
+        // ─── 2. SECCIÓ DEL BOTIGUER (Shopkeeper & Bombolla) ───
         var npcRT = MakeRT("Shopkeeper", leftPanel);
         npcRT.anchorMin = new Vector2(0.05f, 0.05f);
         npcRT.anchorMax = new Vector2(0.95f, 0.95f);
         npcRT.offsetMin = npcRT.offsetMax = Vector2.zero;
 
-        // Bubble
+        // Bombolla de diàleg (Bubble)
         var bubbleRT = MakeRT("Bubble", npcRT);
         bubbleRT.anchorMin = new Vector2(0f, 0.65f);
         bubbleRT.anchorMax = new Vector2(1f, 1f);
         bubbleRT.offsetMin = bubbleRT.offsetMax = Vector2.zero;
 
-        // Tail (sota fons)
+        // Cua de fons de la bombolla (Triangle girat de fons)
         var tailRT = MakeRT("Tail", bubbleRT);
         tailRT.anchorMin = new Vector2(0.5f, 0f); tailRT.anchorMax = new Vector2(0.5f, 0f);
         tailRT.sizeDelta = new Vector2(46f, 46f);
@@ -127,15 +166,15 @@ public class ShopMenuUI : MonoBehaviour
         var tailImg = tailRT.gameObject.AddComponent<Image>();
         tailImg.color = new Color(1f, 1f, 1f, 0.95f);
 
-        // BG (per sobre de la cua, utilitzant sprite de memòria arrodonit)
+        // Fons arrodonit procedimental
         var bBgRT = MakeRT("BG", bubbleRT);
         bBgRT.anchorMin = Vector2.zero; bBgRT.anchorMax = Vector2.one;
         bBgRT.offsetMin = bBgRT.offsetMax = Vector2.zero;
         var bubbleBg = bBgRT.gameObject.AddComponent<Image>();
         bubbleBg.color = new Color(1f, 1f, 1f, 0.95f);
-        bubbleBg.sprite = GetRoundedSprite();
+        bubbleBg.sprite = GetRoundedSprite(); // Generat procedimental
         bubbleBg.type = Image.Type.Sliced;
-        bubbleBg.pixelsPerUnitMultiplier = 0.5f; // Manté els píxels grans d'estil 8bit
+        bubbleBg.pixelsPerUnitMultiplier = 0.5f;
 
         dialogTxt = TxtFill(bubbleRT, "", 42f, new Color(0.1f, 0.1f, 0.1f), FontStyles.Bold, TextAlignmentOptions.Justified);
         dialogTxt.margin = new Vector4(25f, 25f, 25f, 25f);
@@ -147,7 +186,7 @@ public class ShopMenuUI : MonoBehaviour
         typeAudioSrc = gameObject.AddComponent<AudioSource>();
         typeAudioSrc.playOnAwake = false;
 
-        // Sprite
+        // Imatge física de la criatura botiguera
         var spriteRT = MakeRT("Sprite", npcRT);
         spriteRT.anchorMin = new Vector2(0f, 0f);
         spriteRT.anchorMax = new Vector2(1f, 0.60f);
@@ -155,8 +194,10 @@ public class ShopMenuUI : MonoBehaviour
         npcImg = spriteRT.gameObject.AddComponent<Image>();
         npcImg.preserveAspect = true;
         
+        // Missatge de benvinguda aleatori del botiguer
         ApplyShopVariant(inv.GetRandomMsg(inv.shopWelcomeMsgs));
 
+        // Mesures de les files per a la graella de la dreta
         const float H_TITLE  = 68f;
         const float H_STATS  = 68f;
         const float H_DETAIL = 148f;
@@ -166,7 +207,7 @@ public class ShopMenuUI : MonoBehaviour
 
         float fromTop = 0f;
 
-        // ─── Títol (Tabs) ───────────────────────────────────────────────────
+        // ─── Pestanyes Superiors (BUY / SELL) ───
         var titleRT = TopZone(rightPanel, "Title", ref fromTop, H_TITLE);
         
         var buyRT = StretchChild(titleRT, "Buy", 0f, 0f, 0.5f, 1f);
@@ -177,7 +218,7 @@ public class ShopMenuUI : MonoBehaviour
         sellTabBg = sellRT.gameObject.AddComponent<Image>();
         sellTabTxt = TxtFill(sellRT, "SELL", 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
-        // Tab indicator simulation
+        // Tecla decorativa visual TAB amb efecte de pressió
         var indGO = new GameObject("TabKey");
         tabKeyBtnRT = indGO.AddComponent<RectTransform>();
         tabKeyBtnRT.pivot = new Vector2(0.5f, 0.5f);
@@ -208,7 +249,7 @@ public class ShopMenuUI : MonoBehaviour
 
         TxtFill(tabTopRT_Ref, "TAB", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
-        // ─── Stats HP / Or ───────────────────────────────────────────
+        // ─── Estadístiques (Vida, Monedes) ───
         var statsRT = TopZone(rightPanel, "Stats", ref fromTop, H_STATS);
         statsImg = statsRT.gameObject.AddComponent<Image>();
         statsImg.color = new Color(0.04f, 0.03f, 0.11f, 1f);
@@ -224,7 +265,6 @@ public class ShopMenuUI : MonoBehaviour
         goldTxt.text = $"{inv.Gold}";
 
         var coinRT = MakeRT("CoinIcon", statsRT);
-        // Ancorada completament a la dreta del panell al mig (Midline Right)
         coinRT.anchorMin = new Vector2(1f, 0.5f); coinRT.anchorMax = new Vector2(1f, 0.5f);
         coinRT.sizeDelta = new Vector2(44f, 44f);
         coinRT.anchoredPosition = new Vector2(-28f, 0f);
@@ -233,12 +273,11 @@ public class ShopMenuUI : MonoBehaviour
         Sprite coinSp = LoadSprite("Art/Sprites/pixel_coin");
         if (coinSp != null) coinImg.sprite = coinSp;
 
-        // ─── Panell detall ────────────────────────────────────────────
+        // ─── Àrea de detall descriptiu ───
         var detRT = TopZone(rightPanel, "Detail", ref fromTop, H_DETAIL, 2f);
         detImg = detRT.gameObject.AddComponent<Image>();
         detImg.color = new Color(0.08f, 0.10f, 0.20f, 1f);
 
-        // Marc icona
         var frameRT = PointChild(detRT, "Frame", 0f, 0.5f, 0f, 0.5f, 14f, 0f, 126f, 126f);
         frameImg = frameRT.gameObject.AddComponent<Image>();
         frameImg.color = new Color(0.15f, 0.18f, 0.30f, 1f);
@@ -253,19 +292,17 @@ public class ShopMenuUI : MonoBehaviour
         detIconImg.preserveAspect = true;
         detIconImg.color = new Color(1f, 1f, 1f, 0f);
 
-        // Text nom
         var dNameRT = StretchChild(detRT, "DName", 0f, 0.5f, 1f, 1f, 152f, 4f, -150f, -4f);
         detNameTxt  = dNameRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(detNameTxt, 44f, Color.white, FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
         detNameTxt.text = "";
 
-        // Text preu (a la dreta)
+        // Preu detall (dreta)
         var dPriceRT = StretchChild(detRT, "DPrice", 1f, 0.5f, 1f, 1f, -150f, 4f, -44f, -4f);
         detPriceTxt  = dPriceRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(detPriceTxt, 44f, new Color(1f, 0.9f, 0.15f), FontStyles.Bold, TextAlignmentOptions.MidlineRight);
         detPriceTxt.text = "";
 
-        // Icona moneda de la caixa de detall
         var detCoinRT = MakeRT("DCoin", detRT);
         detCoinRT.anchorMin = new Vector2(1f, 0.75f); detCoinRT.anchorMax = new Vector2(1f, 0.75f);
         detCoinRT.sizeDelta = new Vector2(36f, 36f);
@@ -274,33 +311,31 @@ public class ShopMenuUI : MonoBehaviour
         dcImg.sprite = LoadSprite("Art/Sprites/pixel_coin");
         dcImg.preserveAspect = true;
 
-        // Text desc
         var dDescRT = StretchChild(detRT, "DDesc", 0f, 0f, 1f, 0.5f, 152f, 4f, -14f, -4f);
         detDescTxt  = dDescRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(detDescTxt, 28f, new Color(0.62f, 0.62f, 0.62f), FontStyles.Normal, TextAlignmentOptions.MidlineLeft);
         detDescTxt.text = "";
 
-        // ─── Capacitat ───────────────────────────────────────────────
+        // ─── Capacitat ───
         var capRT = TopZone(rightPanel, "Cap", ref fromTop, H_CAP);
         capTxt    = capRT.gameObject.AddComponent<TextMeshProUGUI>();
         SetFont(capTxt, 26f, new Color(0.5f, 0.5f, 0.5f), FontStyles.Normal, TextAlignmentOptions.Center);
-        capTxt.text = $"Espai: {inv.Items.Count} / {inv.maxItemsCapacity}";
         capTxt.text = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
 
-        // ─── Zones fixes des del BOTTOM ──────────────────────────────
+        // ─── Àrees inferiors fixes (Bottom-up maquetat) ───
         float fromBottom = 0f;
 
-        // Hint
         var hintRT = BotZone(rightPanel, "Hint", ref fromBottom, H_HINT);
-        TxtFill(hintRT, "ARROWS / WASD  navigate    |    E / ENTER  buy/sell    |    TAB  switch tab    |    ESC  close",
+        TxtFill(hintRT, "FLETXES / WASD  moure    |    E / ENTER  confirmar    |    TAB  canviar mode    |    ESC  tancar",
                 20f, new Color(0.40f, 0.40f, 0.40f), FontStyles.Normal, TextAlignmentOptions.Center);
 
-        // EXIT
+        // Botó EXIT flotant interactuable
         var exitRT = BotZone(rightPanel, "Exit", ref fromBottom, H_EXIT, 3f);
         exitBg     = exitRT.gameObject.AddComponent<Image>();
         exitBg.color = new Color(0.12f, 0.22f, 0.38f, 1f);
-        exitTxt   = TxtFill(exitRT, "    [ EXIT ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
+        exitTxt   = TxtFill(exitRT, "    [ RETORN ]", 38f, new Color(0.2f, 0.92f, 1f), FontStyles.Bold, TextAlignmentOptions.Center);
 
+        // Tecla decorativa ESC amb pressió per codi
         var escGO = new GameObject("EscKey");
         var escBtnRT = escGO.AddComponent<RectTransform>();
         escBtnRT.SetParent(exitRT, false);
@@ -333,7 +368,7 @@ public class ShopMenuUI : MonoBehaviour
 
         TxtFill(escTopRT_Ref, "ESC", 24f, Color.white, FontStyles.Bold, TextAlignmentOptions.Center);
 
-        // ─── Graella ──────────────────────────────────────────────────
+        // ─── Graella Central de Cel·les ───
         var gridRT_zone = MakeRT("GridZone", rightPanel);
         gridRT_zone.anchorMin = new Vector2(0f, 0f);
         gridRT_zone.anchorMax = new Vector2(1f, 1f);
@@ -363,7 +398,6 @@ public class ShopMenuUI : MonoBehaviour
         RefreshHighlights();
     }
     
-    // Utilitat per carregar imatges 
     private Sprite LoadSprite(string path)
     {
 #if UNITY_EDITOR
@@ -378,6 +412,10 @@ public class ShopMenuUI : MonoBehaviour
     
     private void Start() => StartCoroutine(IntroRoutine());
     
+    /// <summary>
+    /// Corrutina d'entrada vertical Slide de la targeta. 
+    /// Calcula dinàmicament l'amplada física de les cel·les al primer frame.
+    /// </summary>
     private IEnumerator IntroRoutine()
     {
         Vector2 finalOffsetMin = Vector2.zero;
@@ -392,8 +430,9 @@ public class ShopMenuUI : MonoBehaviour
             cardRT_Ref.offsetMax = finalOffsetMax + startOffset;
         }
 
-        yield return null;
+        yield return null; // Esperem 1 frame fins que el Canvas estigui representat correctament
 
+        // recalcul geomètric de les cel·les per a evitar overlap en píxel art
         if (glg != null && glgRT != null)
         {
             float w     = glgRT.rect.width;
@@ -410,7 +449,7 @@ public class ShopMenuUI : MonoBehaviour
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / dur);
-                float easeOut = 1f - Mathf.Pow(1f - t, 3f);
+                float easeOut = 1f - Mathf.Pow(1f - t, 3f); // OutCubic suavitzat
                 
                 cardRT_Ref.offsetMin = Vector2.Lerp(finalOffsetMin + startOffset, finalOffsetMin, easeOut);
                 cardRT_Ref.offsetMax = Vector2.Lerp(finalOffsetMax + startOffset, finalOffsetMax, easeOut);
@@ -435,6 +474,9 @@ public class ShopMenuUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Pobla la botiga segons estiguem a pestanya COMPRAR (llista del botiguer) o VENDRE (llista de motxilla).
+    /// </summary>
     private void BuildEntries(PlayerInventory inv)
     {
         entries.Clear();
@@ -453,7 +495,7 @@ public class ShopMenuUI : MonoBehaviour
                 }
             }
         }
-        else // ShopMode.Sell
+        else // ShopMode.Sell (agrupem per recompte per a evitar botons duplicats)
         {
             var counts = new Dictionary<string, int>();
             foreach (var i in inv.Items) { counts.TryGetValue(i, out int n); counts[i] = n + 1; }
@@ -471,6 +513,9 @@ public class ShopMenuUI : MonoBehaviour
         else if (entries.Count > 0 && selIdx == EXIT_IDX) selIdx = 0;
     }
 
+    /// <summary>
+    /// Aplica els canvis de colors i transicions de temàtica gràfica segons el mode (Comprar / Vendre).
+    /// </summary>
     private void RefreshTabs()
     {
         bool isBuy = (currentMode == ShopMode.Buy);
@@ -488,10 +533,11 @@ public class ShopMenuUI : MonoBehaviour
             tabKeyBtnRT.anchoredPosition = new Vector2(isBuy ? -90f : -95f, 0f);
         }
 
+        // ── APLICACIÓ DELS CANVIS CROMÀTICS DINÀMICS DE LA UI ──
         if (isBuy)
         {
-            if (cardImg) cardImg.color = new Color(0.07f, 0.06f, 0.15f, 1f);
-            if (cardOl) cardOl.effectColor = new Color(0.15f, 0.85f, 0.95f, 1f);
+            if (cardImg) cardImg.color = new Color(0.07f, 0.06f, 0.15f, 1f); // Fons blau profund
+            if (cardOl) cardOl.effectColor = new Color(0.15f, 0.85f, 0.95f, 1f); // Contorn celeste
             if (statsImg) statsImg.color = new Color(0.04f, 0.03f, 0.11f, 1f);
             if (detImg) detImg.color = new Color(0.08f, 0.10f, 0.20f, 1f);
             if (frameImg) frameImg.color = new Color(0.15f, 0.18f, 0.30f, 1f);
@@ -500,8 +546,8 @@ public class ShopMenuUI : MonoBehaviour
         }
         else
         {
-            if (cardImg) cardImg.color = new Color(0.15f, 0.06f, 0.06f, 1f);
-            if (cardOl) cardOl.effectColor = new Color(0.95f, 0.4f, 0.15f, 1f);
+            if (cardImg) cardImg.color = new Color(0.15f, 0.06f, 0.06f, 1f); // Fons vermell profund
+            if (cardOl) cardOl.effectColor = new Color(0.95f, 0.4f, 0.15f, 1f); // Contorn taronja fogós
             if (statsImg) statsImg.color = new Color(0.11f, 0.03f, 0.03f, 1f);
             if (detImg) detImg.color = new Color(0.20f, 0.08f, 0.08f, 1f);
             if (frameImg) frameImg.color = new Color(0.30f, 0.15f, 0.15f, 1f);
@@ -523,7 +569,7 @@ public class ShopMenuUI : MonoBehaviour
         tGo.transform.SetParent(cell.transform, false);
         var tRT = tGo.AddComponent<RectTransform>();
         tRT.anchorMin = Vector2.zero; tRT.anchorMax = Vector2.one;
-        tRT.offsetMin = new Vector2(6f, 30f); tRT.offsetMax = new Vector2(-6f, -4f); // Top half
+        tRT.offsetMin = new Vector2(6f, 30f); tRT.offsetMax = new Vector2(-6f, -4f); 
         var txt = tGo.AddComponent<TextMeshProUGUI>();
         SetFont(txt, 30f, Color.white, FontStyles.Bold, TextAlignmentOptions.Bottom);
         txt.text         = count > 1 ? $"{nameStr}  <color=#AAAAAA>x{count}</color>" : $"{nameStr}";
@@ -602,7 +648,7 @@ public class ShopMenuUI : MonoBehaviour
         }
         var e = entries[selIdx];
         detNameTxt.text = currentMode == ShopMode.Sell ? $"{e.idName}  <color=#AAAAAA>x{e.count}</color>" : e.idName;
-        detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(no ItemProfile)";
+        detDescTxt.text = e.profile != null ? e.profile.itemDescription : "(sense llibre de dades de l'objecte)";
         
         int p = 0;
         if (e.profile != null)
@@ -616,8 +662,10 @@ public class ShopMenuUI : MonoBehaviour
         detPriceTxt.text = $"{p}";
     }
 
+    // ── NAVEGACIÓ I REPRESSIÓ DE CONTROLS ──
     private void Update()
     {
+        // Tecles físiques en 3D decoratives
         if (tabTopRT_Ref != null)
         {
             float cycle = Time.unscaledTime * 1.5f;
@@ -641,6 +689,7 @@ public class ShopMenuUI : MonoBehaviour
         }
 
         if (inputBlocked) return;
+        
         bool left  = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
         bool up    = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
@@ -715,6 +764,10 @@ public class ShopMenuUI : MonoBehaviour
     }
 
     private Coroutine errorAnim;
+    
+    /// <summary>
+    /// Corrutina de sacsejada d'errors (Horizontal Shake).
+    /// </summary>
     private IEnumerator ShowErrorAnim(string msg)
     {
         detDescTxt.color = new Color(1f, 0.3f, 0.3f);
@@ -741,6 +794,10 @@ public class ShopMenuUI : MonoBehaviour
         RefreshDetail();
     }
 
+    /// <summary>
+    /// Aplica una rebregada de diàleg i de retrat del botiguer.
+    /// Triarà la veu de murmuri d'esquenes a les expressions gràfiques.
+    /// </summary>
     private void ApplyShopVariant(ShopDialogVariant variant)
     {
         if (variant == null) return;
@@ -771,6 +828,9 @@ public class ShopMenuUI : MonoBehaviour
 
     private Sprite generatedRoundedSprite;
     
+    /// <summary>
+    /// Generador procedural gràfic d'una bombolla arrodonida píxel-art tileable de 12x12.
+    /// </summary>
     private Sprite GetRoundedSprite()
     {
         if (generatedRoundedSprite != null) return generatedRoundedSprite;
@@ -784,6 +844,7 @@ public class ShopMenuUI : MonoBehaviour
         {
             for (int x = 0; x < size; x++)
             {
+                // Eliminem manualment els 3 píxels de cada cantonada de l'escala
                 bool corner = false;
                 if (x==0 && y<=2) corner = true;
                 else if (x==1 && y<=1) corner = true;
@@ -803,10 +864,15 @@ public class ShopMenuUI : MonoBehaviour
         }
         tex.Apply();
         
+        // Retornem un Sliced Sprite que es manté visualment lluent de 4 cantonades fixes
         generatedRoundedSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(4, 4, 4, 4));
         return generatedRoundedSprite;
     }
 
+    /// <summary>
+    /// Corrutina de typewriter per a la bombolla del botiguer.
+    /// Emet murmuris cada 2 lletres variant el Pitch de forma orgànica.
+    /// </summary>
     private IEnumerator TypewriteText(string text)
     {
         if (dialogTxt != null) dialogTxt.text = "";
@@ -819,7 +885,7 @@ public class ShopMenuUI : MonoBehaviour
             
             if (char.IsLetterOrDigit(text[i]) && inv != null && inv.shopVoiceSound != null && typeAudioSrc != null)
             {
-                if (count % 2 == 0) // Un so cada 2 lletres per no solapar massa
+                if (count % 2 == 0) 
                 {
                     typeAudioSrc.pitch = UnityEngine.Random.Range(0.85f, 1.15f);
                     typeAudioSrc.PlayOneShot(inv.shopVoiceSound, 0.6f);
@@ -827,12 +893,17 @@ public class ShopMenuUI : MonoBehaviour
             }
             count++;
             
+            // Pauses dinàmiques narratives
             if (text[i] == '.' || text[i] == '?' || text[i] == '!') yield return new WaitForSecondsRealtime(0.25f);
             else if (text[i] == ',') yield return new WaitForSecondsRealtime(0.15f);
             else yield return new WaitForSecondsRealtime(0.015f);
         }
     }
 
+    /// <summary>
+    /// Corrutina de sacsejada física bidimensional (Juicy Shake) de la criatura.
+    /// Emet decreixements de força exponencials molt retro.
+    /// </summary>
     private IEnumerator ShakeSprite(RectTransform rt)
     {
         if (rt == null) yield break;
@@ -850,56 +921,65 @@ public class ShopMenuUI : MonoBehaviour
         rt.anchoredPosition = startPos;
     }
 
+    /// <summary>
+    /// Lògica mestra de transaccions. Dissenya reaccions, càlculs d'or i alertes de seguretat.
+    /// </summary>
     private void InteractWithItem(ShopEntry entry)
     {
         var inv = PlayerInventory.Instance;
         if (inv == null || entry.profile == null) return;
 
+        // ── MODE COMPRAR (BUY) ──
         if (currentMode == ShopMode.Buy)
         {
+            // Alerta: Motxilla plena
             if (inv.Items.Count >= inv.maxItemsCapacity)
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopInventoryFullMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("INVENTORY IS FULL!"));
+                errorAnim = StartCoroutine(ShowErrorAnim("INVENTARI PLÈ!"));
                 return;
             }
 
             int price = entry.profile.buyPrice;
+            // Alerta: Falta d'or
             if (!inv.SpendGold(price))
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopCantAffordMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("NOT ENOUGH GOLD!"));
+                errorAnim = StartCoroutine(ShowErrorAnim("SENSE OR COMPLERT!"));
                 return;
             }
 
             inv.AddItem(entry.profile.itemName);
-            ApplyShopVariant(inv.GetRandomMsg(inv.shopBuyMsgs));
+            ApplyShopVariant(inv.GetRandomMsg(inv.shopBuyMsgs)); // Reacció agraïda
             PlaySuccess(inv);
         }
-        else // Sell
+        // ── MODE VENDRE (SELL) ──
+        else 
         {
             int price = entry.profile.sellPrice;
             if (inv.RemoveItem(entry.idName))
             {
                 inv.AddGold(price);
-                ApplyShopVariant(inv.GetRandomMsg(inv.shopSellMsgs));
+                ApplyShopVariant(inv.GetRandomMsg(inv.shopSellMsgs)); // Reacció venedora
                 PlaySuccess(inv);
             }
             else
             {
                 ApplyShopVariant(inv.GetRandomMsg(inv.shopCantAffordMsgs));
                 if (errorAnim != null) StopCoroutine(errorAnim);
-                errorAnim = StartCoroutine(ShowErrorAnim("COULD NOT SELL THE ITEM."));
+                errorAnim = StartCoroutine(ShowErrorAnim("NO S'HA POGUT VENDRE."));
             }
         }
 
         goldTxt.text  = $"{inv.Gold}";
         capTxt.text   = $"Capacity: {inv.Items.Count} / {inv.maxItemsCapacity}";
+        
         BuildEntries(inv);
         StartCoroutine(AdjustGrid());
-        RefreshDetail(); RefreshHighlights();
+        RefreshDetail(); 
+        RefreshHighlights();
     }
     
     private void PlaySuccess(PlayerInventory inv)
@@ -915,7 +995,9 @@ public class ShopMenuUI : MonoBehaviour
     private void CloseMenu() { IsOpen = false; onClose?.Invoke(); Destroy(gameObject); }
     private void OnDestroy()  { IsOpen = false; }
 
-    // ── Helpers RT ───────────────────────────────────────────────────
+    // =========================================================================
+    // UTILS RT (Generadors Procedimentals RectTransform)
+    // =========================================================================
     private RectTransform MakeRT(string n, Transform parent)
     { var go = new GameObject(n); go.transform.SetParent(parent, false); return go.AddComponent<RectTransform>(); }
     private RectTransform MakeRT(string n, RectTransform parent) => MakeRT(n, parent.transform);
@@ -969,7 +1051,7 @@ public class ShopMenuUI : MonoBehaviour
         return t;
     }
 
-    // ── Font ─────────────────────────────────────────────────────────
+    // ── LOCALITZACIÓ DE FONTS ──
     private void SetFont(TextMeshProUGUI t, float size, Color col, FontStyles style, TextAlignmentOptions align)
     {
         t.fontSize = size; t.color = col; t.fontStyle = style; t.alignment = align;
@@ -978,6 +1060,7 @@ public class ShopMenuUI : MonoBehaviour
         if (f == null) f = LoadFont("8bitoperator_jve SDF");
         if (f != null) t.font = f;
     }
+    
     private TMP_FontAsset LoadFont(string n)
     {
 #if UNITY_EDITOR
@@ -987,6 +1070,8 @@ public class ShopMenuUI : MonoBehaviour
             $"Assets/TextMesh Pro/Resources/Fonts & Materials/{n}.asset");
         if (f != null) return f;
 #endif
-        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
+        var r = Resources.Load<TMP_FontAsset>($"Fonts & Materials/{n}"); 
+        return r ?? Resources.Load<TMP_FontAsset>($"Fonts/{n}") ?? Resources.Load<TMP_FontAsset>(n);
     }
 }
+// Final de la línia física

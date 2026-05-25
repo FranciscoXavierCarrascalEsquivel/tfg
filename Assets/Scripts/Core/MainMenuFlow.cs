@@ -3,68 +3,77 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Orquestrador del flux del Menú Principal (MainMenuFlow).
+/// Controla tota l'experiència en entrar al joc:
+/// 1) Esborra de forma proactiva l'inventari previ de memòria per garantir una neteja de dades.
+/// 2) Orquestra la línia de temps introductòria del logotip (fosa a transparent del negre, fade-in/fade-out
+///    del logotip, i finalment activació suau dels botons de la interfície gràfica).
+/// 3) Activa de forma gradual la música d'ambient del menú amb efecte de volum (FadeIn).
+/// 4) Gestiona els botons de Jugar (Play) i Sortir (Quit) bloquejant inputs dobles i fent foses de tancament.
+/// </summary>
 public class MainMenuFlow : MonoBehaviour
 {
-    [Header("UI Refs")]
-    [SerializeField] private Image blackOverlay;      // Imatge negra per fer fundits a negre.
-    [SerializeField] private Image logoImage;         // Imatge del logo que apareix al principi.
-    [SerializeField] private CanvasGroup menuGroup;   // Grup del menú per controlar la transparència i interacció.
-    [SerializeField] private Button playButton;      // Botó per començar a jugar.
-    [SerializeField] private Button quitButton;      // Botó per sortir del joc.
+    [Header("Elements Gràfics (UI)")]
+    [SerializeField] private Image blackOverlay;      // Cortina negra per a realitzar foses de pantalla.
+    [SerializeField] private Image logoImage;         // Logotip de presentació inicial.
+    [SerializeField] private CanvasGroup menuGroup;   // Grup que allotja els botons del menú (Jugar, Sortir, etc.).
+    [SerializeField] private Button playButton;       // Botó de començar partida.
+    [SerializeField] private Button quitButton;       // Botó de tancar aplicació.
 
-    [Header("Timings")]
-    [SerializeField] private float waitBeforeLogo = 0.8f;     // X
-    [SerializeField] private float logoVisibleTime = 1.6f;    // Y
-    [SerializeField] private float waitBeforeMenu = 0.5f;     // Z
+    [Header("Temps de Retard (Timings)")]
+    [SerializeField] private float waitBeforeLogo = 0.8f;     // Retard en negre abans de mostrar logotip
+    [SerializeField] private float logoVisibleTime = 1.6f;    // Temps de presència en pantalla del logotip
+    [SerializeField] private float waitBeforeMenu = 0.5f;     // Interval abans d'activar el menú
 
-    [Header("Fade Durations")]
+    [Header("Duracions de les Foses (Fades)")]
     [SerializeField] private float blackFadeOutAtStart = 0.4f;
     [SerializeField] private float logoFadeIn = 0.5f;
     [SerializeField] private float logoFadeOut = 0.5f;
     [SerializeField] private float menuFadeIn = 0.5f;
     [SerializeField] private float fadeOutOnClick = 0.6f;
 
-    [Header("Click Fade Options")]
-    [Tooltip("Si true, el menú també fa fade out (a més del negre).")]
+    [Header("Opcions de Fosa en Clicar")]
+    [Tooltip("Si és true, els botons del menú també s'esvaeixen a l'hora que puja el fons negre en prémer Jugar.")]
     [SerializeField] private bool fadeOutMenuToo = false;
 
-    [Header("Play")]
-    [SerializeField] private string playSceneName = "FirstTimeSequence"; // Nom de l'escena que es carregarà en polsar jugar.
+    [Header("Configuració de Càrrega")]
+    [SerializeField] private string playSceneName = "FirstTimeSequence"; // Nom de l'escena inicial de partida
 
-    [Header("Menu Music")]
-    [SerializeField] private AudioSource musicSource;
+    [Header("Música de Menú")]
+    [SerializeField] private AudioSource musicSource; // Cançó ambient del menú
     [SerializeField] private AudioClip menuMusic;
     [SerializeField] private bool musicFadeIn = true;
     [SerializeField] private float musicFadeInTime = 1.0f;
     [Range(0f, 1f)]
-    [SerializeField] private float musicVolume = 0.8f;
+    [SerializeField] private float musicVolume = 0.8f; // Volum normal objectiu
 
-    private bool inputEnabled = false;
-    private bool clicked = false;
+    private bool inputEnabled = false; // Flag per evitar que el jugador pitgi tecles abans d'hora
+    private bool clicked = false;      // Evita doble clic conflictiu
     private Coroutine musicFadeRoutine;
     private Coroutine flowRoutine;
 
     private void Awake()
     {
-        // 1. Assegurar que la partida es reinicia completament
+        // 1. Reset absolut de dades: Si existia un inventari persistent d'una sessió anterior, el destruïm
         if (PlayerInventory.Instance != null)
         {
             Destroy(PlayerInventory.Instance.gameObject);
         }
 
-        // Estat inicial
+        // Establim l'estat silenciós i ocult de tots els components per defecte
         if (blackOverlay != null)
         {
             blackOverlay.gameObject.SetActive(true);
-            blackOverlay.raycastTarget = true;      // bloqueja clics al principi
-            SetImageAlpha(blackOverlay, 1f);        // comença en negre
-            blackOverlay.transform.SetAsLastSibling(); // assegura a sobre de tot
+            blackOverlay.raycastTarget = true;      
+            SetImageAlpha(blackOverlay, 1f);        // Iniciem en negre absolut
+            blackOverlay.transform.SetAsLastSibling(); // La cortina de seguretat s'apila per damunt de tot
         }
 
         if (logoImage != null)
         {
             logoImage.gameObject.SetActive(true);
-            logoImage.raycastTarget = false; // no bloquejar clics
+            logoImage.raycastTarget = false; 
             SetImageAlpha(logoImage, 0f);
         }
 
@@ -85,7 +94,7 @@ public class MainMenuFlow : MonoBehaviour
 
     private void Start()
     {
-        // 🔒 Eliminem listeners duplicats si el script es re-carrega
+        // Netegem possibles subscripcions prèvies redundants i enllacem els botons de forma neta
         if (playButton != null)
         {
             playButton.onClick.RemoveListener(OnPlay);
@@ -101,23 +110,28 @@ public class MainMenuFlow : MonoBehaviour
         flowRoutine = StartCoroutine(Flow());
     }
 
-    IEnumerator Flow()
+    /// <summary>
+    /// Corrutina seqüencial que organitza tota la línia gràfica del menú de forma harmoniosa.
+    /// </summary>
+    private IEnumerator Flow()
     {
         yield return new WaitForSeconds(waitBeforeLogo);
 
+        // Desfem la cortina negra inicial
         if (blackOverlay != null)
         {
             blackOverlay.transform.SetAsLastSibling();
             yield return FadeImage(blackOverlay, GetImageAlpha(blackOverlay), 0f, blackFadeOutAtStart);
-            // Ara ja no hauria de bloquejar el menú (però encara no està visible)
-            blackOverlay.raycastTarget = false;
+            blackOverlay.raycastTarget = false; // Desbloquegem interaccions de pantalla
         }
 
+        // Mostrem el logotip
         if (logoImage != null)
             yield return FadeImage(logoImage, 0f, 1f, logoFadeIn);
 
         yield return new WaitForSeconds(logoVisibleTime);
 
+        // Ocultem el logotip
         if (logoImage != null)
         {
             yield return FadeImage(logoImage, 1f, 0f, logoFadeOut);
@@ -126,8 +140,10 @@ public class MainMenuFlow : MonoBehaviour
 
         yield return new WaitForSeconds(waitBeforeMenu);
 
+        // Engeguem de forma progressiva la música d'ambient del menú
         StartMenuMusic();
 
+        // Fem aparèixer els botons del menú
         if (menuGroup != null)
             yield return FadeCanvasGroup(menuGroup, 0f, 1f, menuFadeIn);
 
@@ -135,30 +151,32 @@ public class MainMenuFlow : MonoBehaviour
 
         if (menuGroup != null)
         {
-            // Activem la interacció amb el menú un cop visible
+            // Atorguem finalment els permisos de clic
             menuGroup.interactable = true;
             menuGroup.blocksRaycasts = true;
         }
     }
 
-    void OnPlay()
+    private void OnPlay()
     {
         Debug.Log("MainMenuFlow -> OnPlay()");
         if (!inputEnabled || clicked) return;
         clicked = true;
 
+        // Anem a negre i carreguem la escena de joc
         StartCoroutine(FadeOutThen(() =>
         {
             SceneManager.LoadScene(playSceneName);
         }));
     }
 
-    void OnQuit()
+    private void OnQuit()
     {
         Debug.Log("MainMenuFlow -> OnQuit()");
         if (!inputEnabled || clicked) return;
         clicked = true;
 
+        // Anem a negre i tanquem l'execució de forma neta
         StartCoroutine(FadeOutThen(() =>
         {
 #if UNITY_EDITOR
@@ -169,9 +187,11 @@ public class MainMenuFlow : MonoBehaviour
         }));
     }
 
-    IEnumerator FadeOutThen(System.Action action)
+    /// <summary>
+    /// Corrutina de tancament que s'encarrega d'aplicar un fos a negre de protecció abans d'executar una acció.
+    /// </summary>
+    private IEnumerator FadeOutThen(System.Action action)
     {
-        // Bloqueja inputs immediatament
         inputEnabled = false;
 
         if (menuGroup != null)
@@ -180,17 +200,15 @@ public class MainMenuFlow : MonoBehaviour
             menuGroup.blocksRaycasts = false;
         }
 
-        // ✅ Assegura que el negre estigui a sobre i actiu
         if (blackOverlay != null)
         {
             blackOverlay.gameObject.SetActive(true);
             blackOverlay.transform.SetAsLastSibling();
             blackOverlay.raycastTarget = true;
 
-            // Si vols que el menú també faci fade out
             if (fadeOutMenuToo && menuGroup != null)
             {
-                // fem en paral·lel: menú baixa mentre el negre puja
+                // Si s'indica, esvaeix en paral·lel el menú de botons alhora que s'enfosqueix el fons
                 Coroutine c1 = StartCoroutine(FadeCanvasGroup(menuGroup, menuGroup.alpha, 0f, fadeOutOnClick));
                 yield return FadeImage(blackOverlay, GetImageAlpha(blackOverlay), 1f, fadeOutOnClick);
                 yield return c1;
@@ -204,11 +222,13 @@ public class MainMenuFlow : MonoBehaviour
         action?.Invoke();
     }
 
-    // ---------------- MUSIC ----------------
-    void StartMenuMusic()
+    // =========================================================================
+    // SEGMENT DE GESTIÓ MUSICAL DEL MENÚ
+    // =========================================================================
+
+    private void StartMenuMusic()
     {
         if (musicSource == null || menuMusic == null) return;
-
         if (musicSource.isPlaying && musicSource.clip == menuMusic) return;
 
         musicSource.clip = menuMusic;
@@ -230,7 +250,10 @@ public class MainMenuFlow : MonoBehaviour
         musicFadeRoutine = StartCoroutine(FadeInMusic());
     }
 
-    IEnumerator FadeInMusic()
+    /// <summary>
+    /// Incrementa progressivament el volum del so de fons des de 0 fins al nivell objectiu.
+    /// </summary>
+    private IEnumerator FadeInMusic()
     {
         musicSource.volume = 0f;
         musicSource.Play();
@@ -247,8 +270,11 @@ public class MainMenuFlow : MonoBehaviour
         musicFadeRoutine = null;
     }
 
-    // ---------------- HELPERS ----------------
-    IEnumerator FadeImage(Image img, float from, float to, float duration)
+    // =========================================================================
+    // METODES UTILS D'INTERPOLACIÓ DE UI (HELPERS)
+    // =========================================================================
+
+    private IEnumerator FadeImage(Image img, float from, float to, float duration)
     {
         if (img == null) yield break;
 
@@ -269,7 +295,7 @@ public class MainMenuFlow : MonoBehaviour
         SetImageAlpha(img, to);
     }
 
-    IEnumerator FadeCanvasGroup(CanvasGroup cg, float from, float to, float duration)
+    private IEnumerator FadeCanvasGroup(CanvasGroup cg, float from, float to, float duration)
     {
         if (cg == null) yield break;
 
@@ -289,7 +315,7 @@ public class MainMenuFlow : MonoBehaviour
         cg.alpha = to;
     }
 
-    void SetImageAlpha(Image img, float a)
+    private void SetImageAlpha(Image img, float a)
     {
         if (img == null) return;
         var c = img.color;
@@ -297,7 +323,7 @@ public class MainMenuFlow : MonoBehaviour
         img.color = c;
     }
 
-    float GetImageAlpha(Image img)
+    private float GetImageAlpha(Image img)
     {
         if (img == null) return 0f;
         return img.color.a;

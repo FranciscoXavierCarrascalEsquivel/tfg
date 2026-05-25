@@ -3,10 +3,17 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// Controlador principal del Jugador en l'Overworld (mapa en 2D).
+/// Gestiona les físiques de moviment (caminar, córrer), les animacions de 4 direccions,
+/// la reproducció d'àudio dels passos i els xocs amb parets, i el sistema de combats aleatoris
+/// amb la generació visual d'una exclamació d'alerta (!) sobre el jugador.
+/// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
 public class PlayerController2D : MonoBehaviour
 {
+    // Font compartida i en memòria cau per a la bafarada d'alerta (!) per a millorar el rendiment
     private static TMP_FontAsset cachedAlertFont;
 
     [Header("Alert & Encounters")]

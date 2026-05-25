@@ -4,13 +4,23 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Gestiona la interfície del mode IA: mostra respostes del NPC,
-/// permet al jugador escriure text i enviar-lo a Ollama.
-/// Reutilitza visualment el quadre de diàleg existent del joc.
+/// Interfície gràfica i gestor del sistema de diàleg amb intel·ligència artificial (mode IA).
+/// Aquest component és el responsable de renderitzar el quadre de diàleg avançat que permet
+/// a l'usuari interaccionar de manera oberta escrivint text, el qual s'envia a un model local
+/// de llenguatge (Ollama) per obtenir respostes dinàmiques generades en temps real pel NPC.
+/// 
+/// DISSENY I ESTRUCTURA:
+/// - S'ha optat per una construcció 100% procedimental (per codi) de la interfície gràfica. D'aquesta
+///   manera, evitem dependències rígides de prefabs de Unity, permetent que el sistema s'acobli
+///   perfectament a qualsevol Canvas actiu en l'escena.
+/// - Implementa un patró de disseny Singleton per garantir un únic punt d'accés global.
+/// - Reutilitza la font tipogràfica retro (8-bit) per mantenir la coherència visual de la interfície.
+/// - Ofereix animacions de transició (entrada/sortida de tipus lliscament suau) i efectes de tecleig de lletres.
 /// </summary>
 public class AIDialogueUI : MonoBehaviour
 {
-    // --- Singleton lleuger ---
+    // --- Singleton de la Interfície ---
+    // Permet accedir a la UI des de qualsevol script de control o interacció del jugador
     private static AIDialogueUI _instance;
     public static AIDialogueUI Instance
     {
@@ -18,59 +28,62 @@ public class AIDialogueUI : MonoBehaviour
         {
             if (_instance == null)
             {
+                // Si per algun motiu no s'ha instanciat previament, la creem sota un GameObject buit persistent
                 var go = new GameObject("AIDialogueUI");
                 _instance = go.AddComponent<AIDialogueUI>();
-                DontDestroyOnLoad(go);
+                DontDestroyOnLoad(go); // Assegura la supervivència entre canvis d'escena
             }
             return _instance;
         }
     }
 
-    public bool IsOpen { get; private set; }
-    public System.Action OnAIDialogueClosed;
+    public bool IsOpen { get; private set; } // Flag que indica si la finestra de xat IA està activa
+    public System.Action OnAIDialogueClosed; // Callback per notificar al món que s'ha tancat el xat (ex. per alliberar el moviment del jugador)
 
-    // --- Referències UI construïdes dinàmicament ---
+    // --- Referències a components de la UI generats per codi ---
     private Canvas rootCanvas;
     private GameObject panelGO;
     private RectTransform panelRT;
     private CanvasGroup panelGroup;
-    private TextMeshProUGUI npcResponseText;
-    private TextMeshProUGUI npcNameText;
-    private GameObject npcNameBoxGO;
-    private TMP_InputField playerInputField;
-    private TextMeshProUGUI hintText;
+    private TextMeshProUGUI npcResponseText; // Text on es bolca la resposta generada per la IA
+    private TextMeshProUGUI npcNameText;     // Etiqueta del nom de l'enemic/NPC
+    private GameObject npcNameBoxGO;         // Caixa visual de fons del nom
+    private TMP_InputField playerInputField; // Camp de text editable on escriu el jugador
+    private TextMeshProUGUI hintText;         // Indicadors ràpids per al teclat (ex: Esc per sortir)
     private Image panelBgImg;
-    private Image aiPortraitImage;
-    private GameObject thinkingBubbleGO;
-    private RectTransform[] bubbleRTs;
-    private Sprite circleSprite;
+    private Image aiPortraitImage;           // Imatge d'avatar o retrat de la criatura
+    private GameObject thinkingBubbleGO;     // Contenidor dels punts suspensius de "Pensant..."
+    private RectTransform[] bubbleRTs;       // Punts físics de la bombolla per animar-los individualment
+    private Sprite circleSprite;             // Sprite circular generat dinàmicament per procediment
     private RectTransform inputContainerRT;
 
-    // --- Audio ---
+    // --- Control d'Àudio i Feedbacks ---
     private AudioSource audioSource;
-    private AudioClip currentPlayerTypingSound;
-    private AudioClip currentAITypingSound;
+    private AudioClip currentPlayerTypingSound; // So al teclejar el jugador
+    private AudioClip currentAITypingSound;     // So de l'efecte de tecleig retro quan parla el NPC
 
-    // --- Estat ---
-    private Interactable currentNPC;
-    private bool isWaitingForResponse;
-    private bool isBuilt;
-    private Coroutine typingRoutine;
+    // --- Control d'Estat del Flux ---
+    private Interactable currentNPC;         // Referència de la base de dades de l'entitat interaccionada
+    private bool isWaitingForResponse;       // Flag per evitar re-enviaments de prompts mentre la IA pensa
+    private bool isBuilt;                    // Control per no recrear la UI procedimental cada vegada que s'obre
+    private Coroutine typingRoutine;         // Referència a la corrutina d'escriptura activa (per poder tallar-la)
 
-    // --- Portraits (thinking vs responding) ---
-    private Sprite cachedResponsePortrait;
-    private Sprite cachedThinkingPortrait;
+    // --- Retrats d'Expressió Emocional ---
+    private Sprite cachedResponsePortrait;   // Imatge estàndard del personatge parlant
+    private Sprite cachedThinkingPortrait;   // Imatge del personatge en actitud reflexiva/processant
 
-    // --- Animació ---
-    private float animDuration = 0.4f;
+    // --- Configuració de les Animacions ---
+    private float animDuration = 0.4f;       // Temps de la fosa i desplaçament vertical
     private Coroutine animRoutine;
-    private Vector2 shownPos;
+    private Vector2 shownPos;                // Posició final desitjada en pantalla (calculada dinàmicament)
 
-    // --- Font cache (reutilitza la mateixa font del joc) ---
+    // --- Font Cache ---
+    // Desa la referència a la font tipogràfica per estalviar accessos a disc repetits
     private static TMP_FontAsset cachedFont;
 
     private void Awake()
     {
+        // Control de duplicats en cas de persistència extrema
         if (_instance != null && _instance != this) { Destroy(gameObject); return; }
         _instance = this;
         DontDestroyOnLoad(gameObject);
@@ -79,35 +92,37 @@ public class AIDialogueUI : MonoBehaviour
     private void Update()
     {
         if (!IsOpen) return;
-        if (PauseMenuUI.IsOpen) return;
+        if (PauseMenuUI.IsOpen) return; // Si està el joc pausat, no processem lògica del xat
 
-        // Sortir amb Escape
+        // Tancament ràpid prement la tecla d'escapament
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Close();
             return;
         }
 
-        // Nota: L'Enter es gestiona via l'event onSubmit del TMP_InputField,
-        // perquè el InputField consumeix la tecla Return abans que arribi a Update().
+        // Nota didàctica: L'Enter per enviar el prompt es processa directament mitjançant
+        // l'esdeveniment onSubmit de la classe TMP_InputField, evitant possibles problemes
+        // de consum de tecles duplicades en el motor d'Update principal de Unity.
     }
 
     /// <summary>
-    /// Obre el mode IA per a un NPC concret.
+    /// Obre la finestra de xat intel·ligent configurada per a un personatge en concret.
     /// </summary>
+    /// <param name="npc">El component interactuable que conté els prompts del personatge.</param>
     public void Open(Interactable npc)
     {
-        if (IsOpen) Close();
+        if (IsOpen) Close(); // Neteja de diàlegs previs no tancats correctament
 
         currentNPC = npc;
         IsOpen = true;
         isWaitingForResponse = false;
 
-        // Configurar sons d'aquest NPC
+        // Recuperem els efectes sonors configurats de forma individualitzada per a aquest personatge
         currentPlayerTypingSound = npc.playerTypingSound;
         currentAITypingSound = npc.aiTypingSound;
 
-        // Assegurar AudioSource
+        // Ens assegurem de tenir un component emissor de so en el mateix objecte
         if (audioSource == null)
         {
             audioSource = gameObject.GetComponent<AudioSource>();
@@ -115,9 +130,10 @@ public class AIDialogueUI : MonoBehaviour
             audioSource.playOnAwake = false;
         }
 
+        // Construïm la interfície si és la primera vegada que s'executa el sistema
         BuildUI();
 
-        // Netejar tot abans de començar
+        // Reiniciem i netegem els elements visuals de qualsevol diàleg anterior
         if (npcResponseText != null) 
         {
             npcResponseText.text = "";
@@ -125,10 +141,11 @@ public class AIDialogueUI : MonoBehaviour
         }
         if (thinkingBubbleGO != null) thinkingBubbleGO.SetActive(false);
 
-        // Configurar portraits (normal i thinking)
+        // Emmagatzemem les expressions facials definides a la base de dades
         cachedResponsePortrait = npc.aiPortrait;
         cachedThinkingPortrait = npc.aiThinkingPortrait != null ? npc.aiThinkingPortrait : npc.aiPortrait;
 
+        // Establim el retrat inicial (normal)
         if (aiPortraitImage != null)
         {
             if (cachedResponsePortrait != null)
@@ -138,15 +155,16 @@ public class AIDialogueUI : MonoBehaviour
             }
             else
             {
-                aiPortraitImage.enabled = false;
+                aiPortraitImage.enabled = false; // Desactivar si el personatge no té imatge gràfica
             }
         }
 
-        // Mostrar missatge inicial o repetit si en té (amb un mini-retard per seguretat)
+        // Executem el missatge de benvinguda pre-configurat del NPC (si en té cap)
         string aiMsg = npc.GetAIMessage();
         if (!string.IsNullOrEmpty(aiMsg))
         {
             if (typingRoutine != null) StopCoroutine(typingRoutine);
+            // Iniciem l'escriptura del text inicial amb un lleuger desfasament per fer-ho més orgànic
             typingRoutine = StartCoroutine(TypeInitialMessageDelayed(aiMsg));
         }
         else if (npcResponseText != null)
@@ -155,11 +173,10 @@ public class AIDialogueUI : MonoBehaviour
         }
         else
         {
-            // Si no hi ha missatge inicial, almenys buidem el camp
             if (npcResponseText != null) npcResponseText.text = "";
         }
 
-        // Configurar nom del NPC
+        // Mostrem i actualitzem el nom de l'enemic en la caixa dedicada
         if (npcNameBoxGO != null && npcNameText != null)
         {
             if (!string.IsNullOrEmpty(npc.aiCharacterName))
@@ -169,21 +186,21 @@ public class AIDialogueUI : MonoBehaviour
             }
             else
             {
-                npcNameBoxGO.SetActive(false);
+                npcNameBoxGO.SetActive(false); // Amagar si no hi ha nom especificat
             }
         }
 
-        // Missatge inicial
-        if (npcResponseText != null)
+        // Indicador provisional mentre s'engeguen les rutines
+        if (npcResponseText != null && string.IsNullOrEmpty(aiMsg))
         {
             npcResponseText.text = "...";
         }
 
-        // Mostrar panell
+        // Activem el panell principal i executem l'animació d'entrada
         if (panelGO != null) panelGO.SetActive(true);
         PlayIn();
 
-        // Focus a l'input
+        // Donem focus de forma directa al camp d'escriptura perquè l'usuari pugui teclejar a l'acte
         if (playerInputField != null)
         {
             playerInputField.text = "";
@@ -193,7 +210,7 @@ public class AIDialogueUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Tanca el mode IA.
+    /// Tanca de forma neta la interfície del diàleg intel·ligent.
     /// </summary>
     public void Close()
     {
@@ -202,11 +219,16 @@ public class AIDialogueUI : MonoBehaviour
         IsOpen = false;
         isWaitingForResponse = false;
 
+        // Parem qualsevol tasca d'escriptura de text pendent per evitar fuites de rendiment
         if (typingRoutine != null) { StopCoroutine(typingRoutine); typingRoutine = null; }
 
+        // Iniciem l'animació de lliscament de sortida
         PlayOut();
     }
 
+    /// <summary>
+    /// Corrutina per retardar lleument la fosa del diàleg de benvinguda inicial per evitar pampallugues.
+    /// </summary>
     private IEnumerator TypeInitialMessageDelayed(string message)
     {
         yield return new WaitForSecondsRealtime(0.1f);
@@ -214,19 +236,21 @@ public class AIDialogueUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Cridat pel event onValueChanged del TMP_InputField quan el jugador escriu.
+    /// Listener associat a l'esdeveniment onValueChanged de la caixa d'escriptura del jugador.
+    /// Afegeix el feedback auditiu clàssic de teclat mecànic a mesura que es prem cada tecla.
     /// </summary>
     private void OnPlayerTyping(string newValue)
     {
         if (currentPlayerTypingSound != null && audioSource != null && !string.IsNullOrEmpty(newValue))
         {
+            // Variem lleugerament el to de reproducció (Pitch) perquè no soni repetitiu i resulti més natural
             audioSource.pitch = Random.Range(0.9f, 1.1f);
             audioSource.PlayOneShot(currentPlayerTypingSound, 0.6f);
         }
     }
 
     /// <summary>
-    /// Cridat pel event onSubmit del TMP_InputField quan el jugador prem Enter.
+    /// Callback per a la detecció d'enviament de missatge mitjançant la tecla Enter.
     /// </summary>
     private void OnInputSubmit(string text)
     {
@@ -235,6 +259,9 @@ public class AIDialogueUI : MonoBehaviour
         SendPlayerMessage();
     }
 
+    /// <summary>
+    /// Prepara, valida i envia el text de l'usuari cap a la connexió del servei Ollama.
+    /// </summary>
     private void SendPlayerMessage()
     {
         string message = playerInputField.text.Trim();
@@ -242,26 +269,31 @@ public class AIDialogueUI : MonoBehaviour
 
         Debug.Log($"[AIDialogueUI] Enviant missatge a Ollama: '{message}'");
 
+        // Netegem el camp d'entrada perquè quedi llest per a la propera intervenció
         playerInputField.text = "";
         isWaitingForResponse = true;
 
-        // Mostrar "Pensant..." mentre espera
+        // Executem l'animació d'espera "Pensant..." per donar feedback de processament a l'usuari
         if (npcResponseText != null)
         {
             if (typingRoutine != null) { StopCoroutine(typingRoutine); typingRoutine = null; }
             typingRoutine = StartCoroutine(ThinkingAnimation());
         }
 
-        // Desactivar input temporalment
+        // Desactivem temporalment la interacció de la caixa de text per evitar sobrecàrregues
         if (playerInputField != null)
         {
             playerInputField.interactable = false;
         }
 
-        // Enviar a Ollama
+        // Enviem el prompt mitjançant el client de xarxa asíncron
         OllamaDialogueClient.Instance.SendMessage(currentNPC, message, OnResponseReceived);
     }
 
+    /// <summary>
+    /// Callback disparat en el moment que rebem la cadena de text de resposta de l'API FastAPI/Ollama.
+    /// </summary>
+    /// <param name="response">El contingut de text enviat per la IA.</param>
     private void OnResponseReceived(string response)
     {
         try
@@ -270,19 +302,21 @@ public class AIDialogueUI : MonoBehaviour
 
             isWaitingForResponse = false;
 
+            // Aturem immediatament la corrutina de l'animació dels punts de pensament
             if (typingRoutine != null) { StopCoroutine(typingRoutine); typingRoutine = null; }
 
-            // Mostrar resposta
+            // Procedim a escriure la resposta lletra per lletra
             if (npcResponseText != null)
             {
-                npcResponseText.maxVisibleCharacters = int.MaxValue; // Reset per seguretat
+                npcResponseText.maxVisibleCharacters = int.MaxValue; // Reset de caràcters visibles actius
                 typingRoutine = StartCoroutine(TypeResponseRoutine(response ?? OllamaDialogueClient.FallbackMessage));
             }
 
-            // Reactivar input
+            // Reactivem el canal d'entrada per permetre la continuació del diàleg
             if (playerInputField != null && IsOpen)
             {
                 playerInputField.interactable = true;
+                // Forcem el focus de tornada a l'input en el frame següent per evitar problemes d'esdeveniments
                 StartCoroutine(RefocusInputNextFrame());
             }
         }
@@ -290,12 +324,14 @@ public class AIDialogueUI : MonoBehaviour
         {
             Debug.LogError($"[AIDialogueUI] ERROR a OnResponseReceived: {e.Message}\n{e.StackTrace}");
             isWaitingForResponse = false;
-            // Tornar al portrait normal en cas d'error
+            
+            // Si hi ha cap error inesperat de xarxa o deserialització, restaures el retrat normal
             if (aiPortraitImage != null && cachedResponsePortrait != null)
             {
                 aiPortraitImage.sprite = cachedResponsePortrait;
             }
-            // Intentem mostrar el text directament com a últim recurs
+            
+            // Bolquem el missatge d'error de rescat per no trencar l'experiència del jugador
             if (npcResponseText != null)
             {
                 npcResponseText.text = response ?? OllamaDialogueClient.FallbackMessage;
@@ -310,7 +346,7 @@ public class AIDialogueUI : MonoBehaviour
 
     private IEnumerator RefocusInputNextFrame()
     {
-        yield return null; // Esperar un frame
+        yield return null; // Un frame d'espera és crucial per assegurar que el mòdul d'Events de Unity ha refrescat
         if (playerInputField != null && IsOpen)
         {
             playerInputField.ActivateInputField();
@@ -318,29 +354,34 @@ public class AIDialogueUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina que gestiona el feedback gràfic de reflexió de la criatura quan processa el prompt.
+    /// Canvia l'avatar a l'expressió reflexiva i anima els punts suspesos de forma sinusoidal.
+    /// </summary>
     private IEnumerator ThinkingAnimation()
     {
         if (thinkingBubbleGO == null) yield break;
         
-        // Canviar al portrait de "pensant"
+        // Canviem al retrat facial de reflexió (Thinking)
         if (aiPortraitImage != null && cachedThinkingPortrait != null)
         {
             aiPortraitImage.sprite = cachedThinkingPortrait;
         }
 
         thinkingBubbleGO.SetActive(true);
-        npcResponseText.text = ""; // Netegem el text mentre pensa
+        npcResponseText.text = ""; // Netegem la resposta anterior durant el temps d'espera
         
         float timer = 0f;
         while (isWaitingForResponse)
         {
-            timer += Time.unscaledDeltaTime;
+            timer += Time.unscaledDeltaTime; // Utilitzem unscaledDeltaTime per no dependre del TimeScale del joc
             for (int i = 0; i < bubbleRTs.Length; i++)
             {
+                // Calculem un moviment sinusoidal desfasat per a cada punt, simulant un efecte d'ona
                 float offset = Mathf.Sin(timer * 5f + (i * 0.8f)) * 10f;
                 bubbleRTs[i].anchoredPosition = new Vector2(bubbleRTs[i].anchoredPosition.x, offset);
                 
-                // Efecte de escala també
+                // Variem l'escala dinàmicament per donar-li més volum i dinamisme tridimensional
                 float scale = 1f + Mathf.Sin(timer * 5f + (i * 0.8f)) * 0.2f;
                 bubbleRTs[i].localScale = new Vector3(scale, scale, 1f);
             }
@@ -350,14 +391,18 @@ public class AIDialogueUI : MonoBehaviour
         thinkingBubbleGO.SetActive(false);
     }
 
+    /// <summary>
+    /// Corrutina d'escriptura retro (Typewriter).
+    /// Mostra la resposta de la IA de manera progressiva i sincronitzada amb sons de tecleig.
+    /// </summary>
     private IEnumerator TypeResponseRoutine(string text)
     {
         if (npcResponseText == null) yield break;
 
-        // Amagar l'animació de càrrega quan comencem a escriure la resposta
+        // Ens assegurem de tancar la visual de pensament si continuava activa
         if (thinkingBubbleGO != null) thinkingBubbleGO.SetActive(false);
 
-        // Tornar al portrait de "resposta"
+        // Restablim el retrat normal de xat (Response)
         if (aiPortraitImage != null && cachedResponsePortrait != null)
         {
             aiPortraitImage.sprite = cachedResponsePortrait;
@@ -366,21 +411,22 @@ public class AIDialogueUI : MonoBehaviour
         npcResponseText.text = text;
         npcResponseText.maxVisibleCharacters = 0;
 
-        float charsPerSecond = 50f;
+        float charsPerSecond = 50f; // Velocitat base de tecleig
         float delay = 1f / charsPerSecond;
 
         for (int i = 0; i < text.Length; i++)
         {
             npcResponseText.maxVisibleCharacters = i + 1;
 
-            // So de tecleig IA per cada caràcter visible (no espais)
             char c = text[i];
+            // Emetem el so de parla de la criatura evitant espais o salts de línia
             if (currentAITypingSound != null && c != ' ' && c != '\n')
             {
-                audioSource.pitch = Random.Range(0.95f, 1.05f);
+                audioSource.pitch = Random.Range(0.95f, 1.05f); // Micro-modulació de freqüència de veu
                 audioSource.PlayOneShot(currentAITypingSound, 0.5f);
             }
 
+            // Dinamisme de puntuació: fem pauses lleugerament més llargues en comes, punts o exclamacions
             float currentDelay = delay;
             if (c == '.' || c == '?' || c == '!') currentDelay = delay * 8f;
             else if (c == ',' || c == ';' || c == ':') currentDelay = delay * 4f;
@@ -388,22 +434,28 @@ public class AIDialogueUI : MonoBehaviour
             yield return new WaitForSecondsRealtime(currentDelay);
         }
 
+        // Assegurem que s'activi la visualització del final exacte per evitar pèrdues de paraules
         npcResponseText.maxVisibleCharacters = text.Length;
         typingRoutine = null;
     }
 
-    // =========================================
-    // UI Builder
-    // =========================================
+    // =========================================================================
+    // UI Builder Procedimental (Creació Dinàmica dels Elements de la UI)
+    // =========================================================================
+    /// <summary>
+    /// Mètode encarregat d'instanciar i organitzar tota la jerarquia del Canvas per codi.
+    /// Configura les caixes, marges, colors, components de xarxa i efectes de contorn de la interfície.
+    /// </summary>
     private void BuildUI()
     {
-        if (isBuilt && panelGO != null) return;
+        if (isBuilt && panelGO != null) return; // Si ja està construïda, no cal tornar-hi
 
-        // Trobar el Canvas principal
+        // Localitzem el Canvas principal de l'escena on incrustarem el nostre panell
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         Canvas targetCanvas = null;
         foreach (var c in canvases)
         {
+            // Evitem muntar-lo a sobre dels Canvas d'escena final o d'alertes específiques
             if (c.name != "EndCanvas" && c.name != "AlertCanvas")
             {
                 targetCanvas = c;
@@ -415,32 +467,36 @@ public class AIDialogueUI : MonoBehaviour
 
         rootCanvas = targetCanvas;
 
-        // --- Panell principal ---
+        // ── Creació del Panell Contenidor Principal ──
         panelGO = new GameObject("AIDialoguePanel");
         panelRT = panelGO.AddComponent<RectTransform>();
         panelRT.SetParent(rootCanvas.transform, false);
 
-        // Canvas propi amb sorting alt
+        // Ens assegurem que el panell tingui el seu propi Canvas d'ordenament superior
         Canvas diagCanvas = panelGO.AddComponent<Canvas>();
         diagCanvas.overrideSorting = true;
-        diagCanvas.sortingOrder = 10000;
-        panelGO.AddComponent<GraphicRaycaster>();
+        diagCanvas.sortingOrder = 10000; // Prioritat màxima sobre la UI estàndard
+        panelGO.AddComponent<GraphicRaycaster>(); // Permet rebre clics de ratolí en l'input
 
+        // Col·loquem el panell ocupant la part inferior de la pantalla (zona de diàlegs)
         panelRT.anchorMin = new Vector2(0.12f, 0.05f);
         panelRT.anchorMax = new Vector2(0.88f, 0.40f);
         panelRT.offsetMin = panelRT.offsetMax = Vector2.zero;
-        shownPos = panelRT.anchoredPosition;
+        shownPos = panelRT.anchoredPosition; // Guardem la posició per a les animacions de desplaçament
 
         panelGroup = panelGO.AddComponent<CanvasGroup>();
         panelGroup.alpha = 0f;
 
+        // Estètica del fons: blau fosc molt profund, estil cyberpunk/místic
         panelBgImg = panelGO.AddComponent<Image>();
         panelBgImg.color = new Color(0.08f, 0.08f, 0.16f, 0.95f);
+        
+        // Afegim un contorn brillant d'estil "glow" celest
         var panelOl = panelGO.AddComponent<Outline>();
         panelOl.effectColor = new Color(0.4f, 0.8f, 1f, 0.8f);
         panelOl.effectDistance = new Vector2(6f, -6f);
 
-        // --- NPC Name Box ---
+        // ── Caixa del Nom del Personatge (Etiqueta superior esquerra) ──
         npcNameBoxGO = new GameObject("AINameBox");
         npcNameBoxGO.transform.SetParent(panelRT, false);
         var nbRT = npcNameBoxGO.AddComponent<RectTransform>();
@@ -451,7 +507,7 @@ public class AIDialogueUI : MonoBehaviour
         nbRT.anchoredPosition = new Vector2(15f, 8f);
 
         var nbImg = npcNameBoxGO.AddComponent<Image>();
-        nbImg.color = new Color(0.15f, 0.25f, 0.4f, 1f);
+        nbImg.color = new Color(0.15f, 0.25f, 0.4f, 1f); // Blau acer per diferenciar el nom
         var nbOl = npcNameBoxGO.AddComponent<Outline>();
         nbOl.effectColor = new Color(0.4f, 0.8f, 1f, 0.8f);
         nbOl.effectDistance = new Vector2(6f, -6f);
@@ -468,28 +524,28 @@ public class AIDialogueUI : MonoBehaviour
         npcNameText.fontSizeMin = 30f;
         npcNameText.fontSizeMax = 54f;
 
-        // --- Zona de resposta del NPC (part superior del panell) ---
+        // ── Zona del Text de Diàleg de la IA (Part superior de la caixa) ──
         var responseGO = new GameObject("AIResponseBox");
         responseGO.transform.SetParent(panelRT, false);
         var rRT = responseGO.AddComponent<RectTransform>();
-        rRT.anchorMin = new Vector2(0.30f, 0.28f); // Comença després de l'espai de la foto
+        rRT.anchorMin = new Vector2(0.30f, 0.28f); // Situada després del retrat per evitar solapaments
         rRT.anchorMax = new Vector2(0.98f, 0.95f);
         rRT.offsetMin = rRT.offsetMax = Vector2.zero;
 
         npcResponseText = responseGO.AddComponent<TextMeshProUGUI>();
-        npcResponseText.margin = new Vector4(10f, 10f, 10f, 10f); // Marges interns més nets
+        npcResponseText.margin = new Vector4(10f, 10f, 10f, 10f);
         npcResponseText.textWrappingMode = TextWrappingModes.Normal;
         npcResponseText.fontSizeMax = 70f;
         npcResponseText.fontSizeMin = 32f;
         npcResponseText.enableAutoSizing = true;
         SetFont(npcResponseText, 55f, Color.white, FontStyles.Normal, TextAlignmentOptions.TopLeft);
 
-        // --- Portrait (Cantonada esquerra dedicada) ---
+        // ── Retrat de la Criatura ──
         var portraitBoxGO = new GameObject("AIPortraitBox");
         portraitBoxGO.transform.SetParent(panelRT, false);
         var pbRT = portraitBoxGO.AddComponent<RectTransform>();
-        pbRT.anchorMin = new Vector2(0.02f, 0.05f); // Una mica de marge des de la vora del panell
-        pbRT.anchorMax = new Vector2(0.28f, 0.95f); // Ocupa el primer 28% de l'ample i gairebé tot l'alt
+        pbRT.anchorMin = new Vector2(0.02f, 0.05f); 
+        pbRT.anchorMax = new Vector2(0.28f, 0.95f); // Ocupa el primer terç esquerre del panell
         pbRT.offsetMin = pbRT.offsetMax = Vector2.zero;
 
         var portraitGO = new GameObject("AIPortraitImage");
@@ -499,10 +555,10 @@ public class AIDialogueUI : MonoBehaviour
         pRT.offsetMin = Vector2.zero; pRT.offsetMax = Vector2.zero;
         
         aiPortraitImage = portraitGO.AddComponent<Image>();
-        aiPortraitImage.preserveAspect = true;
+        aiPortraitImage.preserveAspect = true; // IMPORTANT: Manté la proporció de píxels dels sprites retro
         aiPortraitImage.enabled = false;
 
-        // --- Thinking Bubbles ---
+        // ── Bombolles Animades d'Esperà (Thinking Dots) ──
         thinkingBubbleGO = new GameObject("AIThinkingBubbles");
         thinkingBubbleGO.transform.SetParent(panelRT, false);
         var tbRT = thinkingBubbleGO.AddComponent<RectTransform>();
@@ -511,7 +567,7 @@ public class AIDialogueUI : MonoBehaviour
         tbRT.sizeDelta = new Vector2(200f, 100f);
         tbRT.anchoredPosition = Vector2.zero;
         
-        if (circleSprite == null) circleSprite = CreateCircleSprite();
+        if (circleSprite == null) circleSprite = CreateCircleSprite(); // Generem la textura de punt procedural
         
         bubbleRTs = new RectTransform[3];
         for (int i = 0; i < 3; i++)
@@ -528,39 +584,39 @@ public class AIDialogueUI : MonoBehaviour
         }
         thinkingBubbleGO.SetActive(false);
 
-        // --- Separador visual ---
+        // ── Línia Separadora Estètica ──
         var separatorGO = new GameObject("AISeparator");
         separatorGO.transform.SetParent(panelRT, false);
         var sepRT = separatorGO.AddComponent<RectTransform>();
-        sepRT.anchorMin = new Vector2(0.30f, 0.27f); // Alineat amb el text per no tapar la foto
+        sepRT.anchorMin = new Vector2(0.30f, 0.27f);
         sepRT.anchorMax = new Vector2(0.95f, 0.27f);
         sepRT.sizeDelta = new Vector2(0f, 3f);
         sepRT.anchoredPosition = Vector2.zero;
         var sepImg = separatorGO.AddComponent<Image>();
         sepImg.color = new Color(0.4f, 0.8f, 1f, 0.5f);
 
-        // --- Camp d'entrada de text del jugador (part inferior) ---
+        // ── Contenidor i Camp de Text del Jugador (Part Inferior) ──
         var inputContainerGO = new GameObject("AIInputContainer");
         inputContainerGO.transform.SetParent(panelRT, false);
         inputContainerRT = inputContainerGO.AddComponent<RectTransform>();
-        inputContainerRT.anchorMin = new Vector2(0.30f, 0.04f); // Comença després de la foto
+        inputContainerRT.anchorMin = new Vector2(0.30f, 0.04f);
         inputContainerRT.anchorMax = new Vector2(0.98f, 0.25f);
         inputContainerRT.offsetMin = inputContainerRT.offsetMax = Vector2.zero;
 
         var icImg = inputContainerGO.AddComponent<Image>();
-        icImg.color = new Color(0.05f, 0.05f, 0.12f, 0.9f);
+        icImg.color = new Color(0.05f, 0.05f, 0.12f, 0.9f); // Més fosc per contrastar el text que entra
         var icOl = inputContainerGO.AddComponent<Outline>();
         icOl.effectColor = new Color(0.3f, 0.6f, 0.8f, 0.6f);
         icOl.effectDistance = new Vector2(3f, -3f);
 
-        // Input Field (TMP)
+        // Input Field principal de TextMeshPro
         var inputGO = new GameObject("AIInputField");
         inputGO.transform.SetParent(inputContainerRT, false);
         var inputRT = inputGO.AddComponent<RectTransform>();
         inputRT.anchorMin = Vector2.zero; inputRT.anchorMax = Vector2.one;
         inputRT.offsetMin = new Vector2(15f, 5f); inputRT.offsetMax = new Vector2(-15f, -5f);
 
-        // TextArea (necessari per a TMP_InputField)
+        // Zona de tall (Viewport)
         var textAreaGO = new GameObject("Text Area");
         textAreaGO.transform.SetParent(inputRT, false);
         var taRT = textAreaGO.AddComponent<RectTransform>();
@@ -568,7 +624,7 @@ public class AIDialogueUI : MonoBehaviour
         taRT.offsetMin = Vector2.zero; taRT.offsetMax = Vector2.zero;
         var taMask = textAreaGO.AddComponent<RectMask2D>();
 
-        // Text del jugador
+        // Text editable visible
         var playerTextGO = new GameObject("Text");
         playerTextGO.transform.SetParent(taRT, false);
         var ptRT = playerTextGO.AddComponent<RectTransform>();
@@ -580,7 +636,7 @@ public class AIDialogueUI : MonoBehaviour
         playerText.fontSizeMin = 28f;
         playerText.fontSizeMax = 50f;
 
-        // Placeholder
+        // Text de suggeriment (Placeholder)
         var placeholderGO = new GameObject("Placeholder");
         placeholderGO.transform.SetParent(taRT, false);
         var phRT = placeholderGO.AddComponent<RectTransform>();
@@ -588,42 +644,38 @@ public class AIDialogueUI : MonoBehaviour
         phRT.offsetMin = Vector2.zero; phRT.offsetMax = Vector2.zero;
         var placeholderText = placeholderGO.AddComponent<TextMeshProUGUI>();
         SetFont(placeholderText, 44f, new Color(0.5f, 0.55f, 0.65f, 0.7f), FontStyles.Italic, TextAlignmentOptions.Left);
-        placeholderText.text = "Type here...  (Enter to send, Esc to exit)";
+        placeholderText.text = "Escriu aquí... (Enter per enviar, Esc per sortir)";
         placeholderText.enableAutoSizing = true;
         placeholderText.fontSizeMin = 22f;
         placeholderText.fontSizeMax = 44f;
 
-        // Configurar InputField
+        // Muntem i connectem el component TMP_InputField
         playerInputField = inputGO.AddComponent<TMP_InputField>();
         playerInputField.textViewport = taRT;
         playerInputField.textComponent = playerText;
         playerInputField.placeholder = placeholderText;
         playerInputField.fontAsset = playerText.font;
         playerInputField.pointSize = 44f;
-        playerInputField.characterLimit = 300;
+        playerInputField.characterLimit = 300; // Limitem el text per evitar abusos o desbordaments de memòria de la IA
         playerInputField.lineType = TMP_InputField.LineType.SingleLine;
 
-        // IMPORTANT: Connectar l'event onSubmit per capturar Enter
-        // (TMP_InputField consumeix la tecla Return, Input.GetKeyDown no la detecta)
+        // Enllacem els nostres mètodes d'esdeveniments
         playerInputField.onSubmit.AddListener(OnInputSubmit);
-
-        // So de tecleig del jugador per cada caràcter escrit
         playerInputField.onValueChanged.AddListener(OnPlayerTyping);
 
-        // Colors de l'InputField
+        // Estètica de colors al seleccionar
         var inputColors = playerInputField.colors;
         inputColors.normalColor = Color.white;
         inputColors.highlightedColor = new Color(0.4f, 0.8f, 1f, 1f);
         inputColors.selectedColor = Color.white;
         playerInputField.colors = inputColors;
 
-        // Caret (cursor) color
         playerInputField.caretColor = new Color(0.4f, 0.8f, 1f, 1f);
         playerInputField.caretWidth = 3;
         playerInputField.customCaretColor = true;
         playerInputField.selectionColor = new Color(0.2f, 0.5f, 0.8f, 0.4f);
 
-        // --- Hint text (Escape per sortir) a baix a la dreta ---
+        // ── Indicador de tecla d'escapament per a sortida ràpida (Hint) ──
         var hintGO = new GameObject("AIHintText");
         hintGO.transform.SetParent(rootCanvas.transform, false);
         var hintRT = hintGO.AddComponent<RectTransform>();
@@ -636,26 +688,33 @@ public class AIDialogueUI : MonoBehaviour
 
         hintText = hintGO.AddComponent<TextMeshProUGUI>();
         SetFont(hintText, 24f, new Color(0.5f, 0.6f, 0.7f, 0.6f), FontStyles.Italic, TextAlignmentOptions.Right);
-        hintText.text = "[Esc] Exit";
+        hintText.text = "[Esc] Sortir";
 
         panelGO.SetActive(false);
-        isBuilt = true;
+        isBuilt = true; // Protecció per evitar futures reconstruccions d'elements redundants
     }
 
-    // =========================================
-    // Font Helper (reutilitza la font 8-bit del joc)
-    // =========================================
+    // =========================================================================
+    // Font Helper - Localització Dinàmica i Mètodes de Càrrega de Recursos
+    // =========================================================================
+    /// <summary>
+    /// Configura les propietats tipogràfiques d'un element de text.
+    /// Realitza una cerca recursiva de la font retro als directoris del projecte, funcionant tant
+    /// a l'editor com en la versió compilada (Build).
+    /// </summary>
     private void SetFont(TextMeshProUGUI t, float size, Color col, FontStyles style, TextAlignmentOptions align)
     {
         t.fontSize = size; t.color = col; t.fontStyle = style; t.alignment = align;
 
         if (cachedFont == null)
         {
+            // Cerca prioritària mitjançant AssetDatabase en cas d'estar executant-se a l'Editor de Unity
 #if UNITY_EDITOR
             cachedFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/determination SDF.asset")
                  ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/PixelOperator SDF.asset")
                  ?? UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/PixelOperator SDF.asset");
 #endif
+            // Si estem en una Build compilada o la cerca anterior ha fallat, utilitzem Resources.Load estàndard
             if (cachedFont == null)
             {
                 cachedFont = Resources.Load<TMP_FontAsset>("Fonts/determination SDF")
@@ -668,9 +727,9 @@ public class AIDialogueUI : MonoBehaviour
         if (cachedFont != null) t.font = cachedFont;
     }
 
-    // =========================================
-    // Animació (mateixa estètica que DialogueUI)
-    // =========================================
+    // =========================================================================
+    // Animacions de Entrada i Sortida (Efecte Lliscament Vertical RPG)
+    // =========================================================================
     private void PlayIn()
     {
         if (panelRT == null || panelGroup == null) return;
@@ -690,10 +749,14 @@ public class AIDialogueUI : MonoBehaviour
         animRoutine = StartCoroutine(AnimateOut());
     }
 
+    /// <summary>
+    /// Corrutina d'entrada: desplaça el panell de diàleg de forma vertical (d'avall cap a dalt)
+    /// utilitzant una suavització cúbica per donar-li un aspecte visual fluid i molt professional.
+    /// </summary>
     private IEnumerator AnimateIn()
     {
         panelGroup.alpha = 1f;
-        float slideDist = 800f;
+        float slideDist = 800f; // Distància de desplaçament d'inici (fora de la pantalla)
         Vector2 offset = new Vector2(0f, -slideDist);
         panelRT.anchoredPosition = shownPos + offset;
         panelRT.localScale = Vector3.one;
@@ -703,6 +766,7 @@ public class AIDialogueUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float u = Mathf.Clamp01(t / Mathf.Max(0.0001f, animDuration));
+            // Aplicació d'una corba de suavització de tipus "OutCubic" per frenar al final de la transició
             float eased = 1f - Mathf.Pow(1f - u, 3f);
             panelRT.anchoredPosition = Vector2.Lerp(shownPos + offset, shownPos, eased);
             yield return null;
@@ -713,6 +777,9 @@ public class AIDialogueUI : MonoBehaviour
         animRoutine = null;
     }
 
+    /// <summary>
+    /// Corrutina de sortida: llisca el panell cap avall fins a ocultar-lo completament per sota de la vista.
+    /// </summary>
     private IEnumerator AnimateOut()
     {
         panelGroup.alpha = 1f;
@@ -725,6 +792,7 @@ public class AIDialogueUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float u = Mathf.Clamp01(t / Mathf.Max(0.0001f, animDuration));
+            // Aplicació d'una corba de tipus "InQuad" (acceleració gradual cap avall)
             float eased = u * u;
             panelRT.anchoredPosition = Vector2.Lerp(startPos, endPos, eased);
             yield return null;
@@ -732,11 +800,16 @@ public class AIDialogueUI : MonoBehaviour
 
         panelGroup.alpha = 0f;
         panelRT.anchoredPosition = endPos;
-        if (panelGO) panelGO.SetActive(false);
+        if (panelGO) panelGO.SetActive(false); // Apaguem el panell per estalviar recursos de dibuix del motor
 
         animRoutine = null;
-        OnAIDialogueClosed?.Invoke();
+        OnAIDialogueClosed?.Invoke(); // Notifiquem al jugador per alliberar la seva interacció amb el món
     }
+
+    /// <summary>
+    /// Generador gràfic procedural d'un sprite circular amb suavitzat de vores (Anti-aliasing bàsic).
+    /// Ens permet tenir imatges circulars perfectes sense necessitat d'afegir assets en el disc.
+    /// </summary>
     private Sprite CreateCircleSprite()
     {
         int size = 64;
@@ -745,16 +818,19 @@ public class AIDialogueUI : MonoBehaviour
         {
             for (int x = 0; x < size; x++)
             {
+                // Calculem la distància de cada píxel respecte al centre de la textura
                 float dx = (x - size / 2f) / (size / 2f);
                 float dy = (y - size / 2f) / (size / 2f);
                 float d = Mathf.Sqrt(dx * dx + dy * dy);
                 float alpha = d <= 1f ? 1f : 0f;
-                // Soft edge
+                
+                // Apliquem una petita fosa gradual en el límit exterior per crear un suavitzat natural
                 if (d > 0.8f && d <= 1f) alpha = 1f - (d - 0.8f) / 0.2f;
+                
                 tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
             }
         }
-        tex.Apply();
+        tex.Apply(); // Envia els píxels a la GPU de manera eficient
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
     }
 }

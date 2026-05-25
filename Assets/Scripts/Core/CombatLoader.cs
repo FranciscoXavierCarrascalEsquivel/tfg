@@ -3,29 +3,51 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Carregador i gestor de transicions de combats (CombatLoader).
+/// Aquest és el cervell encarregat de connectar de forma neta el món de l'Overworld amb el Combat (additive scene).
+/// Flux d'entrada al combat (StartCombat):
+/// 1) Bloqueja el jugador i enquadra de cop la càmera per evitar desalineacions visualment molestes.
+/// 2) Cerca i fosa de forma gradual a silenci (FadeOut) de tots els àudios ambientals actius, guardant-ne els volums.
+/// 3) Realitza una captura gràfica de la pantalla (Texture2D) just abans d'iniciar la transició.
+/// 4) Instancia el SplitSnapshot (pantalla partida fragmentada) projectant la captura com a fons per tapar el canvi.
+/// 5) Carrega de forma asíncrona additiva la "CombatScene".
+/// 6) Executa el PreSetup del combat, activa l'animació d'obertura del Split i engega la música de combat.
+/// 
+/// Flux de sortida del combat (EndCombat):
+/// 1) Fosa a silenci de la cançó de batalla.
+/// 2) Recupera recompenses de reclutament de combat.
+/// 3) Uneix de nou les dues meitats del Split tancant la vista, descarrega asíncronament el combat.
+/// 4) Si hi ha recompensa, l'afegeix a l'inventari i crea un panell dinàmic al Canvas del món (RecruitRewardPanelUI).
+/// 5) Restaura els scripts del món, el moviment, i fa un FadeIn de les músiques del mapa que s'havien pausat.
+/// </summary>
 public class CombatLoader : MonoBehaviour
 {
-    [Header("Scene")]
-    [SerializeField] private string combatSceneName = "CombatScene";
-    [SerializeField] private MonoBehaviour[] worldScriptsToDisable;
+    [Header("Configuració de l'Escena")]
+    [SerializeField] private string combatSceneName = "CombatScene"; // Nom de l'escena de combat a carregar additivament
+    [SerializeField] private MonoBehaviour[] worldScriptsToDisable; // Components de l'Overworld que cal congelar en combat
 
-    public static bool IsInCombat { get; set; }
+    public static bool IsInCombat { get; set; } // Flag d'estat global de si estem enmig d'un combat
 
-    [Header("Split Snapshot Transition")]
-    [SerializeField] private SplitSnapshot splitOverlayPrefab;
+    [Header("Efecte de Transició")]
+    [SerializeField] private SplitSnapshot splitOverlayPrefab; // Prefab de pantalla partida per al trencament de vidre
 
-    [Header("Triggers")]
-    [SerializeField] private ZoneChangeTrigger[] stopMusicTriggers;
+    [Header("Triggers Físics")]
+    [SerializeField] private ZoneChangeTrigger[] stopMusicTriggers; // Triggers que aturen preventivament la música de fons
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip backgroundMusic;
-    [SerializeField] private AudioClip combatMusic;
+    [Header("Canals d'Àudio")]
+    [SerializeField] private AudioClip backgroundMusic; // Música d'exploració del mapa
+    [SerializeField] private AudioClip combatMusic;     // Música general de combat
+    
     private AudioSource combatAudioSource;
     private AudioSource backgroundAudioSource;
+    
+    // Diccionari temporal per desar els volums de les cançons del món mentre combatem per poder restaurar-les
     private System.Collections.Generic.Dictionary<AudioSource, float> pausedAudioSources = new System.Collections.Generic.Dictionary<AudioSource, float>();
 
     private void Awake()
     {
+        // Setup dels nostres emissors de so dedicats
         combatAudioSource = gameObject.AddComponent<AudioSource>();
         combatAudioSource.loop = true;
         combatAudioSource.playOnAwake = false;
@@ -39,6 +61,7 @@ public class CombatLoader : MonoBehaviour
 
     private void OnEnable()
     {
+        // Enllacem de forma de delegats els esdeveniments de canvi de zona
         if (stopMusicTriggers != null)
         {
             foreach (var t in stopMusicTriggers)
@@ -68,33 +91,43 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Atura suau de la cançó d'exploració activa del mapa.
+    /// </summary>
     public void StopBackgroundMusic()
     {
         if (backgroundAudioSource != null && backgroundAudioSource.isPlaying)
         {
-            // Fem un fade out progressiu de 3 segons abans de pausar/parar
             StartCoroutine(FadeAudio(backgroundAudioSource, backgroundAudioSource.volume, 0f, 3f, true));
         }
     }
 
+    /// <summary>
+    /// Atura suau de la cançó d'exploració engegada a partir d'un cicle de corrutina.
+    /// </summary>
     public Coroutine StopBackgroundMusicCoroutine(float fadeDuration = 3f)
     {
         if (backgroundAudioSource != null && backgroundAudioSource.isPlaying)
         {
-            // Fem un fade out progressiu abans de pausar/parar
             return StartCoroutine(FadeAudio(backgroundAudioSource, backgroundAudioSource.volume, 0f, fadeDuration, true));
         }
         return null;
     }
 
+    /// <summary>
+    /// Reprodueix una nova cançó de fons al mapa amb el volum complet.
+    /// </summary>
     public void PlayBackgroundMusic(AudioClip clip)
     {
         if (backgroundAudioSource == null) return;
-        backgroundAudioSource.volume = 1f; // Resetegem el volum per si venim d'un fade out
+        backgroundAudioSource.volume = 1f; 
         backgroundAudioSource.clip = clip;
         backgroundAudioSource.Play();
     }
 
+    /// <summary>
+    /// Engega de forma segura la seqüència de combat a partir d'un objecte encounter.
+    /// </summary>
     public void StartCombat(CombatEncounter encounter)
     {
         if (IsInCombat) 
@@ -108,7 +141,7 @@ public class CombatLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Permet carregar un combat directament des d'un perfil d'enemic (útil per a UnityEvents).
+    /// Enllaç d'inici directe a partir d'un perfil d'enemic (Didàctic per a disparadors de UnityEvents de l'inspector).
     /// </summary>
     public void StartCombatWithProfile(EnemyProfile profile)
     {
@@ -116,7 +149,6 @@ public class CombatLoader : MonoBehaviour
         
         CombatEncounter encounter = new CombatEncounter();
         encounter.enemyProfile = profile;
-        // Valors per defecte si no s'especifiquen a l'encounter
         encounter.enemyAttackDuration = profile.attackDuration;
         
         StartCombat(encounter);
@@ -132,46 +164,49 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
-    private SplitSnapshot activeOverlay;
+    private SplitSnapshot activeOverlay; // Transició activa
 
+    /// <summary>
+    /// Corrutina mestra que s'encarrega d'aplicar la transició visual de trencament i de carregar additivament la CombatScene.
+    /// </summary>
     private IEnumerator StartCombatRoutine(CombatEncounter encounter)
     {
         LockPlayer(true);
         IsInCombat = true;
-        // Snap camera to target immediately so the snapshot is perfectly centered/clamped
+
+        // Centrem immediatament la càmera a sobre de l'objectiu perquè no hi hagi salts visuals
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
         foreach (var camFollow in cams) camFollow.SnapToTarget();
 
-        // 1) Captura el frame actual (món) al final del frame
+        // 1) Esperem al final de frame (EndOfFrame) perquè el render de la càmera estigui complet
         yield return new WaitForEndOfFrame();
 
-        // Lock player physically and logically so they do not move behind scenes
         LockPlayer(true);
 
-        // Fade ALL active AudioSources in the scene
+        // Emmudim a poc a poc (FadeOut) absolutament TOTS els AudioSources del món
         pausedAudioSources.Clear();
         var allAudio = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         foreach (var src in allAudio)
         {
             if (src != combatAudioSource && src.isPlaying)
             {
-                pausedAudioSources[src] = src.volume;
+                pausedAudioSources[src] = src.volume; // Guardem el volum original
                 StartCoroutine(FadeAudio(src, src.volume, 0f, 1f, true));
             }
         }
 
-        // Snapshot captures the frame cleanly without the UI overlapping
+        // Capturem de forma neta els píxels de la pantalla de l'Overworld
         var snapshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGBA32, false);
         snapshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
         snapshot.Apply();
 
-        // 2) Instancia l'overlay i posa el snapshot
+        // 2) Instanciem el filtre gràfic de Split i li bolquem la captura com a textures de tall
         var overlay = Instantiate(splitOverlayPrefab);
         overlay.SetSnapshot(snapshot);
-        overlay.keepAlive = true; // IMPORTANT perquè no s'autodestrueixi al final de PlayOpen!
+        overlay.keepAlive = true; // Mantenim viu per fer el tancament invers en acabar!
         activeOverlay = overlay;
 
-        // Assegura que el canvas va davant
+        // Forcem que el Canvas del trencament de pantalla passi per sobre de tot
         var c = overlay.GetComponent<Canvas>();
         if (c != null)
         {
@@ -179,24 +214,22 @@ public class CombatLoader : MonoBehaviour
             c.sortingOrder = 9999;
         }
 
-        // IMPORTANT: deixa 1-2 frames perquè es vegi segur
+        // Deixem 2 frames lliures per a assegurar-nos que Unity ha dibuixat l'overlay abans d'iniciar la càrrega
         yield return null;
         yield return null;
 
-        // 3) Carreguem combat per sota i esperem primer que el món estigui instanciat
+        // 3) Carreguem additivament l'escena del combat sense esborrar el mapa de joc
         var loadOp = SceneManager.LoadSceneAsync(combatSceneName, LoadSceneMode.Additive);
         while (!loadOp.isDone) yield return null;
 
-        // Ara que la UI existeix d'esquenes però ningú la veu per l'Overlay,
-        // cridem l'Setup abans de l'animació per tapar possibles "errors d'un frame vaci"
+        // Cerquem el gestor del combat d'esquenes a la pantalla i fem el PreSetup gràfic silenciós
         var cm = FindFirstObjectByType<CombatManager>();
         if (cm != null) cm.PreSetup(encounter);
 
-        // 4) Llavors, mentre ja estan les imatges precarregades, obrim l'animació de transició
+        // 4) Triem i engeguem l'animació de fractura i separació lateral del Split
         yield return StartCoroutine(overlay.PlayOpen());
 
-        // Ara sí que l'animació d'entrada ha acabat, posem la música de combat
-        // Prioritat: Música de l'enemic > Música global del CombatLoader
+        // Comencem la música del combat (triant la cançó personalitzada de l'enemic si en té, o la genèrica)
         AudioClip musicToPlay = combatMusic;
         if (encounter != null && encounter.enemyProfile != null && encounter.enemyProfile.combatMusic != null)
         {
@@ -211,7 +244,7 @@ public class CombatLoader : MonoBehaviour
             StartCoroutine(FadeCombatMusic(true, 1f));
         }
 
-        // 5) Ara sí, desactiva scripts del món
+        // 5) Desactivem scripts i controladors de l'Overworld
         if (worldScriptsToDisable != null)
         {
             foreach (var s in worldScriptsToDisable) 
@@ -220,27 +253,34 @@ public class CombatLoader : MonoBehaviour
             }
         }
 
-        // 6) Inicia combat de debò on els menús llisquen
+        // 6) Llancem formalment la seqüència activa dels menús de combat de la batalla
         if (cm != null) yield return cm.BeginRoutine(encounter, this);
         else Debug.LogError("CombatManager no trobat a CombatScene");
     }
 
+    /// <summary>
+    /// Finalitza el combat.
+    /// </summary>
     public void EndCombat()
     {
         StartCoroutine(EndCombatRoutine());
     }
 
+    /// <summary>
+    /// Corrutina de tancament i alliberament de combat.
+    /// </summary>
     private IEnumerator EndCombatRoutine()
     {
         IsInCombat = false;
-        // Parem la música de combat a poc a poc (especialment si no ha començat encara el fadeout llarg)
+        
+        // Parem a poc a poc la cançó de batalla
         if (combatAudioSource != null && combatAudioSource.isPlaying)
         {
-            if (combatAudioSource.volume > 0.1f) // Si encara té volum, fem un fade ràpid de seguretat
+            if (combatAudioSource.volume > 0.1f) 
                 StartCoroutine(FadeCombatMusic(false, 0.8f));
         }
 
-        // Recuperem la recompensa pendent ABANS de destruir l'escena de combat
+        // Comprovem si l'enemic ha sigut reclutat amb èxit en finalitzar la batalla
         EnemyProfile pendingReward = null;
         var cm = FindFirstObjectByType<CombatManager>();
         if (cm != null)
@@ -253,26 +293,27 @@ public class CombatLoader : MonoBehaviour
             Debug.LogWarning("[COMBAT] Could not find CombatManager to check for rewards!");
         }
 
-        // REVERSE OVERLAY: fa que els trossos de la pantalla del món tornin a ajuntarse 
-        // tapant de nou tot el combat actual.
+        // ANIMACIÓ INVERSA DEL SPLIT: Les meitats de pantalla es tornen a unir i tapen la visual del combat
         SplitSnapshot overlayToDestroy = null;
         if (activeOverlay != null)
         {
             overlayToDestroy = activeOverlay;
             yield return activeOverlay.PlayClose();
-            activeOverlay = null; // Ja no és l'actiu, però encara existeix el GameObject
+            activeOverlay = null; 
         }
 
+        // Descarreguem asíncronament el combat ja ocult de forma totalment neta de la memòria
         var op = SceneManager.UnloadSceneAsync(combatSceneName);
         while (!op.isDone) yield return null;
 
-        // ARA que l'escena ja no existeix, podem destruir l'overlay sense por a veure un frame buit
+        // Ara que la càrrega ja no hi és, és 100% segur destruir el SplitSnapshot sense fotogrames buits
         if (overlayToDestroy != null)
         {
             overlayToDestroy.Cleanup();
             Destroy(overlayToDestroy.gameObject);
         }
 
+        // Reactivem els sistemes del món d'exploració
         if (worldScriptsToDisable != null)
         {
             foreach (var s in worldScriptsToDisable) 
@@ -281,27 +322,25 @@ public class CombatLoader : MonoBehaviour
             }
         }
         
-        // Assegurem que la càmera estigui exactament on toca abans d'alliberar el jugador
         var cams = FindObjectsByType<CameraBoundedFollow>(FindObjectsSortMode.None);
         foreach (var camFollow in cams) camFollow.SnapToTarget();
 
-        // ── Si hi ha recompensa de reclutament pendent, la mostrem ARA al món ──
+        // ── SI HI HA RECOMPENSA DE RECLUTAMENT, GENEREM LA TARGETA DE PRESENTACIÓ DE L'AMIC ──
         if (pendingReward != null)
         {
-            // Reclamem la recompensa perquè els bonus s'apliquin a partir d'ara
+            // Registrem el nou amic i els seus atributs a l'inventari
             if (PlayerInventory.Instance != null)
             {
                 PlayerInventory.Instance.ClaimRecruitReward(pendingReward.enemyName);
             }
 
-            // Millora de detecció de Canvas: busquem el Canvas principal de la UI del món
+            // Cerquem el Canvas de la interfície del món a sobre del qual dibuixarem el panell
             Canvas worldCanvas = null;
             Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
             foreach (var c in allCanvases)
             {
                 if (c.isRootCanvas && c.gameObject.activeInHierarchy)
                 {
-                    // Prioritzem el que es digui "MainCanvas", "UI" o "Overworld"
                     string n = c.name.ToLower();
                     if (n.Contains("main") || n.Contains("ui") || n.Contains("overworld") || n.Contains("player"))
                     {
@@ -312,7 +351,6 @@ public class CombatLoader : MonoBehaviour
                 }
             }
 
-            // Si tot i així és null, busquem qualsevol canvas actiu (encara que no sigui root)
             if (worldCanvas == null && allCanvases.Length > 0)
             {
                 foreach(var c in allCanvases) if(c.gameObject.activeInHierarchy) { worldCanvas = c; break; }
@@ -325,16 +363,17 @@ public class CombatLoader : MonoBehaviour
                     ? pendingReward.recruitmentCompleteMessage
                     : pendingReward.recruitmentRewardDescription;
 
+                // Generem el bonic panell gràfic per codi de reclutament de la TFG
                 RecruitRewardPanelUI.Create(
                     worldCanvas.transform,
                     pendingReward.recruitmentRewardSprite,
                     msg,
                     pendingReward.enemyName,
                     pendingReward.recruitmentRewardSound,
-                    () => { rewardDone = true; }
+                    () => { rewardDone = true; } // Callback que s'executa en tancar
                 );
                 
-                // Esperem que l'usuari tanqui el panell
+                // Ens quedem en bucle d'espera fins que l'usuari llegeixi i premi Tancar
                 yield return new WaitUntil(() => rewardDone);
             }
             else
@@ -345,14 +384,14 @@ public class CombatLoader : MonoBehaviour
 
         LockPlayer(false);
 
-        // Resume ALL previously paused AudioSources securely
+        // FOS DE TORNADA AL VOLUM ORIGINAL DE TOTS ELS SONS DEL MÓN QUE HAVÍEM PAUSAT
         foreach (var kvp in pausedAudioSources)
         {
             if (kvp.Key != null) StartCoroutine(FadeAudio(kvp.Key, 0f, kvp.Value, 1f, false));
         }
         pausedAudioSources.Clear();
         
-        // 7) SI hi ha un diàleg pausat pel combat, demanem que es reprengui ara
+        // Reprenem de forma segura qualsevol diàleg del mapa que hagués quedat interromput
         var dUI = FindFirstObjectByType<DialogueUI>();
         if (dUI != null) dUI.ResumeAfterCombat();
     }
@@ -384,6 +423,9 @@ public class CombatLoader : MonoBehaviour
         activeFadeMusicCoroutine = null;
     }
 
+    /// <summary>
+    /// Corrutina utilitària de transició de volum gradual (Fading) per a qualsevol AudioSource actiu del joc.
+    /// </summary>
     private IEnumerator FadeAudio(AudioSource source, float startVol, float endVol, float duration, bool pauseAtEnd)
     {
         if (source == null) yield break;
@@ -405,8 +447,6 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
-    // Antic botó OnGUI de combat aleatori eliminat
-
     private void DebugStartRandomCombat()
     {
         if (IsInCombat) return;
@@ -423,6 +463,9 @@ public class CombatLoader : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Llista exhaustiva d'identificadors de patrons d'atac que poden executar els enemics en el TFG.
+/// </summary>
 public enum EnemyAttackPattern
 {
     RandomDrop,
@@ -431,14 +474,12 @@ public enum EnemyAttackPattern
     DiagonalCross,
     FastMeteors,
     SnakeWaves,
-    // Versions Spinning
     RandomDropSpinning,
     HorizontalWavesSpinning,
     CircleBurstSpinning,
     DiagonalCrossSpinning,
     FastMeteorsSpinning,
     SnakeWavesSpinning,
-    // Nous patrons (Red Projectiles / Strictly Downward)
     RainWithRed,
     RainWithRedSpinning,
     RapidFireRed,
@@ -452,13 +493,16 @@ public enum EnemyAttackPattern
     ExpandingCross
 }
 
+/// <summary>
+/// Model de dades d'esdeveniment que representa una única instància de combat iniciada en el joc.
+/// </summary>
 [System.Serializable]
 public class CombatEncounter
 {
-    [Tooltip("Si poses un perfil aquí, ignora la resta i utilitza les dades completes del monstre.")]
+    [Tooltip("Perfil de dades de l'enemic amb qui es combatirà.")]
     public EnemyProfile enemyProfile;
 
-    [Header("Overrides Temporals (Ignorats si hi ha Perfil)")]
+    [Header("Overrides d'Atributs (Només utilitzats si no hi ha perfil)")]
     public Sprite enemyPortrait;
     public GameObject projectilePrefab;
     public float enemyAttackDuration = 6f;

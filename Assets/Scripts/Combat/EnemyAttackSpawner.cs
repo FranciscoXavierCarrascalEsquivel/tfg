@@ -2,21 +2,50 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Generador i Coreògraf de Patrons d'Atac Enemics (EnemyAttackSpawner).
+/// Aquest component és el "cervell ofensiu" del combat, encarregat d'instanciar i dirigir
+/// les coreografies de projectils que ha d'esquivar o blocar el jugador.
+/// Rep la informació del prefab actiu i l'enumerat de patró triat per la criatura (`EnemyAttackPattern`),
+/// i executa corrutines asíncrones de llançament amb temporitzadors de seguretat.
+/// 
+/// PATRONS DE BULLET HELL DEL TFG:
+/// 1. **RandomDrop**: Pluja irregular de projectils lents sobre l'eix horitzontal.
+/// 2. **HorizontalWaves**: Cascades lineals progressives des de l'esquerra a la dreta.
+/// 3. **CircleBurst**: Anell d'esclat concèntric reduït de 3 o 4 bales cap a l'avatar de la mà.
+/// 4. **DiagonalCross**: Llançaments creuats de cantonada a cantonada amb irregularitats horitzontals.
+/// 5. **FastMeteors**: Balas de gran velocitat rectes cap avall per a reflexos ràpids.
+/// 6. **SnakeWaves**: Projectils lineals en ones de zig-zag horitzontals molt marcades de tipus serp.
+/// 7. **RainWithRed / RapidFireRed**: Balas estàndard barrejades amb projectils vermells que no permeten Parry.
+/// 8. **RedHomingBarrage**: Persecució directa de les mans de forma dinàmica asíncrona per ràtio Lerp.
+/// 9. **RedSweepWall**: Murs de projectils vermells densos amb dos petits espais segurs per forçar parades d'escut.
+/// 10. **SimpleStraightLines**: Columnes verticals uniformes des del sostre de l'arena.
+/// 11. **AlternatingSides**: Ràfegues alternes de costat esquerre a costat dret.
+/// 12. **SideSweepers**: Llançaments horitzontals des de les vores laterals de l'arena (dreta o esquerra).
+/// 13. **ExpandingCross**: Fonts de projectils de 8 direccions concèntriques naixent des del centre.
+/// </summary>
 public class EnemyAttackSpawner : MonoBehaviour
 {
-    [SerializeField] private RectTransform projectilesRoot;
-    [SerializeField] private RectTransform arenaRect;
+    [SerializeField] private RectTransform projectilesRoot; // Contenidor pare per a organitzar jeràrquicament les bales
+    [SerializeField] private RectTransform arenaRect; // Marc físic limitador de l'arena de combat
 
     private GameObject projectilePrefab;
     private EnemyAttackPattern currentPattern;
-    private ParryZone[] cachedHands;
+    private ParryZone[] cachedHands; // Desa referències a les mans actives del jugador per estalviar cerques per torn
 
+    /// <summary>
+    /// Enllaça les referències del projectil a utilitzar i el patró coreogràfic des del CombatManager.
+    /// </summary>
     public void Configure(GameObject prefab, EnemyAttackPattern pattern)
     {
         projectilePrefab = prefab;
         currentPattern = pattern;
     }
 
+    /// <summary>
+    /// Corrutina mestra que fa de selector de patrons i inicia les sub-rutines corresponents.
+    /// </summary>
+    /// <param name="duration">Temps límit de duració de l'atac (en segons).</param>
     public IEnumerator Run(float duration)
     {
         switch (currentPattern)
@@ -104,9 +133,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 1. RANDOM DROP (Classic - ara totalment irregular)
-    // ===================================
+    // =========================================================================
+    // 1. RANDOM DROP (Pluja clàssica irregular)
+    // =========================================================================
     private IEnumerator RandomDropRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -120,35 +149,37 @@ public class EnemyAttackSpawner : MonoBehaviour
 
                 if (rt && proj)
                 {
+                    // Dividim el límit de l'arena per allotjar el naixement sense talls a les cantonades
                     float xLimit = arenaRect.rect.width / 3f;
                     float x = Random.Range(-xLimit, xLimit);
-                    float y = arenaRect.rect.height / 2f + Random.Range(10f, 60f);
+                    float y = arenaRect.rect.height / 2f + Random.Range(10f, 60f); // Spawneja per sobre de la capçalera de l'arena
 
                     rt.anchoredPosition = new Vector2(x, y);
-                    Vector2 dir = new Vector2(Random.Range(-0.2f, 0.2f), -1f).normalized;
+                    Vector2 dir = new Vector2(Random.Range(-0.2f, 0.2f), -1f).normalized; // Caiguda vertical amb petita desviació lateral
                     proj.Init(dir, Random.Range(150f, 350f), 0, 0, spinning);
                 }
             }
-            float wait = Random.Range(0.2f, 0.6f);
+            float wait = Random.Range(0.2f, 0.6f); // Ràtio de naixement irregular (asíncron)
             yield return new WaitForSeconds(wait);
             t += wait;
         }
     }
 
-    // ===================================
-    // 2. HORIZONTAL WAVES (Redissenyat: Cascades seguibles)
-    // ===================================
+    // =========================================================================
+    // 2. HORIZONTAL WAVES (Cascades d'ones lineals)
+    // =========================================================================
     private IEnumerator HorizontalWavesRoutine(float duration, bool spinning)
     {
         float t = 0f;
         float screenW = arenaRect.rect.width * 0.8f;
-        float stepX = screenW / 6f;
+        float stepX = screenW / 6f; // Dividim l'ample en 6 passos per fer barrits suaus
         int currentStep = 0;
 
         while (t < duration)
         {
             if (projectilePrefab && projectilesRoot && arenaRect)
             {
+                // Calculem les línies de forma progressiva utilitzant mòduls
                 float x = -screenW/2f + (currentStep % 7) * stepX;
                 currentStep++;
 
@@ -169,11 +200,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // REMOVED: TargetedHomingRoutine (No agrada a l'usuari)
-
-    // ===================================
-    // 4. CIRCLE BURST (Més pocs projectils + opció spinning)
-    // ===================================
+    // =========================================================================
+    // 4. CIRCLE BURST (Anells d'esclats de bales des del mig)
+    // =========================================================================
     private IEnumerator CircleBurstRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -181,8 +210,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         {
             if (projectilePrefab && projectilesRoot && arenaRect)
             {
-                int numProjectiles = Random.Range(3, 5); // Reduït: 3-4 projectils
+                int numProjectiles = Random.Range(3, 5); // Pocs projectils per garantir un combat net i esquivable
                 
+                // Limitem l'arc de l'anell entre 252.5 i 287.5 graus (cap a la part inferior)
                 float startAngle = 252.5f; 
                 float endAngle = 287.5f;
                 float angleStep = (endAngle - startAngle) / (numProjectiles - 1); 
@@ -208,9 +238,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 5. DIAGONAL CROSS (Cruilles amb suport spinning)
-    // ===================================
+    // =========================================================================
+    // 5. DIAGONAL CROSS (Cantonades creuades irregulars)
+    // =========================================================================
     private IEnumerator DiagonalCrossRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -221,7 +251,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                 float w = arenaRect.rect.width / 2.2f;
                 float h = arenaRect.rect.height / 2f;
                 
-                // Afegim irregularitat a les cantonades
+                // Cantonades amb petites desviacions aleatòries (irregularitats de naixement)
                 Vector2 cornerL = new Vector2(-w + Random.Range(10f, 60f), h + Random.Range(30f, 80f));
                 Vector2 cornerR = new Vector2(w - Random.Range(10f, 60f), h + Random.Range(30f, 80f));
                 Vector2[] corners = new Vector2[] { cornerL, cornerR };
@@ -235,19 +265,18 @@ public class EnemyAttackSpawner : MonoBehaviour
                     if (rt && proj)
                     {
                         rt.anchoredPosition = corner;
-                        // El punt de destí també és més irregular (no sempre al centre)
+                        
+                        // Creuem la trajectòria cap a la cantonada oposada per simular l'esquema de creu
                         float offsetTargetX = Random.Range(-150f, 150f);
                         float endX = (corner.x < 0) ? (50f + offsetTargetX) : (-50f + offsetTargetX);
                         
                         Vector2 target = new Vector2(endX, -h - 200f);
                         Vector2 dir = (target - rt.anchoredPosition).normalized;
                         
-                        // Velocitat una mica variable
                         float randomSpeed = Random.Range(220f, 320f);
                         proj.Init(dir, randomSpeed, 0, 0, spinning);
                     }
                     
-                    // Petita pausa irregular entre el naixement del costat esquerre i dret
                     yield return new WaitForSeconds(Random.Range(0.05f, 0.25f));
                 }
             }
@@ -257,9 +286,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 6. FAST METEORS (Velocitat amb opció spinning)
-    // ===================================
+    // =========================================================================
+    // 6. FAST METEORS (Caigudes verticals a alta velocitat)
+    // =========================================================================
     private IEnumerator FastMeteorsRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -276,7 +305,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                     float xLimit = arenaRect.rect.width / 4f;
                     float x = Random.Range(-xLimit, xLimit);
                     rt.anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
-                    proj.Init(Vector2.down, 450f, 0, 0, spinning);
+                    proj.Init(Vector2.down, 450f, 0, 0, spinning); // Caiguda ràpida (450 velocitat)
                 }
             }
             float wait = 0.4f;
@@ -285,9 +314,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 7. SNAKE WAVES (Zig-zag real basat en el projectil)
-    // ===================================
+    // =========================================================================
+    // 7. SNAKE WAVES (Zig-Zag vertical pronunciat)
+    // =========================================================================
     private IEnumerator SnakeWavesRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -303,7 +332,8 @@ public class EnemyAttackSpawner : MonoBehaviour
                 {
                     float x = Random.Range(-arenaRect.rect.width/4f, arenaRect.rect.width/4f);
                     rt.anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 30f);
-                    // Zig-zag el doble de pronunciat (amplitud 120) i mantenint la velocitat lenta
+                    
+                    // Inicialitzem el projectil amb ones de zig-zag de gran amplitud (amplitud = 120, freqüència = 4.5)
                     proj.Init(Vector2.down, 200f, 4.5f, 120f, spinning);
                 }
             }
@@ -314,9 +344,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 7. RAIN WITH RED (Trampes barrejades)
-    // ===================================
+    // =========================================================================
+    // 8. RAIN WITH RED (Pluja mixta estàndard + dany vermell prohibit)
+    // =========================================================================
     private IEnumerator RainWithRedRoutine(float duration, bool spinning)
     {
         float t = 0f;
@@ -331,6 +361,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                     float x = Random.Range(-arenaRect.rect.width/3f, arenaRect.rect.width/3f);
                     go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
                     
+                    // Probabilitat del 35% de generar una bala vermella prohibida
                     bool isRed = Random.value < 0.35f;
                     proj.Init(Vector2.down, 280f, 0, 0, spinning, isRed);
                 }
@@ -341,9 +372,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 8. RED HOMING BARRAGE (Perseguiment constant)
-    // ===================================
+    // =========================================================================
+    // 9. RED HOMING BARRAGE (Ràfegues vermelles de seguiment)
+    // =========================================================================
     private IEnumerator RedHomingBarrageRoutine(float duration, bool spinning)
     {
         if (cachedHands == null || cachedHands.Length == 0) 
@@ -363,11 +394,11 @@ public class EnemyAttackSpawner : MonoBehaviour
                     
                     proj.Init(Vector2.down, 250f, 0, 0, spinning, true);
                     
-                    // Agafa una de les mans (parries) aleatòriament per perseguir
+                    // Assignem una de les mans actives com a objectiu de seguiment
                     if (cachedHands != null && cachedHands.Length > 0)
                     {
                         var targetHand = cachedHands[Random.Range(0, cachedHands.Length)];
-                        proj.SetHoming(targetHand.transform, 3.8f);
+                        proj.SetHoming(targetHand.transform, 3.8f); // Força de seguiment ràpida (3.8)
                     }
                 }
             }
@@ -377,9 +408,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 9. RED SWEEP WALL (Murs horitzontals)
-    // ===================================
+    // =========================================================================
+    // 10. RED SWEEP WALL (Murs compactes amb dobles obertures de seguretat)
+    // =========================================================================
     private IEnumerator RedSweepWallRoutine(float duration)
     {
         float t = 0f;
@@ -387,16 +418,16 @@ public class EnemyAttackSpawner : MonoBehaviour
 
         while (t < duration)
         {
-            // Ocupem tota la horitzontal amb 16 projectils per a fer un mur dens (sense separacions visuals grans)
+            // Instanciem 16 projectils formant una línia horitzontal compacta
             int num = 16;
-            int hole1 = Random.Range(1, 6);   // Forat costat esquerre
-            int hole2 = Random.Range(10, 15); // Forat costat dret
+            int hole1 = Random.Range(1, 6);   // Obertura lliure a l'esquerra
+            int hole2 = Random.Range(10, 15); // Obertura lliure a la dreta
             
             float step = screenW / (num - 1);
 
             for (int i = 0; i < num; i++)
             {
-                if (i == hole1 || i == hole2) continue; // Deixem l'espai per als dos parries
+                if (i == hole1 || i == hole2) continue; // Deixem les línies lliures per a les dues mans
 
                 var go = Instantiate(projectilePrefab, projectilesRoot);
                 float x = -screenW/2f + i * step;
@@ -405,12 +436,15 @@ public class EnemyAttackSpawner : MonoBehaviour
                 go.GetComponent<ProjectileUI>().Init(Vector2.down, 230f, 0, 0, false, true);
             }
 
-            float wait = 2.8f; // Més temps entre franges perquè no s'ajuntin verticalment
+            float wait = 2.8f; // Interval ampli perquè no se solapin verticalment les franges de murs
             yield return new WaitForSeconds(wait);
             t += wait;
         }
     }
 
+    // =========================================================================
+    // 11. RAPID FIRE RED (Tir ràpid vermell persecutor)
+    // =========================================================================
     private IEnumerator RapidFireRedRoutine(float duration, bool spinning)
     {
         if (cachedHands == null || cachedHands.Length == 0) 
@@ -428,13 +462,12 @@ public class EnemyAttackSpawner : MonoBehaviour
                     float x = Random.Range(-240f, 240f);
                     go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
                     
-                    proj.Init(Vector2.down, 500f, 0, 0, spinning, true);
+                    proj.Init(Vector2.down, 500f, 0, 0, spinning, true); // Velocitat punta extrem (500)
                     
-                    // RapidFire ara també persegueix una de les mans aleatòriament
                     if (cachedHands != null && cachedHands.Length > 0)
                     {
                         var targetHand = cachedHands[Random.Range(0, cachedHands.Length)];
-                        proj.SetHoming(targetHand.transform, 4.8f);
+                        proj.SetHoming(targetHand.transform, 4.8f); // Seguiment a gran velocitat de gir (4.8)
                     }
                 }
             }
@@ -444,9 +477,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 10. SIMPLE STRAIGHT LINES
-    // ===================================
+    // =========================================================================
+    // 12. SIMPLE STRAIGHT LINES (Columnes verticals clàssiques)
+    // =========================================================================
     private IEnumerator SimpleStraightLinesRoutine(float duration)
     {
         float t = 0f;
@@ -474,9 +507,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 11. ALTERNATING SIDES
-    // ===================================
+    // =========================================================================
+    // 13. ALTERNATING SIDES (Ràfegues alternes de costats)
+    // =========================================================================
     private IEnumerator AlternatingSidesRoutine(float duration)
     {
         float t = 0f;
@@ -492,6 +525,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                 for (int i = 0; i < numProjectiles; i++)
                 {
                     var go = Instantiate(projectilePrefab, projectilesRoot);
+                    // Llimitem dinàmicament l'ample de spawn a un costat segons el flag d'alternança
                     float minX = leftSide ? -halfW + 20f : 20f;
                     float maxX = leftSide ? -20f : halfW - 20f;
                     float x = Random.Range(minX, maxX);
@@ -500,16 +534,16 @@ public class EnemyAttackSpawner : MonoBehaviour
                     go.GetComponent<ProjectileUI>().Init(Vector2.down, 280f, 0, 0, false);
                 }
             }
-            leftSide = !leftSide;
+            leftSide = !leftSide; // Canvi de costat
             float wait = 0.8f;
             yield return new WaitForSeconds(wait);
             t += wait;
         }
     }
 
-    // ===================================
-    // 12. SIDE SWEEPERS
-    // ===================================
+    // =========================================================================
+    // 14. SIDE SWEEPERS (Llançaments des de les vores de l'arena Y)
+    // =========================================================================
     private IEnumerator SideSweepersRoutine(float duration)
     {
         float t = 0f;
@@ -524,11 +558,12 @@ public class EnemyAttackSpawner : MonoBehaviour
 
                 var go = Instantiate(projectilePrefab, projectilesRoot);
                 float startX = fromLeft ? -w - 50f : w + 50f;
-                float startY = Random.Range(-h + 80f, h - 80f);
+                float startY = Random.Range(-h + 80f, h - 80f); // Alçada aleatòria
                 go.GetComponent<RectTransform>().anchoredPosition = new Vector2(startX, startY);
                 
+                // Mirem cap al costat oposat
                 Vector2 dir = fromLeft ? Vector2.right : Vector2.left;
-                dir.y = Random.Range(-0.1f, 0.1f);
+                dir.y = Random.Range(-0.1f, 0.1f); // Petita desviació vertical
                 dir.Normalize();
 
                 go.GetComponent<ProjectileUI>().Init(dir, 220f, 0, 0, false);
@@ -540,9 +575,9 @@ public class EnemyAttackSpawner : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 13. EXPANDING CROSS
-    // ===================================
+    // =========================================================================
+    // 15. EXPANDING CROSS (Esclats estrellats centrats de 8 braços)
+    // =========================================================================
     private IEnumerator ExpandingCrossRoutine(float duration)
     {
         float t = 0f;
@@ -551,6 +586,7 @@ public class EnemyAttackSpawner : MonoBehaviour
         {
             if (projectilePrefab && projectilesRoot && arenaRect)
             {
+                // Vector direccionals dels 8 braços estrellats
                 Vector2[] dirs = new Vector2[] { 
                     Vector2.up, Vector2.down, Vector2.left, Vector2.right,
                     new Vector2(1, 1).normalized, new Vector2(-1, 1).normalized,
@@ -558,9 +594,10 @@ public class EnemyAttackSpawner : MonoBehaviour
                 };
                 
                 float cx = Random.Range(-60f, 60f);
-                float cy = Random.Range(-20f, 80f); // Una mica més amunt del mig
+                float cy = Random.Range(-20f, 80f); 
                 Vector2 center = new Vector2(cx, cy);
 
+                // Instanciem les 8 bales des del mateix centre de forma estrellada asíncrona
                 foreach (var dir in dirs)
                 {
                     var go = Instantiate(projectilePrefab, projectilesRoot);

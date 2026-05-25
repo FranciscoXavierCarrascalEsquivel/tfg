@@ -2,16 +2,17 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Script d'Editor que configura automàticament Unity per permetre connexions HTTP
-/// (necessari per connectar-se a Ollama que usa HTTP, no HTTPS).
-/// S'executa automàticament en obrir el projecte o recompilar.
+/// Utilitat d'Editor que configura automàticament els paràmetres de seguretat del motor.
+/// Activa l'opció de connexions HTTP insegures (PlayerSettings.insecureHttpOption) a nivell de build,
+/// requisit indispensable per a permetre que el joc es connecti amb el servei local de xat d'Ollama (que opera sota HTTP, no HTTPS).
+/// Decorat amb [InitializeOnLoad] perquè s'executi automàticament tant en obrir el projecte com al recompilar.
 /// </summary>
 [InitializeOnLoad]
 public class AllowInsecureHTTP
 {
     static AllowInsecureHTTP()
     {
-        // Permetre connexions HTTP (Ollama usa HTTP, no HTTPS)
+        // Si no està configurat prèviament, forcem l'accés complet a descàrregues/crides HTTP ordinàries
         if (PlayerSettings.insecureHttpOption != InsecureHttpOption.AlwaysAllowed)
         {
             PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;

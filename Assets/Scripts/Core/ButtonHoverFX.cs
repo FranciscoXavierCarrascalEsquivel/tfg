@@ -4,37 +4,48 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Gestiona l'efecte visual de "glow" (resplendor) i ampliació de botons de la UI en passar-hi el cursor (ButtonGlowHover).
+/// Implementa els controladors d'esdeveniments d'Unity IPointerEnterHandler i IPointerExitHandler.
+/// Quan el punter entra a l'àrea del botó:
+/// 1) S'amplia lleugerament l'escala de l'objecte per donar feedback de prement.
+/// 2) S'activa un perfil de contorn gruixut de TextMeshPro (outlineColor/outlineWidth) amb el color de glow.
+/// 3) Si està actiu, inicia un bucle de pulsació suau estil respiració (sinusoïdal) en la lluentor.
+/// S'utilitzen temps no escalats (unscaledDeltaTime) per a garantir que les animacions de la UI responguin
+/// perfectament fins i tot quan el joc està pausat (Time.timeScale = 0).
+/// </summary>
 public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [Header("Refs")]
-    [SerializeField] private Image buttonImage;   // Referència opcional a la imatge del botó.
-    [SerializeField] private TMP_Text buttonText; // Referència al text del botó (recomanat per fer l'efecte de glow).
+    [Header("Referències d'Elements")]
+    [SerializeField] private Image buttonImage;   // Imatge opcional de fons del botó
+    [SerializeField] private TMP_Text buttonText; // Camp de text recomanat per rebre l'efecte de resplendor
 
-    [Header("Scale")]
-    [SerializeField] private float hoverScale = 1.03f; // Escala que tindrà el botó quan hi passem per sobre.
-    [SerializeField] private float smoothTime = 0.12f; // Temps que triga en fer la transició d'escala.
+    [Header("Configuració de l'Escala")]
+    [SerializeField] private float hoverScale = 1.03f; // Escala multiplicadora objectiu en passar per sobre
+    [SerializeField] private float smoothTime = 0.12f; // Durada en segons de la transició de mida
 
-    [Header("Glow (real) - Outline TMP")]
-    [SerializeField] private bool glowText = true;
-    [SerializeField] private Color glowColor = new Color(0.4f, 1f, 0.9f, 1f);
-    [SerializeField] private float outlineOff = 0.02f;    // quan NO està hover
-    [SerializeField] private float outlineOn = 0.25f;     // quan està hover
+    [Header("Efecte Glow (Contorn TMP)")]
+    [SerializeField] private bool glowText = true; // Activa o desactiva l'efecte de contorn de text
+    [SerializeField] private Color glowColor = new Color(0.4f, 1f, 0.9f, 1f); // Color del resplendor (cian retro per defecte)
+    [SerializeField] private float outlineOff = 0.02f;    // Gruix del contorn quan el cursor està fora
+    [SerializeField] private float outlineOn = 0.25f;     // Gruix del contorn quan el cursor està a sobre
 
-    [Header("Pulse (suau)")]
-    [SerializeField] private bool pulse = true;
-    [SerializeField] private float pulseSpeed = 2.2f;
-    [SerializeField] private float pulseAmount = 0.08f;   // intensitat pulse sobre outlineOn
+    [Header("Efecte de Pulsació Respiratòria")]
+    [SerializeField] private bool pulse = true; // Si es marca, l'opacitat del contorn fluctuarà mentre el cursor hi sigui a sobre
+    [SerializeField] private float pulseSpeed = 2.2f; // Velocitat d'oscil·lació del bucle
+    [SerializeField] private float pulseAmount = 0.08f;   // Rang addicional d'amplitud sinusoïdal
 
-    private Vector3 baseScale;
-    private bool hovering;
-    private Coroutine anim;
+    private Vector3 baseScale; // Escala original del botó
+    private bool hovering;     // Flag d'estat de si el ratolí està a sobre
+    private Coroutine anim;    // Referència a la corrutina d'animació activa
 
-    // Guardem valors base
+    // Còpies dels valors de color base per a la transició inversa de sortida
     private Color baseImgColor;
     private Color baseTextColor;
 
     private void Awake()
     {
+        // Auto-cerca de components si no s'han associat per inspector
         if (buttonImage == null) buttonImage = GetComponent<Image>();
         if (buttonText == null) buttonText = GetComponentInChildren<TMP_Text>(true);
 
@@ -43,7 +54,7 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (buttonImage != null) baseImgColor = buttonImage.color;
         if (buttonText != null) baseTextColor = buttonText.color;
 
-        // Estat inicial del “glow”
+        // Establim l'estat de contorn inicial apagat
         ApplyGlow(false);
     }
 
@@ -61,6 +72,9 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         anim = StartCoroutine(Animate(false));
     }
 
+    /// <summary>
+    /// Corrutina d'animació de transició d'entrada o sortida d'estat hover.
+    /// </summary>
     private IEnumerator Animate(bool toHover)
     {
         float t = 0f;
@@ -68,19 +82,19 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Vector3 startScale = transform.localScale;
         Vector3 targetScale = baseScale * (toHover ? hoverScale : 1f);
 
-        // Per fer transició suau del glow
         float startOutline = GetOutline();
         float targetOutline = toHover ? outlineOn : outlineOff;
 
-        // Si vols també una mica de “lift” al color (opc)
+        // Multipliquem la intensitat del color del text una mica si hi passem per damunt per donar feedback lumínic
         Color startTxt = buttonText ? buttonText.color : Color.white;
         Color targetTxt = buttonText ? (toHover ? MultiplyColor(baseTextColor, 1.08f) : baseTextColor) : Color.white;
 
         while (t < smoothTime)
         {
-            t += Time.unscaledDeltaTime;
+            t += Time.unscaledDeltaTime; // Unscaled delta time per garantir moviment amb el joc pausat
             float k = Mathf.Clamp01(t / Mathf.Max(0.0001f, smoothTime));
 
+            // Interpolació d'escala i contorn de text
             transform.localScale = Vector3.Lerp(startScale, targetScale, k);
 
             if (buttonText != null)
@@ -101,25 +115,31 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
             SetGlowColor(glowColor);
         }
 
-        // Pulse suau del glow mentre l'usuari té el ratolí a sobre
+        // --- EFECTE DE PULSACIÓ ACTIVA MENTRE ES REMAN A SOBRE ---
         if (toHover && pulse && buttonText != null)
         {
             while (hovering)
             {
-                float p = (Mathf.Sin(Time.unscaledTime * pulseSpeed) * 0.5f + 0.5f); // 0..1
-                float extra = (p - 0.5f) * 2f * pulseAmount; // -pulseAmount..+pulseAmount
+                // Generem una ona sinusoïdal pura entre 0 i 1
+                float p = (Mathf.Sin(Time.unscaledTime * pulseSpeed) * 0.5f + 0.5f); 
+                float extra = (p - 0.5f) * 2f * pulseAmount; 
+                
+                // Modulem dinàmicament el gruix de la vora
                 SetOutline(outlineOn + extra);
                 yield return null;
             }
         }
 
-        // Quan surt, assegura tornar a base
+        // En sortir del botó, ens assegurem de restaurar les propietats de contorn apagades normals
         if (!toHover) ApplyGlow(false);
 
         anim = null;
     }
 
-    // ---------- TMP Glow helpers ----------
+    // =========================================================================
+    // METODES D'AJUST DE CONTORN NATIV DE TEXTMESHPRO
+    // =========================================================================
+
     private void ApplyGlow(bool on)
     {
         if (buttonText == null || !glowText) return;
@@ -145,6 +165,9 @@ public class ButtonGlowHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         buttonText.outlineWidth = Mathf.Clamp01(w);
     }
 
+    /// <summary>
+    /// Multiplica els canals vermell, verd i blau d'un color per un coeficient d'intensitat lumínica.
+    /// </summary>
     private static Color MultiplyColor(Color c, float m)
     {
         return new Color(

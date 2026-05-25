@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Classe encarregada de realitzar l'efecte de transició de "pantalla trencada" (Split Transition).
+/// Captura la pantalla, la divideix en dues meitats a través d'una línia fragmentada/pixelada
+/// i en gestiona l'animació d'obertura o tancament (desplaçament lateral amb sacsejada).
+/// Dissenyat específicament per a donar un toc retro de "glitch" o fractura en els combats.
+/// </summary>
 public class SplitSnapshot : MonoBehaviour
 {
-    [Header("UI")]
+    [Header("Interfície d'Usuari (UI)")]
     [SerializeField] private RawImage left;
     [SerializeField] private RawImage right;
 
-    [Header("Animation")]
+    [Header("Animació")]
     [SerializeField] private float offscreen = 2500f;
 
-    [Header("Audio")]
+    [Header("Àudio")]
     [SerializeField] private AudioClip shatterSound;
 
     private Texture2D snapshot;
@@ -23,10 +29,15 @@ public class SplitSnapshot : MonoBehaviour
 
     private Vector2 splitNormal; 
 
-    // =========================
-    // PUBLIC API
-    // =========================
+    // =========================================================================
+    // API PÚBLICA (Mètodes de control des de l'exterior)
+    // =========================================================================
 
+    /// <summary>
+    /// Configura les textures i genera el tall fragmentat a partir d'una captura de pantalla.
+    /// Aquest mètode realitza la divisió de píxels i simula un efecte pixelat/retro a la vora de la fractura.
+    /// </summary>
+    /// <param name="tex">Textura de captura de pantalla original.</param>
     public void SetSnapshot(Texture2D tex)
     {
         snapshot = tex;
@@ -173,6 +184,9 @@ public class SplitSnapshot : MonoBehaviour
 
     public bool keepAlive = false;
 
+    /// <summary>
+    /// Corrutina per a reproduir l'animació de fractura i separació (Obertura).
+    /// </summary>
     public IEnumerator PlayOpen()
     {
         if (shatterSound != null)
@@ -264,6 +278,10 @@ public class SplitSnapshot : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Corrutina per a reproduir l'animació inversa, on les dues meitats es tornen a ajuntar
+    /// lentament fins a tancar la pantalla completa (Tancament).
+    /// </summary>
     public IEnumerator PlayClose()
     {
         var lrt = (RectTransform)left.transform;
@@ -306,6 +324,10 @@ public class SplitSnapshot : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.5f); // Pausa més llarga abans de desactivar-se per donar temps a veure's sencer
     }
 
+    // =========================================================================
+    // MÈTODES MATEMÀTICS I DE SUPORT (Eases i sacsejada)
+    // =========================================================================
+
     private static float EaseOutCubic(float x)
     {
         x = Mathf.Clamp01(x);
@@ -319,6 +341,9 @@ public class SplitSnapshot : MonoBehaviour
         return x * x * x;
     }
 
+    /// <summary>
+    /// Calcola un desplaçament en l'eix X utilitzant Perlin Noise per simular una sacsejada orgànica.
+    /// </summary>
     private static float GetShakeX(float time, float strength, float speed, float maxAbs)
     {
         float sx = (Mathf.PerlinNoise(time * speed, 0.123f) - 0.5f) * 2f;
@@ -327,6 +352,9 @@ public class SplitSnapshot : MonoBehaviour
         return v;
     }
 
+    /// <summary>
+    /// Neteja i alliberament de recursos gràfics per a evitar pèrdues de memòria (Memory Leaks).
+    /// </summary>
     public void Cleanup()
     {
         if (snapshot != null)

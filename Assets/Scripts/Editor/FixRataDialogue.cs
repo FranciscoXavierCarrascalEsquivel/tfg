@@ -3,38 +3,50 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Eina automàtica de l'Editor (TFG) encarregada de validar i corregir l'estructura de diàleg de l'NPC 'Rata'.
+/// Aquest script actua en segon pla (InitializeOnLoad) i s'assegura que es corregeixin possibles errors
+/// en el graf del diàleg (com ara forçar l'opció de reobrir diàlegs, enllaçar correctament els salts de línia
+/// de la conversa cap al node de l'Oblit, fer repetibles les opcions de sortida de forma dinàmica i injectar
+/// una frase final en la primera interacció de la Rata per a guiar millor el jugador).
+/// </summary>
 [InitializeOnLoad]
 public class FixRataDialogue
 {
     static FixRataDialogue()
     {
+        // Programem l'execució al delayCall de l'Editor per garantir que Unity ha acabat de carregar completament l'escena
         EditorApplication.delayCall += RunFix;
     }
 
+    /// <summary>
+    /// Troba l'NPC de Rata a l'escena i en re-estructura les propietats de diàleg de forma segura mitjançant SerializedObject.
+    /// </summary>
     private static void RunFix()
     {
         Scene activeScene = EditorSceneManager.GetActiveScene();
         if (activeScene.name != "Zona_Test") return;
 
+        // Cerquem el GameObject de la Rata a la jerarquia
         GameObject rataObj = GameObject.Find("Rata");
         if (rataObj == null) return;
 
         Interactable interactable = rataObj.GetComponent<Interactable>();
-        // Check if the component exists and hasn't been destroyed
         if (interactable == null || interactable.Equals(null)) return;
 
         bool changed = false;
         SerializedObject so = null;
         
         try {
+            // Instanciem un objecte serialitzat de l'Editor per escriure de forma segura a les variables privades
             so = new SerializedObject(interactable);
         } catch {
-            return; // Exit if the object is in an invalid state
+            return; 
         }
         
         if (so == null) return;
 
-        // 1. Set HideSeenChoices
+        // 1. Configuració de HideSeenChoices (amaga les opcions que el jugador ja ha triat)
         SerializedProperty hideProp = so.FindProperty("hideSeenChoices");
         if (hideProp != null && !hideProp.boolValue)
         {
@@ -47,7 +59,7 @@ public class FixRataDialogue
         {
             bool lineAdded = false;
 
-            // Iterem per TOTES les versions per trobar i netejar opcions repetides i fer els botons 'repeatable'
+            // Iterem per TOTES les versions de l'NPC per trobar i netejar opcions repetides i fer els botons 'repeatable'
             for (int v = 0; v < versionsProp.arraySize; v++)
             {
                 SerializedProperty linesProp = versionsProp.GetArrayElementAtIndex(v).FindPropertyRelative("lines");
@@ -58,13 +70,13 @@ public class FixRataDialogue
                         SerializedProperty lineProp = linesProp.GetArrayElementAtIndex(i);
                         SerializedProperty textPropLine = lineProp.FindPropertyRelative("text");
                         
-                        // Check if we already added the final line to avoid duplicating
+                        // Control preventiu per a no duplicar la frase que s'ha d'inserir
                         if (textPropLine != null && textPropLine.stringValue.Contains("Once you have the file with the email address"))
                         {
                             lineAdded = true;
                         }
 
-                        // Forçar que TOTS els diàlegs tinguin el forceReopen = false
+                        // Forcem que TOTS els diàlegs tinguin el forceReopen = false
                         SerializedProperty forceReopenProp = lineProp.FindPropertyRelative("forceReopen");
                         if (forceReopenProp != null && forceReopenProp.boolValue)
                         {
@@ -72,7 +84,7 @@ public class FixRataDialogue
                             changed = true;
                         }
 
-                        // Pre-calculate the correct index for "There is something above this place" inside this version
+                        // Calculem dinàmicament l'índex correcte del node sobre l'Oblit dins d'aquesta versió de diàleg
                         int correctJumpIndex = -1;
                         for (int k = 0; k < linesProp.arraySize; k++)
                         {
@@ -100,7 +112,7 @@ public class FixRataDialogue
                                 {
                                     string txtVal = textProp.stringValue.ToLower();
                                     
-                                    // 2. Remove the specific choice (repeated explanation about deleting worlds)
+                                    // 2. Netegem l'opció duplicada sobre esborrar els mons
                                     if (txtVal.Contains("deletes worlds") || txtVal.Contains("esborrar mons") || txtVal.Contains("esborra mons"))
                                     {
                                         choicesProp.DeleteArrayElementAtIndex(j);
@@ -108,7 +120,7 @@ public class FixRataDialogue
                                         continue;
                                     }
 
-                                    // Fix the 'Erased by who' choice to point to the start of the explanation dynamically
+                                    // Forcem que la pregunta "Erased? by who" enllaci de forma dinàmica i precisa al node de l'Oblit
                                     if (txtVal.Contains("erased? by who") || txtVal.Contains("esborrats? per qui") || txtVal.Contains("esborrat? per qui") || txtVal.Contains("esborrats?"))
                                     {
                                         SerializedProperty jumpProp = choiceProp.FindPropertyRelative("jumpToLineIndex");
@@ -119,7 +131,7 @@ public class FixRataDialogue
                                         }
                                     }
 
-                                    // 3. Set repeatable to true for exit options
+                                    // 3. Forcem que les opcions de sortida siguin sempre repetibles
                                     if (txtVal.Contains("process this") || txtVal.Contains("processar") ||
                                         txtVal.Contains("ready to go") || txtVal.Contains("llest per marxar") || txtVal.Contains("marxar de la conversa"))
                                     {
@@ -137,7 +149,7 @@ public class FixRataDialogue
                 }
             }
 
-            // 4. Add the final line to the FIRST version
+            // 4. Injectem la línia d'orientació al FINAL de la primera versió del diàleg
             SerializedProperty linesProp0 = versionsProp.GetArrayElementAtIndex(0).FindPropertyRelative("lines");
             if (linesProp0 != null && !lineAdded)
             {
@@ -167,6 +179,7 @@ public class FixRataDialogue
             }
         }
 
+        // Si hi ha hagut alguna correcció, apliquem els canvis i marquem l'escena com a pendent de desar
         if (changed)
         {
             so.ApplyModifiedProperties();

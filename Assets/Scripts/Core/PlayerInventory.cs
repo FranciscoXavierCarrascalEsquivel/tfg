@@ -2,42 +2,54 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Singleton persistent entre escenes. Guarda l'or, els objectes i la vida del jugador.
+/// Singleton d'Inventari i Estat General del Jugador (PlayerInventory).
+/// Aquest script és la base de dades persistent central del jugador durant tota la partida.
+/// Guarda de forma segura:
+/// 1) Els atributs vitals del jugador: vida actual (CurrentHP) i màxima (MaxHP) amb càlculs dinàmics.
+/// 2) El registre econòmic (Gold) i la llista d'objectes (items) continguts amb capacitat límit.
+/// 3) El diari d'enemics: enemics trobats (encounteredEnemies), eliminats (killedEnemies) i reclutats (recruitedEnemies).
+/// 4) El sistema de recompenses evolutives de combat: en reclutar completament una espècie d'enemic,
+///    s'apliquen de forma permanent bonus percentuals acumulatius a l'Atac (%), Vida (%) i Defensa (%).
+/// 5) Detecció d'inputs globals a nivell d'Update fora de combat: obrir/tancar l'inventari (Tab/I),
+///    i l'anti-rebot per a obrir la pausa mantenint premut ESC durant 0.5 segons.
 /// </summary>
 
+/// <summary>
+/// Representa una línia de diàleg de botiga amb un pes de probabilitat assignat per a selecció aleatòria (weighted random).
+/// </summary>
 [System.Serializable]
 public class ShopDialogVariant
 {
     [TextArea(2, 4)] public string text = "...";
-    [Range(0f, 100f)] public float weight = 10f;
-    [Tooltip("Sprite opcional per aquesta frase (deixa-ho buit per utilitzar el per defecte)")]
+    [Range(0f, 100f)] public float weight = 10f; // Pes de probabilitat d'aparició d'aquesta expressió
+    [Tooltip("Sprite de retrat opcional per aquesta frase concreta.")]
     public Sprite expressionSprite;
 }
 
 public class PlayerInventory : MonoBehaviour
 {
-    public static PlayerInventory Instance { get; private set; }
+    public static PlayerInventory Instance { get; private set; } // Instància de Singleton global
 
-    [Header("Valors inicials")]
+    [Header("Valors Inicials")]
     [SerializeField] private int startingMaxHP = 100;
     
-    [Header("Item Database")]
-    [Tooltip("Límit global d'objectes a l'inventari")]
+    [Header("Base de Dades d'Objectes (Items)")]
+    [Tooltip("Límit màxim d'objectes individuals a l'inventari.")]
     public int maxItemsCapacity = 20;
 
-    [Tooltip("Posa aquí els Item Profiles per relacionar-los.")]
+    [Tooltip("Registre de perfils d'objectes registrats en el joc.")]
     public List<ItemProfile> itemDatabase = new List<ItemProfile>();
 
-    [Header("Enemy Database")]
-    [Tooltip("Posa aquí els Enemy Profiles per poder consultar la llista i els límits.")]
+    [Header("Base de Dades d'Enemics")]
+    [Tooltip("Registre de perfils d'enemics registrats en el joc.")]
     public List<EnemyProfile> enemyDatabase = new List<EnemyProfile>();
 
-    [Header("Shop")]
-    [Tooltip("Objectes disponibles per comprar a la botiga.")]
+    [Header("Botiga (Items a la Venda)")]
+    [Tooltip("Llista d'objectes a la venda de la botiga.")]
     public List<ItemProfile> shopItems = new List<ItemProfile>();
 
-    [Header("Shopkeeper")]
-    public Sprite shopkeeperSprite;
+    [Header("Botiguer (NPC)")]
+    public Sprite shopkeeperSprite; // Retrat per defecte del venedor
     
     public List<ShopDialogVariant> shopWelcomeMsgs = new List<ShopDialogVariant>();
     public List<ShopDialogVariant> shopBuyMsgs = new List<ShopDialogVariant>();
@@ -45,32 +57,34 @@ public class PlayerInventory : MonoBehaviour
     public List<ShopDialogVariant> shopCantAffordMsgs = new List<ShopDialogVariant>();
     public List<ShopDialogVariant> shopInventoryFullMsgs = new List<ShopDialogVariant>();
 
-    [Header("UI Audio")]
+    [Header("Àudios d'Interfície (UI)")]
     public AudioClip navSound;
     public AudioClip selectSound;
     public AudioClip shopBuySound;
     public AudioClip shopSellSound;
     public AudioClip shopVoiceSound;
 
-    // ── HP ──────────────────────────────────────────────────────────
+    // ── GESTIÓ DINÀMICA DE VIDA (HP) ──────────────────────────────────────────
     private int baseMaxHP;
     public int MaxHP 
     { 
         get 
         {
+            // Apliquem un increment percentual a la vida màxima base si hi ha bonus acumulats de reclutament
             float bonus = GetTotalHealthBonus();
             if (bonus <= 0f) return baseMaxHP;
             return baseMaxHP + Mathf.RoundToInt(baseMaxHP * (bonus / 100f));
         }
     }
-    public int CurrentHP { get; private set; }
+    public int CurrentHP { get; private set; } // Vida actual del personatge
 
-    // ── Or i objectes ────────────────────────────────────────────────
-    public int Gold { get; private set; }
+    // ── OR I COMPTES ────────────────────────────────────────────────
+    public int Gold { get; private set; } // Or del jugador
 
-    private List<string> items = new List<string>();
+    private List<string> items = new List<string>(); // Llista de noms d'objectes a l'inventari
     public IReadOnlyList<string> Items => items.AsReadOnly();
 
+    // Diccionaris per emmagatzemar registres d'enemics (recruited, killed, encountered)
     private Dictionary<string, int> recruitedEnemies = new Dictionary<string, int>();
     public IReadOnlyDictionary<string, int> RecruitedEnemies => recruitedEnemies;
 
@@ -80,30 +94,36 @@ public class PlayerInventory : MonoBehaviour
     private List<string> encounteredEnemies = new List<string>();
     public IReadOnlyList<string> EncounteredEnemies => encounteredEnemies.AsReadOnly();
 
-    // Recompenses de reclutament ja reclamades (per no aplicar-les dues vegades)
+    // Recompenses de reclutament ja atorgades (HashSet per evitar aplicacions duplicades)
     private HashSet<string> claimedRecruitRewards = new HashSet<string>();
 
-    // Diàlegs ja vistos (opcions de resposta)
+    // Registre hash d'opcions de diàleg ja vistes (suporta l'opció hideSeenChoices)
     private HashSet<string> seenChoices = new HashSet<string>();
 
+    /// <summary>
+    /// Registra que s'ha vist una opció de diàleg.
+    /// </summary>
     public void MarkChoiceSeen(string choiceText)
     {
         if (string.IsNullOrEmpty(choiceText)) return;
         seenChoices.Add(choiceText.Trim());
     }
 
+    /// <summary>
+    /// Comprova si l'usuari ja ha escollit aquesta opció anteriorment en diàleg.
+    /// </summary>
     public bool IsChoiceSeen(string choiceText)
     {
         if (string.IsNullOrEmpty(choiceText)) return false;
         return seenChoices.Contains(choiceText.Trim());
     }
 
+    // Propietats de control del menú de pausa
     private float escapeHoldTime = 0f;
-    private const float EscapeHoldRequired = 0.5f;
+    private const float EscapeHoldRequired = 0.5f; // Segons premuts requerits
     private PlayerController2D cachedPlayer;
     private DialogueUI cachedDialogueUI;
 
-    // ────────────────────────────────────────────────────────────────
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -112,17 +132,20 @@ public class PlayerInventory : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject); // Inventari es manté permanent entre zones
 
         baseMaxHP = startingMaxHP;
-        CurrentHP = startingMaxHP;   // Primera vegada: vida plena
+        CurrentHP = startingMaxHP;   
 
-        // Crea el panell de controls
+        // Instanciem dinàmicament el gestor de bafarades HUD de controls
         if (gameObject.GetComponent<ControlsUI>() == null)
             gameObject.AddComponent<ControlsUI>();
     }
 
-    // ── HP ──────────────────────────────────────────────────────────
+    // =========================================================================
+    // MODIFICADORS DE VIDA (HP)
+    // =========================================================================
+
     public void SetHP(int hp)
     {
         CurrentHP = Mathf.Clamp(hp, 0, MaxHP);
@@ -134,7 +157,10 @@ public class PlayerInventory : MonoBehaviour
         CurrentHP = Mathf.Min(CurrentHP, MaxHP);
     }
 
-    // ── Or ──────────────────────────────────────────────────────────
+    // =========================================================================
+    // MODIFICADORS ECONÒMICS (GOLD)
+    // =========================================================================
+
     public void AddGold(int amount)
     {
         Gold += Mathf.Max(0, amount);
@@ -147,7 +173,10 @@ public class PlayerInventory : MonoBehaviour
         return true;
     }
 
-    // ── Objectes ────────────────────────────────────────────────────
+    // =========================================================================
+    // CONTROL DE LLISTAT D'OBJECTES (ITEMS)
+    // =========================================================================
+
     public ItemProfile GetItemProfile(string itemName)
     {
         if (itemDatabase == null) return null;
@@ -185,7 +214,10 @@ public class PlayerInventory : MonoBehaviour
         return items.Remove(itemName);
     }
 
-    // ── Enemics reclutats ───────────────────────────────────────────
+    // =========================================================================
+    // CONTROL DE SISTEMA DE RECLUTAMENT I DIARI D'ENEMICS
+    // =========================================================================
+
     public void RecruitEnemy(string enemyName)
     {
         if (string.IsNullOrEmpty(enemyName)) return;
@@ -213,7 +245,6 @@ public class PlayerInventory : MonoBehaviour
         return enemyDatabase.Find(x => x.enemyName == enemyName || x.name == enemyName);
     }
     
-    // ── Enemics matats i límits ─────────────────────────────────────
     public void EncounterEnemy(string enemyName)
     {
         if (string.IsNullOrEmpty(enemyName)) return;
@@ -240,6 +271,10 @@ public class PlayerInventory : MonoBehaviour
         return killedEnemies[enemyName];
     }
 
+    /// <summary>
+    /// Calcula el límit màxim de reclutament real d'un enemic, restant les baixes de combats comeses pel jugador.
+    /// Si matem un enemic d'aquesta espècie, el límit de reclutament d'amics d'aquest grup disminueix!
+    /// </summary>
     public int GetAvailableRecruitLimit(EnemyProfile enemy)
     {
         if (enemy == null) return 0;
@@ -247,15 +282,12 @@ public class PlayerInventory : MonoBehaviour
     }
 
     /// <summary>
-    /// Comprova si s'acaba de completar la barra de reclutament per a un enemic.
-    /// Retorna l'EnemyProfile si s'ha completat just ara, null si no.
+    /// Comprova si s'acaba de completar al 100% el reclutament d'una determinada espècie en aquest instant de combat.
     /// </summary>
     public EnemyProfile CheckRecruitmentJustCompleted(string enemyName)
     {
         if (string.IsNullOrEmpty(enemyName)) return null;
-
-        // Si ja hem reclamat la recompensa, no hem d'activar el panell de "Completat!" de nou.
-        if (HasClaimedRecruitReward(enemyName)) return null;
+        if (HasClaimedRecruitReward(enemyName)) return null; // Ja s'havia processat abans
         
         foreach (var ep in enemyDatabase)
         {
@@ -271,9 +303,10 @@ public class PlayerInventory : MonoBehaviour
         return null;
     }
 
-    // ── Recruitment Bonuses ──────────────────────────────────────────────
+    // =========================================================================
+    // SISTEMA D'ACUMULACIÓ DE BONUS D'AMIC (STAT BONUSES)
+    // =========================================================================
 
-    /// <summary>Marca la recompensa de reclutament com a reclamada.</summary>
     public void ClaimRecruitReward(string enemyName)
     {
         if (!string.IsNullOrEmpty(enemyName)) claimedRecruitRewards.Add(enemyName);
@@ -284,7 +317,6 @@ public class PlayerInventory : MonoBehaviour
         return claimedRecruitRewards.Contains(enemyName);
     }
 
-    /// <summary>Retorna el bonus total d'atac (%) de totes les barres completades.</summary>
     public float GetTotalAttackBonus()
     {
         float total = 0f;
@@ -297,7 +329,6 @@ public class PlayerInventory : MonoBehaviour
         return total;
     }
 
-    /// <summary>Retorna el bonus total de vida (%) de totes les barres completades.</summary>
     public float GetTotalHealthBonus()
     {
         float total = 0f;
@@ -310,7 +341,6 @@ public class PlayerInventory : MonoBehaviour
         return total;
     }
 
-    /// <summary>Retorna el bonus total de defensa (%) de totes les barres completades.</summary>
     public float GetTotalDefenseBonus()
     {
         float total = 0f;
@@ -323,33 +353,34 @@ public class PlayerInventory : MonoBehaviour
         return total;
     }
 
-    // ── Input: Obrir Inventari o Botiga (Fora Combat) ───────────────────────
+    // =========================================================================
+    // ENTRADES DE TECLAT I NAVEGACIÓ (HUD INPUT MANAGEMENT)
+    // =========================================================================
+
     private void Update()
     {
-        // Cache refs si s'han destruït (canvi d'escena)
         if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController2D>();
         if (cachedDialogueUI == null) cachedDialogueUI = FindFirstObjectByType<DialogueUI>();
 
-        // Si s'oprimeix 'I' o 'TAB' i no hi ha combat actiu (CombatManager) o no està ja obert
+        // 1. Inputs: Obrir Inventari (Tabulador o Tecla I)
         if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
         {
-            // Bloquejar inventari durant diàlegs normals o IA
+            // Bloqueig de l'inventari si s'està parlant o en mode xat intel·ligent
             bool isDialogueOpen = (cachedDialogueUI != null && cachedDialogueUI.IsOpen);
             bool isAIOpen = (AIDialogueUI.Instance != null && AIDialogueUI.Instance.IsOpen);
-            if (isDialogueOpen || isAIOpen) return; // No obrir inventari durant diàlegs
+            if (isDialogueOpen || isAIOpen) return; 
 
-            // Només obrim l'inventari si no hi ha cap menú obert
             if (!InventoryMenuUI.IsOpen && !ShopMenuUI.IsOpen)
             {
-                if (!CombatLoader.IsInCombat) // Fora del combat
+                if (!CombatLoader.IsInCombat) 
                 {
-                    Time.timeScale = 0f; // Posa en pausa el món
+                    Time.timeScale = 0f; // Congelem el rellotge de físiques
                     
                     if (cachedPlayer != null) cachedPlayer.LockMovement();
 
                     InventoryMenuUI.Show(isCombat: false, onItemSelected: (profile) =>
                     {
-                        // En l'escena normal, només podem curar.
+                        // Lògica d'ús fora de combat: Només permetem curar d'acord a les regles de joc
                         if (profile.effectType == ItemEffectType.HealPlayer)
                         {
                             int before = CurrentHP;
@@ -359,7 +390,7 @@ public class PlayerInventory : MonoBehaviour
                         }
                     }, 
                     onClose: () => {
-                        Time.timeScale = 1f; // Continua el temps al tancar
+                        Time.timeScale = 1f; // Reactivem rellotge
                         if (cachedPlayer != null && (cachedDialogueUI == null || !cachedDialogueUI.IsOpen))
                             cachedPlayer.UnlockMovement();
                     });
@@ -367,18 +398,18 @@ public class PlayerInventory : MonoBehaviour
             }
         }
 
-        // Menu de Pausa (Mantenir ESC 0.5 segons)
+        // 2. Inputs: Menú de Pausa (Mantenir premut ESC durant 0.5 segons)
         if (Input.GetKey(KeyCode.Escape))
         {
             bool isAnyMenuOpen = InventoryMenuUI.IsOpen || ShopMenuUI.IsOpen;
             
             if (!isAnyMenuOpen && !PauseMenuUI.IsOpen)
             {
-                escapeHoldTime += Time.unscaledDeltaTime;
+                escapeHoldTime += Time.unscaledDeltaTime; // Unscaled per evitar errors
                 if (escapeHoldTime >= EscapeHoldRequired)
                 {
                     escapeHoldTime = 0f;
-                    PauseMenuUI.Show();
+                    PauseMenuUI.Show(); // Obrim la pausa!
                 }
             }
         }
@@ -386,9 +417,11 @@ public class PlayerInventory : MonoBehaviour
         {
             escapeHoldTime = 0f;
         }
-
     }
 
+    /// <summary>
+    /// Congela controls i obri el Canvas dinàmic de la botiga al mapa.
+    /// </summary>
     public void ShowShopMenu()
     {
         if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController2D>();
@@ -402,6 +435,9 @@ public class PlayerInventory : MonoBehaviour
         });
     }
 
+    /// <summary>
+    /// Selecciona aleatòriament una línia de diàleg de botiga ponderada pel seu pes (Weighted Random Selection).
+    /// </summary>
     public ShopDialogVariant GetRandomMsg(List<ShopDialogVariant> list)
     {
         if (list == null || list.Count == 0) return null;
@@ -419,7 +455,6 @@ public class PlayerInventory : MonoBehaviour
         return list[list.Count - 1];
     }
 
-    // ── Debug ───────────────────────────────────────────────────────
     public string GetSummary()
     {
         return $"HP: {CurrentHP}/{MaxHP} | Or: {Gold}G | Items: {string.Join(", ", items)}";

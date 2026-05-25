@@ -2,15 +2,23 @@ using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
+/// <summary>
+/// Gestiona la seqüència cinemàtica d'introducció del joc (Intro Cutscene).
+/// Controla la posició inicial del jugador (estirat a terra), canviant manualment els sprites
+/// del personatge i deshabilitant el seu Animator durant les fases de diàleg de terra,
+/// assegut i dret. Executa efectes de sacsejada (tremolors de d'esforç) per transmetre la sensació
+/// que el personatge s'està despertant i intentant aixecar, i utilitza Reflexió (Reflection)
+/// per forçar la direcció final de mirada (lastDir) del jugador cap a la dreta de forma neta.
+/// </summary>
 public class IntroCutscene : MonoBehaviour
 {
-    [Header("Sprites")]
+    [Header("Sprites de la Cinemàtica")]
     [Tooltip("L'sprite del jugador estirat al terra")]
     [SerializeField] private Sprite playerOnFloorSprite;
     [Tooltip("L'sprite del jugador estant assegut")]
     [SerializeField] private Sprite playerSittingSprite;
     
-    [Header("Diàlegs")]
+    [Header("Seqüències de Diàlegs")]
     [Tooltip("Diàlegs quan està estirat al terra")]
     [SerializeField] private Interactable.DialogueLine[] dialogueWhileOnFloor;
     [Tooltip("Diàlegs després de canviar a l'sprite d'estar assegut")]
@@ -18,26 +26,26 @@ public class IntroCutscene : MonoBehaviour
     [Tooltip("Diàlegs després de posar-se dret")]
     [SerializeField] private Interactable.DialogueLine[] dialogueWhileStanding;
     
-    [Header("Efecte Tremolor & Audio")]
-    [Tooltip("Temps que estarà tremolant abans de posar-se dret")]
+    [Header("Efectes Tremolor i Àudio")]
+    [Tooltip("Temps que estarà tremolant abans de fer l'esforç d'aixecar-se")]
     [SerializeField] private float trembleDuration = 0.5f;
-    [Tooltip("Volum del brunzit (quant es desvia de la seva posició)")]
+    [Tooltip("Intensitat del tremolor (desviació de posició original)")]
     [SerializeField] private float trembleIntensity = 0.04f;
-    [Tooltip("So opcional que sonara al tremolar/aixecar-se")]
+    [Tooltip("So opcional que sonarà en fer l'esforç d'aixecar-se")]
     [SerializeField] private AudioClip standUpSound;
 
-    [Header("Temps d'Espera (Ritme)")]
+    [Header("Temps d'Espera (Ritme Humà)")]
     [Tooltip("Pausa inicial abans de dir la primera paraula al terra")]
     [SerializeField] private float delayBeforeFirstDialogue = 0.5f;
-    [Tooltip("Pausa després de seure, just abans de parlar la segona part")]
+    [Tooltip("Pausa després de seure, just abans de parlar la segon part")]
     [SerializeField] private float delayBeforeSecondDialogue = 0.5f;
     [Tooltip("Pausa de silenci just abans de fer l'últim esforç per aixecar-se")]
     [SerializeField] private float delayBeforeFinalTremble = 0.3f;
     [Tooltip("Pausa després de posar-se dret, just abans de parlar la tercera part")]
     [SerializeField] private float delayBeforeThirdDialogue = 0.5f;
 
-    [Header("Opcions generals")]
-    [Tooltip("Si vols que la cinemàtica passi només 1 únic cop. Deixa'l desmarcat si estàs provant.")]
+    [Header("Opcions Generals")]
+    [Tooltip("Si es marca, la cinemàtica només s'executarà una vegada en tota la sessió.")]
     [SerializeField] private bool playOnlyOnce = true;
 
     private PlayerController2D playerRef;
@@ -48,7 +56,7 @@ public class IntroCutscene : MonoBehaviour
 
     private void Awake()
     {
-        // Ens assegurem de canviar l'sprite INSTANTANÍAMENT durant la càrrega inicial!
+        // Durant la càrrega inicial, modifiquem els sprites a nivell d'Awake per evitar parpellejos (flickering) del personatge de peu
         if (playOnlyOnce && hasPlayed) return;
 
         playerRef = FindFirstObjectByType<PlayerController2D>();
@@ -57,7 +65,7 @@ public class IntroCutscene : MonoBehaviour
             playerAnim = playerRef.GetComponent<Animator>();
             playerSprite = playerRef.GetComponent<SpriteRenderer>();
 
-            // Desactivem l'animator al primeríssim frame possible i canviem sprite
+            // Desactivem temporalment l'Animator del model perquè no aixafi l'sprite estirat
             if (playerAnim != null) playerAnim.enabled = false;
             if (playerSprite != null && playerOnFloorSprite != null)
             {
@@ -72,12 +80,15 @@ public class IntroCutscene : MonoBehaviour
         
         if (playerRef != null) 
         {
-            playerRef.LockMovement(); // Em bloquegem aquí, quan el seu Awake segur ja està inicialitzat
+            playerRef.LockMovement(); // Congelem el jugador abans d'iniciar la seqüència
         }
         
         StartCoroutine(PlayCutscene());
     }
 
+    /// <summary>
+    /// Corrutina mestra que orquestra tota la cinemàtica d'inici frame a frame.
+    /// </summary>
     private IEnumerator PlayCutscene()
     {
         hasPlayed = true;
@@ -86,13 +97,15 @@ public class IntroCutscene : MonoBehaviour
 
         DialogueUI dialogueUI = FindFirstObjectByType<DialogueUI>();
 
+        // ==========================================
         // 1. FASE ESTIRAT AL TERRA
-        // Pausa inicial abans de parlar
+        // ==========================================
         if (delayBeforeFirstDialogue > 0f) yield return new WaitForSeconds(delayBeforeFirstDialogue);
         
         if (dialogueUI != null && dialogueWhileOnFloor != null && dialogueWhileOnFloor.Length > 0)
         {
             yield return StartCoroutine(PlayDialogueAndWait(dialogueUI, dialogueWhileOnFloor));
+            // Si el jugador ha decidit saltar (Skip) els diàlegs de la introducció
             if (dialogueUI.WasSkipped)
             {
                 yield return StartCoroutine(CompleteCutsceneRoutine());
@@ -100,16 +113,17 @@ public class IntroCutscene : MonoBehaviour
             }
         }
         
-        // PRIMER TREMOLOR ABANS DE SEURE
+        // Tremolor de sacsejada d'intent d'esforç
         yield return StartCoroutine(DoTrembleAndSound());
         
+        // ==========================================
         // 2. FASE ASSEGUT
+        // ==========================================
         if (playerSprite != null && playerSittingSprite != null)
         {
             playerSprite.sprite = playerSittingSprite;
         }
 
-        // Segona pausa humana entre asseure's i parlar de nou
         if (delayBeforeSecondDialogue > 0f) yield return new WaitForSeconds(delayBeforeSecondDialogue);
 
         if (dialogueUI != null && dialogueWhileSitting != null && dialogueWhileSitting.Length > 0)
@@ -122,19 +136,22 @@ public class IntroCutscene : MonoBehaviour
             }
         }
 
-        // SEGON TREMOLOR ABANS D'AIXECAR-SE DEFINITIVAMENT
-        // Pausa final de silenci
+        // ==========================================
+        // 3. SEGON TREMOLOR I ESFORÇ FINAL
+        // ==========================================
         if (delayBeforeFinalTremble > 0f) yield return new WaitForSeconds(delayBeforeFinalTremble);
         
         yield return StartCoroutine(DoTrembleAndSound());
 
-        // 4. AIXECAR-SE I MIRAR A LA DRETA
+        // ==========================================
+        // 4. AIXECAR-SE D'EMPEUS (Orientació cap a la dreta)
+        // ==========================================
         if (playerAnim != null) 
         {
-            playerAnim.enabled = true; // Activar el sistema normal del jugador
+            playerAnim.enabled = true; // Reactivem el sistema d'animacions normal
             
-            // Fem us de reflection per forçar l'animator i que faci que el personatge quedi mirant a la dreta 
-            // per pura comoditat visual del jugador
+            // Per comoditat en la posada en escena, utilitzem Reflexió per a sobreescriure 
+            // la direcció de mirada del personatge i fer que miri a la dreta sense canviar cap codi de control
             FieldInfo lastDirField = typeof(PlayerController2D).GetField("lastDir", BindingFlags.NonPublic | BindingFlags.Instance);
             if (lastDirField != null)
             {
@@ -142,7 +159,9 @@ public class IntroCutscene : MonoBehaviour
             }
         }
 
+        // ==========================================
         // 5. FASE DRET
+        // ==========================================
         if (delayBeforeThirdDialogue > 0f) yield return new WaitForSeconds(delayBeforeThirdDialogue);
 
         if (dialogueUI != null && dialogueWhileStanding != null && dialogueWhileStanding.Length > 0)
@@ -155,13 +174,19 @@ public class IntroCutscene : MonoBehaviour
             }
         }
 
-        // 6. FI! Tornem els controls
+        // ==========================================
+        // 6. FINAL DE LA CINEMÀTICA (Retorn de control)
+        // ==========================================
         yield return StartCoroutine(CompleteCutsceneRoutine());
     }
 
+    /// <summary>
+    /// Corrutina de tancament segur de la cinemàtica, assegurant que el personatge quedi despert,
+    /// d'empeus mirant en la direcció correcta i amb els controls de moviment totalment actius.
+    /// </summary>
     private IEnumerator CompleteCutsceneRoutine()
     {
-        // Si encara no s'ha aixecat (animator deshabilitat), fem l'animació d'esforç (tremolor)
+        // En cas que s'hagi saltat (Skip) a la meitat, forcem l'aixecament amb una sacsejada de seguretat
         if (playerAnim != null && !playerAnim.enabled) 
         {
             yield return StartCoroutine(DoTrembleAndSound());
@@ -176,16 +201,18 @@ public class IntroCutscene : MonoBehaviour
         playerRef.UnlockMovement();
     }
 
+    /// <summary>
+    /// Realitza un moviment oscil·lant frenètic i aleatori de la posició del personatge durant la sacsejada.
+    /// </summary>
     private IEnumerator DoTrembleAndSound()
     {
-        PlayerInteractor.IsShaking = true;
+        PlayerInteractor.IsShaking = true; // Bloquegem interaccions del món
         Vector3 originalPos = playerRef.transform.position;
         float elapsed = 0f;
         
         while (elapsed < trembleDuration)
         {
             elapsed += Time.deltaTime;
-            // Moviment aleatori frenètic en eixos X i Y per simular tremolor/esforç
             float offsetX = Random.Range(-1f, 1f) * trembleIntensity;
             float offsetY = Random.Range(-1f, 1f) * trembleIntensity;
             
@@ -193,18 +220,20 @@ public class IntroCutscene : MonoBehaviour
             yield return null;
         }
         
-        // Assegurem que torni a la posició original estable exacta
+        // Estabilitzem el jugador en la seva posició original estable
         playerRef.transform.position = originalPos;
         PlayerInteractor.IsShaking = false;
 
-        // Reproduïm el so just al moment exacte d'acabar el tremolor i fer el canvi!
+        // Reproduïm so d'esforç si n'hi ha un assignat
         if (standUpSound != null)
         {
             ItemSoundPlayer.Play(standUpSound);
         }
     }
 
-    // Helper per encapsular l'espera de qualsevol diàleg llarg
+    /// <summary>
+    /// Envia el contingut de diàleg i es manté en bucle fins que rep la senyal de tancament.
+    /// </summary>
     private IEnumerator PlayDialogueAndWait(DialogueUI dialogueUI, Interactable.DialogueLine[] dialogueLines)
     {
         bool dialogueFinished = false;
@@ -219,7 +248,6 @@ public class IntroCutscene : MonoBehaviour
 
         dialogueUI.StartDialogue(dialogueLines);
 
-        // Esperem bucle fins que ens avisin que ja no està obert
         while (!dialogueFinished)
         {
             yield return null;

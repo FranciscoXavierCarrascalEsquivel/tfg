@@ -3,218 +3,241 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
 
+/// <summary>
+/// Component base de dades i interacció de l'Overworld (Interactable).
+/// Defineix el comportament de qualsevol entitat amb la qual el jugador pot parlar o actuar
+/// (NPCs, cartells informatius, cofres, enemics, etc.).
+/// Suporta arbres de diàlegs lineals, diàlegs ramificats (amb camins i decisions),
+/// requeriments temporals d'inventari, versions progressives d'interacció,
+/// i la totalitat de paràmetres de prompts asíncrons per a la Intel·ligència Artificial.
+/// </summary>
 public class Interactable : MonoBehaviour
 {
+    /// <summary>
+    /// Representació estructurada d'un únic enunciat o línia de diàleg (DialogueLine).
+    /// </summary>
     [Serializable]
     public class DialogueLine
     {
         [TextArea(2, 6)]
+        [Tooltip("El contingut de text literal que es renderitzarà en el panell.")]
         public string text = "…";
 
-        [Header("Portrait (optional)")]
+        [Header("Retrat (Opcional)")]
+        [Tooltip("L'avatar retro bidimensional d'expressió facial associat al parlant.")]
         public Sprite portrait;
 
-        [Tooltip("Nom del personatge (opcional)")]
+        [Tooltip("El nom textual del personatge que s'imprimirà a sobre de la caixa de text.")]
         public string speakerName = "";
 
-        [Tooltip("Mostrar retrat a la dreta?")]
+        [Tooltip("Si és cert, l'avatar es dibuixarà a la banda dreta de la caixa en comptes de l'esquerra.")]
         public bool isRightSide = false;
 
-        [Tooltip("Si vols que el quadre surti a la part superior de la pantalla")]
+        [Tooltip("Si vols que el panell de diàleg surti al capdamunt de la pantalla per no tapar visualment l'acció inferior.")]
         public bool showOnTop = false;
 
-        [Tooltip("Si és cert, fons forma núvol i mode pensament.")]
+        [Tooltip("Si és cert, la caixa canviarà a tipus núvol (Pensament) i s'aplicarà una font i comportament especials.")]
         public bool isThought = false;
 
-        [Tooltip("Tancar i obrir finestra en aquesta línia?")]
+        [Tooltip("Si és cert, el Canvas es tancarà i es tornarà a obrir per donar un feedback visual de tall dramàtic.")]
         public bool forceReopen = false;
 
-        [Tooltip("Opcional: so exclusiu de veu per aquesta línia/personatge.")]
+        [Tooltip("So exclusiu de murmuri o so de veu per a aquesta frase en concret.")]
         public AudioClip customVoiceSound;
 
-        [Tooltip("Opcional: si vols retrat animat (Animator Controller)")]
+        [Tooltip("Controlador d'animació opcional en cas de voler que el retrat sigui dinàmic/animat.")]
         public RuntimeAnimatorController portraitAnimator;
 
-        [Tooltip("Si vols canviar l'sprite d'un objecte en aquesta línia de diàleg (opcional)")]
+        [Tooltip("Permet canviar dinàmicament l'aspecte visual d'un objecte del món (ex. activar un interruptor) en aquesta línia.")]
         public Sprite interactableSpriteChange;
 
-        [Tooltip("Opcional: A quin SpriteRenderer aplicar el canvi d'sprite? (Si està buit, s'aplicarà al mateix objecte Interactable)")]
+        [Tooltip("El Renderer a sobre del qual s'aplicarà la transformació de l'sprite visual anterior. Si es deixa buit, s'aplicarà a aquest mateix element.")]
         public SpriteRenderer targetSpriteRenderer;
 
-        [Tooltip("Opcional: So a reproduir quan l'Interactable canvia d'sprite")]
+        [Tooltip("Feedback sonor que s'emetrà en el moment de realitzar la transformació gràfica de l'objecte.")]
         public AudioClip interactableSpriteChangeSound;
 
         [HideInInspector]
-        public Interactable owner;
+        public Interactable owner; // Vinculació d'instància amb el script contenidor original
 
-        [Header("Behaviour Tree & Branching")]
-        [Tooltip("Si és cert, el diàleg es tancarà un cop finalitzi aquesta línia, ignorant les següents.")]
+        [Header("Behavior Tree & Branching")]
+        [Tooltip("Si és cert, el diàleg finalitza immediatament un cop completada aquesta frase, sense continuar llegint la llista.")]
         public bool isEndNode = false;
 
-        [Header("Ritme (Puses & Auto-Avanç)")]
-        [Tooltip("Opcional: Espera X segons (pantalla amagada/buida) ABANS de començar a mostrar aquesta línia.")]
+        [Header("Ritme i Temporitzadors")]
+        [Tooltip("Espera un temps en segons (amb pantalla buida) abans de començar a teclejar aquesta línia.")]
         public float delayBeforeLine = 0f;
 
-        [Tooltip("Opcional: Si és &gt; 0, el diàleg avançarà a la següent línia automàticament al cap d'aquests segons un cop hagi acabat de teclejar (sense esperar a premer la E).")]
+        [Tooltip("Si és major a 0, la línia passarà a la següent automàticament sense esperar que el jugador premi el botó d'interacció (E).")]
         public float autoAdvanceTime = 0f;
 
-        [Tooltip("Si és cert, el jugador no podrà saltar l'animació de tecleig d'aquesta línia prement la tecla d'interacció.")]
+        [Tooltip("Si és cert, el jugador tindrà prohibit saltar-se l'animació de tecleig prement el botó d'avanç.")]
         public bool cannotSkip = false;
 
         [Header("Xarxa de Nodes")]
-
-        [Tooltip("Sobreescriu quina Versió de diàleg (índex) es reproduirà la propera vegada que interaccionis amb l'objecte. (-1 descarta)")]
+        [Tooltip("Força que la propera vegada que el jugador interaccioni amb aquest objecte, s'activi una versió de diàleg concreta. (-1 ignora).")]
         public int setNextInteractionVersion = -1;
 
-        [Tooltip("A quin índex saltem automàticament des d'aquí? (-1 vol dir llegir la posició següent de forma lineal)")]
+        [Tooltip("Índex de salt directe dins de la llista de frases per a fer bucles o salts condicionals. (-1 per a comportament lineal continu).")]
         public int jumpToLineIndex = -1;
 
-        [Tooltip("Opcional: Afegeix respostes interactives si vols que el jugador esculli camins diferents.")]
+        [Tooltip("Llista d'opcions de resposta interactives que s'oferiran al jugador un cop acabada de llegir la línia activa.")]
         public DialogueChoice[] choices;
 
-        [Header("Esdeveniments")]
-        [Tooltip("Accions extres a executar quan el jugador arriba a aquesta línia de diàleg (ex: Donar un objecte, Iniciar una animació).")]
+        [Header("Esdeveniments de Unity")]
+        [Tooltip("Accions o mètodes que s'executaran de forma dinàmica en el frame precís que es comença a llegir aquesta línia (ex: iniciar cinemàtiques, tremolar càmera, spawn de partícules).")]
         public UnityEvent onLineReached;
     }
 
+    /// <summary>
+    /// Representa un botó de resposta elegible pel jugador que ramifica el diàleg.
+    /// </summary>
     [Serializable]
     public class DialogueChoice
     {
-        [Tooltip("Text de la resposta que veurà el jugador")]
+        [Tooltip("El text que es mostrarà en el botó d'opció.")]
         public string text;
 
-        [Tooltip("A quina línia (índex de la matriu 'lines' començant per 0) saltem? Fica -1 per finalitzar i tancar l'arbre.")]
+        [Tooltip("Índex de línia al qual saltem (0-based) si triem aquesta opció. Posa -1 per tancar l'arbre completament.")]
         public int jumpToLineIndex = -1;
 
-        [Tooltip("Opcional: So exclusiu al seleccionar aquesta resposta específica.")]
+        [Tooltip("Efecte de so personalitzat que s'emetrà en el moment de confirmar la selecció.")]
         public AudioClip customSelectSound;
 
-        [Tooltip("Si és cert, aquesta opció no desapareixerà mai encara que ja l'haguem escollit abans.")]
+        [Tooltip("Si és cert, aquesta opció seguirà estant disponible encara que el jugador ja l'hagi seleccionat en interaccions anteriors.")]
         public bool repeatable = false;
 
-        [Tooltip("Accions extres a executar quan s'escull aquesta resposta (ex: Iniciar combat, Restar or).")]
+        [Tooltip("Esdeveniment que s'executa immediatament al seleccionar aquesta branca (ex: donar inici a una baralla, restar diners, donar recompensa).")]
         public UnityEvent onChoiceSelected;
     }
     
+    /// <summary>
+    /// Grup de línies de diàleg lligades a una única instància d'interacció.
+    /// </summary>
     [Serializable]
     public class DialogueVersion
     {
-        [Tooltip("Sequència de línies que es mostraran en aquesta interacció.")]
+        [Tooltip("Seqüència consecutiva de línies que componen el diàleg.")]
         public DialogueLine[] lines;
+        
+        [Tooltip("Override d'efecte sonor per a les veus del personatge per a aquesta versió.")]
         public AudioClip voiceOverride;
+
+        [Tooltip("Esdeveniment general que es dispara just a l'inici d'aquesta versió de diàleg.")]
         public UnityEvent onLineReached;
     }
 
-    // =============================================
-    // IA Generativa (Ollama) — Configuració per NPC
-    // =============================================
+    // =========================================================================
+    // IA Generativa (Ollama) — Paràmetres del Prompt i Configuració del Personatge
+    // =========================================================================
     [Header("IA Generativa (Ollama)")]
 
-    [Tooltip("Si és cert, aquest interactuable pot utilitzar IA generativa per a diàlegs lliures.")]
+    [Tooltip("Activa la integració de diàlegs lliures mitjançant connexions asíncrones a Ollama.")]
     public bool useGenerativeAI = false;
 
-    [Tooltip("Nom del personatge IA (es mostra al quadre de diàleg i s'inclou al prompt).")]
+    [Tooltip("El nom oficial del NPC que es bolcarà a l'etiqueta de text i s'enviarà com a clau al model.")]
     public string aiCharacterName = "";
 
     [TextArea(3, 8)]
-    [Tooltip("Descripció del comportament, personalitat, to i manera de parlar del personatge.")]
+    [Tooltip("Prompt del sistema de personalitat. Defineix el temperament, la manera d'expressar-se i el vocabulari característic del personatge.")]
     public string aiCharacterBehavior = "";
 
     [TextArea(3, 8)]
-    [Tooltip("Informació que el personatge sap i límits del seu coneixement. Molt important per limitar la IA.")]
+    [Tooltip("Límits cognitius i lore del NPC. Essencial per evitar al·lucinacions i donar respostes absurdes de coses que el personatge desconeix.")]
     public string aiKnowledgeLimit = "";
 
     [TextArea(3, 8)]
-    [Tooltip("Context narratiu addicional del personatge o de la zona on es troba.")]
+    [Tooltip("Context situacional. Explica on es troba el personatge en aquest moment i quin és el seu estat d'ànim.")]
     public string aiInitialContext = "";
 
-    [Tooltip("URL de la API FastAPI pública (Cloudflare Tunnel).")]
+    [Tooltip("La direcció URL de l'API web dinàmica de connexió FastAPI (aixecada mitjançant un túnel Cloudflare).")]
     public string aiApiUrl = "https://door-matched-cruises-agrees.trycloudflare.com/chat";
 
-    [Tooltip("Token d'autorització per a la API.")]
+    [Tooltip("La clau de pas secreta requerida per autenticar-se amb la nostra API local.")]
     public string aiApiToken = "el-teu-token-secret-del-tfg";
 
-    [Tooltip("Idioma en què ha de respondre la IA (ex: English, Català, Español...).")]
+    [Tooltip("L'idioma vehicular en el qual s'obliga a respondre al model de llenguatge (ex: Català, English...).")]
     public string aiResponseLanguage = "English";
 
-    [Tooltip("Si és cert, primer es mostra el diàleg normal i després s'activa el mode IA.")]
+    [Tooltip("Si és cert, el personatge parlarà primer utilitzant els seus diàlegs tradicionals lineals i posteriorment s'obrirà el mode IA lliure.")]
     public bool activateAIAfterNormalDialogue = false;
 
-    [Tooltip("Si és cert, s'obre directament el mode IA sense passar pel diàleg normal. Prioritat sobre activateAIAfterNormalDialogue.")]
+    [Tooltip("Obre directament la caixa de diàleg de text IA sense mostrar cap línia de diàleg estàndard prèvia.")]
     public bool startAIDirectly = false;
 
-    [Tooltip("Versió de diàleg (índex, 0-based) a partir de la qual s'activa el mode IA en comptes del diàleg normal. -1 = desactivat. Exemple: si poses 2, les versions 0 i 1 seran diàleg normal, i de la 2 en endavant serà mode IA.")]
+    [Tooltip("Índex de versió (0-based) en el qual aquest interactuable farà la transició a IA. Ex: si és 2, les interaccions 0 i 1 seran diàlegs fixos, i a la 2 s'engegarà el xat dinàmic.")]
     public int activateAIAtVersion = -1;
 
-    [Tooltip("Sprite que es mostrarà quan la IA estigui donant la resposta (estat normal).")]
+    [Tooltip("L'avatar estàndard que es mostrarà en xerrar amb el personatge.")]
     public Sprite aiPortrait;
 
-    [Tooltip("Sprite que es mostrarà mentre la IA està pensant la resposta. Si està buit, es farà servir aiPortrait.")]
+    [Tooltip("L'avatar d'espera que es carregarà a pantalla mentre esperem la resposta asíncrona d'Ollama.")]
     public Sprite aiThinkingPortrait;
 
     [TextArea(2, 4)]
-    [Tooltip("Missatge inicial que dirà el personatge en obrir el diàleg d'IA.")]
+    [Tooltip("La primera frase amb la qual el personatge obre el xat dinàmic quan és la primera vegada que hi parlem.")]
     public string aiFirstMessage = "Hello! How can I help you today?";
 
     [TextArea(2, 4)]
-    [Tooltip("Missatge que es mostrarà cada cop que es torni a obrir el diàleg IA (2a interacció en endavant). Si està buit, es farà servir sempre aiFirstMessage.")]
+    [Tooltip("La frase de benvinguda a partir de la segona conversa en endavant. Si es buida, es mantindrà el missatge inicial.")]
     public string aiRepeatMessage = "";
 
-    [Header("Sons de Tecleig IA")]
-    [Tooltip("So que es reprodueix per cada tecla que polsa el jugador al camp d'entrada.")]
+    [Header("Efectes Sonors de Xat")]
+    [Tooltip("So mecànic o auditiu al prémer el jugador cada lletra a l'input de xat.")]
     public AudioClip playerTypingSound;
 
-    [Tooltip("So que es reprodueix per cada lletra que apareix a la resposta del personatge IA.")]
+    [Tooltip("So dinàmic emès per a cada lletra escrita en pantalla quan parla la IA.")]
     public AudioClip aiTypingSound;
 
-    // =============================================
-    // Fi de la configuració IA
-    // =============================================
-
-    [Header("Configuració de Diàleg")]
-    [Tooltip("Si és cert, les opcions de diàleg (choices) que ja hem escollit s'amagaran la propera vegada, excepte si estan marcades com a repetibles.")]
+    // =========================================================================
+    // Requisits d'Inventari (Lògica de Desbloqueig Emergent)
+    // =========================================================================
+    [Header("Configuració de Diàleg General")]
+    [Tooltip("Si és cert, les opcions (choices) que ja hagin estat seleccionades no es tornaran a mostrar al menú (evita redundàncies).")]
     [SerializeField] private bool hideSeenChoices = false;
     public bool HideSeenChoices => hideSeenChoices;
 
-    [Tooltip("Si és cert, el diàleg d'aquest interactuable no es podrà saltar del tot (deshabilita el saltar amb F).")]
+    [Tooltip("Si és cert, s'evitarà el salt total de converses mitjançant la drecera 'F'.")]
     [SerializeField] private bool cannotSkipDialogue = false;
     public bool CannotSkipDialogue => cannotSkipDialogue;
 
     [Header("Requisit d'Inventari (Opcional)")]
-    [Tooltip("Nom de l'objecte necessari a l'inventari per executar l'acció especial en comptes del diàleg normal.")]
+    [Tooltip("El nom d'ID exacte de l'objecte de l'inventari requerit per a activar la interacció especial.")]
     public string requiredItemName = "";
 
-    [Tooltip("Si tenim l'objecte, mostrem aquest diàleg en comptes de les Versions normals.")]
+    [Tooltip("Grup de diàleg alternatiu que es reproduirà exclusivament si el jugador porta l'objecte necessari a la motxilla.")]
     public DialogueVersion requirementMetVersion;
 
-    [Tooltip("S'executarà automàticament al interactuar si tenim l'objecte a l'inventari.")]
+    [Tooltip("Accions addicionals a disparar en el frame precís que interaccionem amb l'objecte correcte a la motxilla.")]
     public UnityEvent onRequirementMet;
 
-    [Tooltip("Si és cert, el diàleg de 'Requirement Met' només es mostrarà 1 vegada. Després tornarà al cicle normal.")]
+    [Tooltip("Si és cert, el diàleg de requisit complert només es mostrarà un cop. En futures interaccions es tornarà al flux estàndard.")]
     [SerializeField] private bool requirementOnlyOnce = true;
     private bool requirementAlreadyMet = false;
 
-    [Header("Versions de Diàleg (cada interacció usa la següent; l'ultima es repeteix en bucle)")]
+    [Header("Versions del Diàleg (Seqüència d'Interaccions consecutiva)")]
     [SerializeField] private DialogueVersion[] versions;
 
-    // Compatibilitat amb el que ja tens (si no omples 'versions')
-    [Header("Legacy (si no omples 'versions')")]
+    // ── FALLBACK LEGACY (Per retrocompatibilitat de scripts anteriors) ──
+    [Header("Legacy (si no s'utilitza versions)")]
     [TextArea(2, 6)]
     [SerializeField] private string description = "…";
     [SerializeField] private Sprite portrait;
     [SerializeField] private RuntimeAnimatorController portraitAnimator;
     
-    [Header("Legacy lines (si no omples 'versions')")]
+    [Header("Línies Legacy (si no s'utilitza versions)")]
     [SerializeField] private DialogueLine[] lines;
 
-    private int interactionCount = 0;
+    private int interactionCount = 0; // Guarda quantes vegades s'ha parlat amb aquest personatge
     public int InteractionCount => interactionCount;
-    private bool everInteracted = false;
-    private int aiInteractionCount = 0;
+    private bool everInteracted = false; // Registre permanent de memòria
+    private int aiInteractionCount = 0;  // Registre de converses d'IA per als canvis de benvinguda
 
-    /// <summary>Cert si el jugador ha interactuat almenys una vegada amb aquest objecte (no es reseteja mai).</summary>
     public bool HasBeenInteracted => everInteracted;
 
+    /// <summary>
+    /// Força el salt de diàleg a una versió concreta des de disparadors de l'editor.
+    /// </summary>
     public void SetNextInteractionVersion(int versionIndex)
     {
         if (versionIndex >= 0)
@@ -224,7 +247,7 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
-    /// Marca manualment l'objecte com a interactuat. Útil per a diàlegs d'IA que no passen pel flux normal.
+    /// Registra de forma manual una interacció. Útil per a fluxos externs de missions.
     /// </summary>
     public void RegisterInteraction()
     {
@@ -232,7 +255,7 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
-    /// Retorna el missatge IA adequat (primer cop o repetit) i incrementa el comptador IA.
+    /// Recupera la cadena de xat IA de benvinguda i actualitza els registres d'ús.
     /// </summary>
     public string GetAIMessage()
     {
@@ -250,8 +273,8 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
-    /// Retorna cert si la interacció actual (basant-se en interactionCount) hauria d'activar el mode IA.
-    /// NO incrementa el comptador.
+    /// Determina si, segons la configuració i les converses mantingudes, el personatge
+    /// hauria de derivar al jugador directament al xat d'IA en comptes dels diàlegs lineals.
     /// </summary>
     public bool ShouldUseAIForCurrentInteraction()
     {
@@ -262,14 +285,14 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
-    /// Retorna les línies de diàleg corresponents a la interacció actual i incrementa el comptador.
-    /// La darrera versió es repeteix indefinidament.
+    /// El cervell lògic de selecció de text. Retorna la taula exacta de frases (DialogueLine)
+    /// resolent la prioritat de requisits, les seqüències de versions, o el fallback legacy.
     /// </summary>
     public DialogueLine[] GetCurrentLines()
     {
         DialogueLine[] linesToReturn = null;
         
-        // Comprovar si hi ha un requisit d'objecte i si el tenim
+        // ── 1. COMPROVACIÓ DEL COMPLIMENT D'OBJECTES REQUERITS ──
         bool hasRequiredItem = false;
         if (!string.IsNullOrEmpty(requiredItemName) && PlayerInventory.Instance != null)
         {
@@ -286,24 +309,25 @@ public class Interactable : MonoBehaviour
         if (hasRequiredItem && (!requirementOnlyOnce || !requirementAlreadyMet))
         {
             requirementAlreadyMet = true;
-            onRequirementMet?.Invoke();
+            onRequirementMet?.Invoke(); // Disparem els esdeveniments de recompensa/compliment
             linesToReturn = requirementMetVersion?.lines ?? new DialogueLine[0];
             
-            // Si estem forçant la versió amb l'objecte, disparem l'event propi si el té
+            // Disparem l'esdeveniment global d'inici de la versió de requisit
             requirementMetVersion?.onLineReached?.Invoke();
         }
-        // Si hi ha versions configurades, les fem servir
+        // ── 2. CICLE DE VERSIONS DE DIÀLEG SEQÜENCIALS ──
         else if (versions != null && versions.Length > 0)
         {
+            // Triem la versió que toca. Si superem l'última, la repetim indefinidament en bucle
             int idx = Mathf.Min(interactionCount, versions.Length - 1);
             linesToReturn = versions[idx]?.lines ?? new DialogueLine[0];
         }
-        // Fallback: l'antic camp lines
+        // ── 3. FALLBACK DE COMPATIBILITAT 1 (Taula simple de línies) ──
         else if (lines != null && lines.Length > 0)
         {
             linesToReturn = lines;
         }
-        // Fallback legacy
+        // ── 4. FALLBACK DE COMPATIBILITAT 2 (Text descriptiu simple) ──
         else
         {
             linesToReturn = new DialogueLine[]
@@ -317,10 +341,11 @@ public class Interactable : MonoBehaviour
             };
         }
 
-        // Incrementem sempre, independentment del camí usat
+        // Incrementem permanentment el comptador d'interaccions del món
         interactionCount++;
         everInteracted = true;
 
+        // Auto-assignem la referència del propietari per a resoldre ramificacions de decisions
         if (linesToReturn != null)
         {
             foreach (var l in linesToReturn)
@@ -332,7 +357,7 @@ public class Interactable : MonoBehaviour
     }
 
     /// <summary>
-    /// Propietat de compatibilitat per codi que feia servir .Lines
+    /// Propietat d'enllaç dinàmic per a sistemes anteriors que feien referència directa a .Lines
     /// </summary>
     public DialogueLine[] Lines => GetCurrentLines();
 }
