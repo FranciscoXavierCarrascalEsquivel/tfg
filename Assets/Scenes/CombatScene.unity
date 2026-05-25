@@ -2917,7 +2917,7 @@ MonoBehaviour:
     projects that someone started with hope but, after all, were left behind.\n\nThey
     failed not because they were evil, but also nobody continued.\n\nNow you are
     part of it. \n\nJust another forgotten one.\n\nBut something still remains...
-    a spark.\n\nThe same one that brought you here.\n\nThank you for trying the demo!"
+    a spark.\n\nThe same one that brought you here."
   parryParticlePrefab: {fileID: 0}
   projectileDestroyLimit: {fileID: 22431405}
   throwStartPoint: {fileID: 1120669640}

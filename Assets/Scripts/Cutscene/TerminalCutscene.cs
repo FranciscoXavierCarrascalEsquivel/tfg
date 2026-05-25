@@ -106,6 +106,11 @@ public class TerminalCutscene : MonoBehaviour
     private void Awake()
     {
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
+
+        if (!string.IsNullOrEmpty(userPrompt))
+        {
+            userPrompt = userPrompt.Replace("fraviercaes04", System.Environment.UserName);
+        }
     }
 
     private void Start()

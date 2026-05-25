@@ -104,7 +104,14 @@ public class ProjectileUI : MonoBehaviour
 
         if (rt.anchoredPosition.y < killY)
         {
-            if (cm && !isRed && !cm.IsEnded) cm.PlayerTakeDamage(10);
+            if (cm && !isRed && !cm.IsEnded)
+            {
+                if (!cm.IsPlayerImmune())
+                {
+                    cm.PlayerTakeDamage(10);
+                    cm.TriggerGlobalImmunity(1f);
+                }
+            }
             Destroy(gameObject);
         }
         // Si el projectil marxa fora de la pantalla per dalt o pels costats, NO fa mal, simplement es destrueix (neteja)
@@ -125,13 +132,27 @@ public class ProjectileUI : MonoBehaviour
             var cm = FindFirstObjectByType<CombatManager>();
             if (cm) 
             {
+                HandController hand = collision.GetComponentInParent<HandController>();
+                if (hand == null) hand = collision.GetComponent<HandController>();
+
                 if (isRed)
                 {
+                    if (hand != null && hand.IsImmune)
+                    {
+                        Destroy(gameObject);
+                        return;
+                    }
+
                     // Els vermells només resten vida si els toques (parry)
                     if (!cm.IsEnded)
                     {
                         if (cm.DamageSound) cm.PlayLocalSound(cm.DamageSound);
                         cm.PlayerTakeDamage(10);
+                        
+                        if (hand != null)
+                        {
+                            hand.TriggerImmunity(1f);
+                        }
                     }
                     Destroy(gameObject); 
                     return; 

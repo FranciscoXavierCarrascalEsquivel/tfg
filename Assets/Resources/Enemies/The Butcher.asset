@@ -123,7 +123,7 @@ MonoBehaviour:
   - phaseName: Error
     hpThresholdPercent: 40
     phaseSprite: {fileID: 1667664292612734564, guid: 8451198a3ed6bf44a8aff64d9416ae60, type: 3}
-    phaseAttacks: 0f00000010000000
+    phaseAttacks: 0f00000011000000
     transitionDialogues:
     - message: ERROR. Neural link feedback loop... The screams of the deleted...
         they are overlapping with your presence.

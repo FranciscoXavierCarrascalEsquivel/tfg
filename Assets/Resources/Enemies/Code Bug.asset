@@ -37,7 +37,7 @@ MonoBehaviour:
   amicableDrops: []
   deathSound: {fileID: 8300000, guid: 5ba0250a820960f4c8df1e29a1eb6ca1, type: 3}
   combatMusic: {fileID: 0}
-  voiceSound: {fileID: 0}
+  voiceSound: {fileID: 8300000, guid: 98cdb5f8e69502d4fa7fa6649f8bd959, type: 3}
   attackReactions:
   - Heh... did I just lose a few pixels?
   - Ouch! That almost fixed me!

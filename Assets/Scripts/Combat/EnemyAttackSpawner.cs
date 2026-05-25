@@ -71,7 +71,10 @@ public class EnemyAttackSpawner : MonoBehaviour
                 break;
 
             case EnemyAttackPattern.RedHomingBarrage:
-                yield return RedHomingBarrageRoutine(duration);
+                yield return RedHomingBarrageRoutine(duration, false);
+                break;
+            case EnemyAttackPattern.RedHomingBarrageSpinning:
+                yield return RedHomingBarrageRoutine(duration, true);
                 break;
 
             case EnemyAttackPattern.RedSweepWall:
@@ -341,7 +344,7 @@ public class EnemyAttackSpawner : MonoBehaviour
     // ===================================
     // 8. RED HOMING BARRAGE (Perseguiment constant)
     // ===================================
-    private IEnumerator RedHomingBarrageRoutine(float duration)
+    private IEnumerator RedHomingBarrageRoutine(float duration, bool spinning)
     {
         if (cachedHands == null || cachedHands.Length == 0) 
             cachedHands = FindObjectsByType<ParryZone>(FindObjectsSortMode.None);
@@ -358,7 +361,7 @@ public class EnemyAttackSpawner : MonoBehaviour
                     float x = Random.Range(-arenaRect.rect.width / 4f, arenaRect.rect.width / 4f);
                     go.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, arenaRect.rect.height / 2f + 50f);
                     
-                    proj.Init(Vector2.down, 250f, 0, 0, false, true);
+                    proj.Init(Vector2.down, 250f, 0, 0, spinning, true);
                     
                     // Agafa una de les mans (parries) aleatòriament per perseguir
                     if (cachedHands != null && cachedHands.Length > 0)

@@ -623,7 +623,7 @@ public class DialogueUI : MonoBehaviour
         string cleanText = text.Trim();
         
         // Apliquem el multiplicador temporal a la velocitat base
-        float currentSpeed = Mathf.Max(1f, charsPerSecond / currentSpeedMultiplier);
+        float currentSpeed = Mathf.Max(1f, charsPerSecond * currentSpeedMultiplier);
         float delay = 1f / currentSpeed;
 
         // Usem maxVisibleCharacters per evitar crear strings nous cada frame (zero GC)

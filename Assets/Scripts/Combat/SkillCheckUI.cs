@@ -233,11 +233,7 @@ public class SkillCheckUI : MonoBehaviour
         {
             CancelCheck();
         }
-        // Prevenció de Softlock
-        else if (timer >= maxWaitTime)
-        {
-            FinishCheck();
-        }
+        // S'ha eliminat la prevenció de softlock (timer >= maxWaitTime) per permetre pensar el temps que es vulgui
     }
 
     private void CancelCheck()

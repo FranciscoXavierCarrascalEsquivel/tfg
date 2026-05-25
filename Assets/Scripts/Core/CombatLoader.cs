@@ -405,16 +405,7 @@ public class CombatLoader : MonoBehaviour
         }
     }
 
-    #if UNITY_EDITOR
-    private void OnGUI()
-    {
-        // Botó per fer debug i entrar en combat aleatori des del món
-        if (GUI.Button(new Rect(10, 10, 220, 50), "TEST: Combat Aleatori"))
-        {
-            DebugStartRandomCombat();
-        }
-    }
-    #endif
+    // Antic botó OnGUI de combat aleatori eliminat
 
     private void DebugStartRandomCombat()
     {
@@ -453,6 +444,7 @@ public enum EnemyAttackPattern
     RapidFireRed,
     RapidFireRedSpinning,
     RedHomingBarrage,
+    RedHomingBarrageSpinning,
     RedSweepWall,
     SimpleStraightLines,
     AlternatingSides,

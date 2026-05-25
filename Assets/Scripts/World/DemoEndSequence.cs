@@ -16,6 +16,12 @@ public class DemoEndSequence : MonoBehaviour
     public Sprite packetSprite;
     public Sprite oblivionFinalSprite;
 
+    [Header("Imatges dels Finals")]
+    public Sprite endingObserverSprite;
+    public Sprite endingGenocideSprite;
+    public Sprite endingPacifistSprite;
+    public Sprite endingMixedSprite;
+
     [Header("Audio")]
     public AudioClip glitchSound;
     public AudioClip travelSound;
@@ -350,26 +356,31 @@ public class DemoEndSequence : MonoBehaviour
         }
 
         string finalMonologue = "";
+        Sprite finalSprite = null;
 
         if (totalKills == 0 && totalRecruits == 0)
         {
             // Ignorant (No reclutar i no matar)
             finalMonologue = "A true observer. You drifted through this world without taking a single life, nor saving one. You simply watched as the code unfolded. Did you think your inaction makes you innocent? When the Great Deletion comes, your hands will be clean, but you will be just as empty.";
+            finalSprite = endingObserverSprite;
         }
         else if (totalRecruits == 0 && totalKills >= totalMaxPopulation && totalMaxPopulation > 0)
         {
             // Genocida (Matar-los a tots i no reclutar ningú)
             finalMonologue = "Oh, look at you... tearing through them like a virus. You've purged every single one of them. You're doing my job for me, little anomaly! If you keep slaughtering with such efficiency, perhaps when the Great Deletion comes, you will be rewarded. It's so entertaining to watch the world bleed out through your hands.";
+            finalSprite = endingGenocideSprite;
         }
         else if (totalKills == 0 && totalRecruits >= totalMaxPopulation && totalMaxPopulation > 0)
         {
             // Reclutador (Reclutar a tothom i no matar ningú)
             finalMonologue = "Hah. You actually think saving every single one of them matters? You've collected them like toys, believing you can rescue a world already marked for deletion. It's almost poetic... how desperately you fight the inevitable. But make no mistake: your little 'friends' will be erased just the same. And I will be watching.";
+            finalSprite = endingPacifistSprite;
         }
         else
         {
             // Mixte (Fer una mica de tot, o no arribar al màxim d'un sol tipus)
             finalMonologue = "How amusing. You spare some, yet you ruthlessly delete others when they stand in your way. You mock me, but every life you take only feeds your strength... making you more like ME. Keep playing the hero while you feast on their code. Who knows? One day, we might just be on the same side.";
+            finalSprite = endingMixedSprite;
         }
 
         // Nova música pel monòleg final
@@ -461,7 +472,8 @@ public class DemoEndSequence : MonoBehaviour
                 oblRT.anchoredPosition = new Vector2(0f, 0f); // Just al centre del 75% superior
                 oblRT.sizeDelta = new Vector2(700f, 700f); // Molt més gran!
                 oblImg = oblImgObj.AddComponent<Image>();
-                if (oblivionFinalSprite != null) oblImg.sprite = oblivionFinalSprite;
+                if (finalSprite != null) oblImg.sprite = finalSprite;
+                else if (oblivionFinalSprite != null) oblImg.sprite = oblivionFinalSprite; // Imatge per defecte
                 oblImg.preserveAspect = true;
                 oblImg.color = new Color(1, 1, 1, 0f); // Invisible inicialment
             }

@@ -1132,6 +1132,14 @@ public class CombatManager : MonoBehaviour
         hpImage.fillAmount = targetFill;
     }
 
+    public void DebugHealPlayerToMax()
+    {
+        playerCurrentHP = playerMaxHP;
+        UpdateStatsUI();
+        if (PlayerInventory.Instance != null)
+            PlayerInventory.Instance.SetHP(playerCurrentHP);
+    }
+
     public void PlayerTakeDamage(int damage)
     {
         if (state == State.End) return; // Evitem dany si ja hem mort o acabat
@@ -1233,6 +1241,9 @@ public class CombatManager : MonoBehaviour
         Interactable.DialogueLine gameOverLine = new Interactable.DialogueLine();
         gameOverLine.text = string.IsNullOrEmpty(gameOverText) ? "GAME OVER" : gameOverText;
         gameOverLine.customVoiceSound = gameOverVoice;
+
+        // Reduïm dràsticament la velocitat del text (per ex. a un 15% de la velocitat normal)
+        dialogueUI.SetSpeedMultiplier(0.15f);
 
         // Desactivem l'animació d'entrada passant un 'false' al nou paràmetre
         dialogueUI.StartDialogue(new Interactable.DialogueLine[] { gameOverLine }, false);
@@ -2468,6 +2479,25 @@ public class CombatManager : MonoBehaviour
         foreach (var hand in handControllers)
         {
             if (hand != null) hand.canMove = active;
+        }
+    }
+
+    public bool IsPlayerImmune()
+    {
+        if (handControllers == null) return false;
+        foreach (var hand in handControllers)
+        {
+            if (hand != null && hand.IsImmune) return true;
+        }
+        return false;
+    }
+
+    public void TriggerGlobalImmunity(float duration)
+    {
+        if (handControllers == null) return;
+        foreach (var hand in handControllers)
+        {
+            if (hand != null) hand.TriggerImmunity(duration);
         }
     }
 
