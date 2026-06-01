@@ -995,7 +995,7 @@ public class DialogueUI : MonoBehaviour
 
         var stComp = skipTextGO.AddComponent<TextMeshProUGUI>();
         SetFont(stComp, 26f, new Color(0.8f, 0.8f, 0.8f, 1f), FontStyles.Bold, TextAlignmentOptions.Left);
-        stComp.text = "Mantenir premut";
+        stComp.text = "Hold to skip";
 
         // Panell de seleccions
         var chGO = new GameObject("ChoicePanel");
