@@ -27,6 +27,7 @@ public class ShopMenuUI : MonoBehaviour
     public static bool IsOpen { get; set; } // Flag global de bloqueig de moviments
 
     private Action onClose;
+    private bool onCloseInvoked = false;
 
     private readonly List<ShopEntry> entries = new List<ShopEntry>();
     private int selIdx = -1;  // -1 = EXIT (selecció per defecte)
@@ -79,10 +80,23 @@ public class ShopMenuUI : MonoBehaviour
         if (CombatLoader.IsInCombat)
         {
             Debug.LogWarning("No es pot obrir la botiga mentre s'està en combat.");
+            onClose?.Invoke();
             return;
         }
         var canvas = CanvasHelper.GetMainCanvas();
-        if (canvas == null) return;
+        if (canvas == null)
+        {
+            canvas = Object.FindFirstObjectByType<Canvas>();
+        }
+        if (canvas == null)
+        {
+            var canGO = new GameObject("ShopCanvas_Fallback");
+            canvas = canGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 25000;
+            canGO.AddComponent<CanvasScaler>();
+            canGO.AddComponent<GraphicRaycaster>();
+        }
         
         var go = new GameObject("ShopMenuUI");
         var rt = go.AddComponent<RectTransform>();
@@ -992,8 +1006,26 @@ public class ShopMenuUI : MonoBehaviour
             ItemSoundPlayer.Play(inv.selectSound);
     }
 
-    private void CloseMenu() { IsOpen = false; onClose?.Invoke(); Destroy(gameObject); }
-    private void OnDestroy()  { IsOpen = false; }
+    private void CloseMenu() 
+    { 
+        IsOpen = false; 
+        if (!onCloseInvoked)
+        {
+            onCloseInvoked = true;
+            onClose?.Invoke();
+        }
+        Destroy(gameObject); 
+    }
+    
+    private void OnDestroy()  
+    { 
+        IsOpen = false; 
+        if (!onCloseInvoked)
+        {
+            onCloseInvoked = true;
+            onClose?.Invoke();
+        }
+    }
 
     // =========================================================================
     // UTILS RT (Generadors Procedimentals RectTransform)

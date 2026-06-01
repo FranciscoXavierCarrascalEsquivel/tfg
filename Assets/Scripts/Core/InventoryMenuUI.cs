@@ -28,6 +28,7 @@ public class InventoryMenuUI : MonoBehaviour
     private bool inCombat; // Cert si estem obrint l'inventari enmig d'un combat (només es permetrà usar certs ítems)
     private Action<ItemProfile> onItemSelected; // Callback en utilitzar un objecte curatiu
     private Action onClose;
+    private bool onCloseInvoked = false;
 
     private readonly List<InventoryEntry> entries = new List<InventoryEntry>(); // Elements visualitzats actuals
     private int selIdx = -1;  // Índex de selecció actiu (-1 = botó de sortida EXIT)
@@ -82,7 +83,25 @@ public class InventoryMenuUI : MonoBehaviour
     public static void Show(bool isCombat, Action<ItemProfile> onItemSelected, Action onClose = null)
     {
         var canvas = CanvasHelper.GetMainCanvas();
-        if (canvas == null) return;
+        if (canvas == null)
+        {
+            canvas = Object.FindFirstObjectByType<Canvas>();
+        }
+        if (canvas == null)
+        {
+            var canGO = new GameObject("InventoryCanvas_Fallback");
+            canvas = canGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 25000;
+            canGO.AddComponent<CanvasScaler>();
+            canGO.AddComponent<GraphicRaycaster>();
+        }
+        if (canvas == null)
+        {
+            Debug.LogWarning("No es pot obrir l'inventari: No s'ha trobat cap Canvas principal.");
+            onClose?.Invoke();
+            return;
+        }
         
         // Creació del GameObject pare procedimental
         var go = new GameObject("InventoryMenuUI");
@@ -980,6 +999,11 @@ public class InventoryMenuUI : MonoBehaviour
     { 
         if (inputBlocked) return;
         inputBlocked = true; 
+        if (!onCloseInvoked)
+        {
+            onCloseInvoked = true;
+            onClose?.Invoke();
+        }
         StartCoroutine(OutroRoutine()); 
     }
 
@@ -1003,11 +1027,23 @@ public class InventoryMenuUI : MonoBehaviour
         }
 
         IsOpen = false; 
-        onClose?.Invoke(); 
+        if (!onCloseInvoked)
+        {
+            onCloseInvoked = true;
+            onClose?.Invoke();
+        }
         Destroy(gameObject);
     }
 
-    private void OnDestroy()  { IsOpen = false; }
+    private void OnDestroy()  
+    { 
+        IsOpen = false; 
+        if (!onCloseInvoked)
+        {
+            onCloseInvoked = true;
+            onClose?.Invoke();
+        }
+    }
 
     // =========================================================================
     // UTILS RT (Generadors Dinàmics de RectTransform per Coordenades)

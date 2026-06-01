@@ -430,7 +430,9 @@ public class PlayerInventory : MonoBehaviour
 
         ShopMenuUI.Show(onClose: () => {
             Time.timeScale = 1f;
-            if (cachedPlayer != null && (cachedDialogueUI == null || !cachedDialogueUI.IsOpen))
+            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController2D>();
+            var diagUI = FindFirstObjectByType<DialogueUI>();
+            if (cachedPlayer != null && (diagUI == null || !diagUI.IsOpen))
                 cachedPlayer.UnlockMovement();
         });
     }
