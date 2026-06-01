@@ -123,7 +123,7 @@ public class DialogueUI : MonoBehaviour
     {
         if (PauseMenuUI.IsOpen) return;
 
-        if (isOpen && !isHiding && !isReopening && currentPanelGO != null && currentPanelGO.activeSelf)
+        if (isOpen && !isHiding && !isReopening && !isHidingForCombat && currentPanelGO != null && currentPanelGO.activeSelf)
         {
             // ── LÒGICA VISUAL DE LA TECLA F (SALT DE CONVERSA) ──
             bool lineAllowsSkip = canSkip && !ForceDisableSkipGlobals && 
@@ -254,6 +254,7 @@ public class DialogueUI : MonoBehaviour
     public void StartDialogue(Interactable.DialogueLine[] lines, bool animateIn = true)
     {
         WasSkipped = false;
+        isHidingForCombat = false;
         
         // Bloqueig de seguretat en combats actius excepte si la baralla ja s'ha donat per completada
         if (CombatLoader.IsInCombat)
@@ -301,6 +302,7 @@ public class DialogueUI : MonoBehaviour
     public void Show(string text, Sprite portrait = null, RuntimeAnimatorController portraitAnim = null)
     {
         WasSkipped = false;
+        isHidingForCombat = false;
         inSequence = false;
         sequence = null;
         seqIndex = 0;
@@ -436,6 +438,7 @@ public class DialogueUI : MonoBehaviour
         canAdvance = true; 
         isTyping = false;
         isSelectingChoice = false;
+        isHidingForCombat = false;
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
 
         if (choicePanelRT != null) 
@@ -455,7 +458,7 @@ public class DialogueUI : MonoBehaviour
     /// </summary>
     public void AdvanceOrSkip()
     {
-        if (!isOpen || isReopening || isHiding) return;
+        if (!isOpen || isReopening || isHiding || isHidingForCombat) return;
         if (autoAdvanceRoutine != null) { StopCoroutine(autoAdvanceRoutine); autoAdvanceRoutine = null; }
 
         // Si està en mig del typewriter, completem el text immediatament
@@ -576,23 +579,27 @@ public class DialogueUI : MonoBehaviour
     /// </summary>
     private IEnumerator CloseExecuteAndPause(Interactable.DialogueLine line, int nextIdx)
     {
+        Debug.Log($"[DialogueUI] CloseExecuteAndPause started. nextIdx: {nextIdx}, line: {line?.text}");
         isHidingForCombat = true;
         seqIndex = nextIdx; // Deixem l'índex llest
 
-        // Tanquem el panell visualment
-        PlayOut();
+        // Tanquem el panell elegantment de cara a la transició de combat SENSE disparar l'esdeveniment de tancament final!
+        PlayOutForReopen();
         yield return new WaitForSecondsRealtime(animDuration + 0.05f);
         
         if (currentPanelGO != null) currentPanelGO.SetActive(false);
         isOpen = false;
 
         // Disparem el combat o animació cinemàtica
+        Debug.Log("[DialogueUI] CloseExecuteAndPause invoking line.onLineReached...");
         line.onLineReached?.Invoke();
         eventAlreadyFired = true; 
 
-        // Si l'esdeveniment no era un combat (i per tant no hem perdut el focus), reactivem dinàmicament
-        if (!CombatLoader.IsInCombat)
+        // Si l'esdeveniment no era un combat (i per tant no hem perdut el focus ni s'està carregant un), reactivem dinàmicament
+        Debug.Log($"[DialogueUI] CloseExecuteAndPause checked. IsInCombat: {CombatLoader.IsInCombat}, IsCombatLoading: {CombatLoader.IsCombatLoading}");
+        if (!CombatLoader.IsInCombat && !CombatLoader.IsCombatLoading)
         {
+            Debug.Log("[DialogueUI] Not a combat, calling ResumeAfterCombat immediately.");
             ResumeAfterCombat();
         }
     }
@@ -602,16 +609,24 @@ public class DialogueUI : MonoBehaviour
     /// </summary>
     public void ResumeAfterCombat()
     {
-        if (!isHidingForCombat) return;
+        Debug.Log($"[DialogueUI] ResumeAfterCombat called. isHidingForCombat: {isHidingForCombat}, inSequence: {inSequence}, seqIndex: {seqIndex}");
         isHidingForCombat = false;
 
         if (inSequence && sequence != null && seqIndex < sequence.Length)
         {
+            Debug.Log($"[DialogueUI] Resuming sequence line at {seqIndex}: {sequence[seqIndex]?.text}");
             if (currentPanelGO != null) currentPanelGO.SetActive(true);
+            eventAlreadyFired = true; // Forcem que no es torni a disparar recursivament l'esdeveniment del combat
+            
+            // Congelem el moviment del jugador per si de cas s'havia desbloquejat
+            var player = FindFirstObjectByType<PlayerController2D>();
+            if (player != null) player.LockMovement();
+
             ShowInternal(sequence[seqIndex], true);
         }
         else
         {
+            Debug.Log($"[DialogueUI] Resume failed, sequence/seqIndex bounds check failed. Hiding.");
             Hide();
         }
     }

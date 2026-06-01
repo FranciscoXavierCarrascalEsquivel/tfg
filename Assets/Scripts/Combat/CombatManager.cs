@@ -1320,7 +1320,16 @@ public class CombatManager : MonoBehaviour
         }
 
         // Recuperem el component de diàleg de l'escena
-        DialogueUI dialogueUI = FindFirstObjectByType<DialogueUI>();
+        DialogueUI dialogueUI = null;
+        DialogueUI[] allDUI = FindObjectsByType<DialogueUI>(FindObjectsSortMode.None);
+        foreach (var ui in allDUI)
+        {
+            if (ui != null && ui.gameObject.scene == gameObject.scene)
+            {
+                dialogueUI = ui;
+                break;
+            }
+        }
         if (dialogueUI == null)
         {
             var go = new GameObject("DialogueManager");
@@ -2120,6 +2129,10 @@ public class CombatManager : MonoBehaviour
             }
         }
 
+        // Desem la vida exacta actual a l'inventari persistent abans de sortir del combat
+        if (PlayerInventory.Instance != null)
+            PlayerInventory.Instance.SetHP(playerCurrentHP);
+
         loader.EndCombat();
     }
 
@@ -2147,6 +2160,9 @@ public class CombatManager : MonoBehaviour
         {
             yield return ShowPlayerActionDialogue("You try to run away... and you make it!");
             state = State.End;
+            // Desem la vida exacta actual a l'inventari persistent abans de sortir del combat
+            if (PlayerInventory.Instance != null)
+                PlayerInventory.Instance.SetHP(playerCurrentHP);
             loader.EndCombat();
         }
         else
@@ -2368,7 +2384,16 @@ public class CombatManager : MonoBehaviour
     /// </summary>
     private IEnumerator ShowPlayerActionDialogue(string text, AudioClip overrideVoice = null, float speedMultiplier = 1f)
     {
-        var dialogUI = FindFirstObjectByType<DialogueUI>();
+        DialogueUI dialogUI = null;
+        DialogueUI[] allDUI = FindObjectsByType<DialogueUI>(FindObjectsSortMode.None);
+        foreach (var ui in allDUI)
+        {
+            if (ui != null && ui.gameObject.scene == gameObject.scene)
+            {
+                dialogUI = ui;
+                break;
+            }
+        }
         GameObject dialogGO = null;
 
         if (dialogUI == null)

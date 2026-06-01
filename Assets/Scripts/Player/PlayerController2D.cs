@@ -361,6 +361,7 @@ public class PlayerController2D : MonoBehaviour
 
     private IEnumerator AlertAndStartCombat(CombatEncounter enc)
     {
+        CombatLoader.IsCombatLoading = true;
         // 1) Reproduir so d'alerta
         if (alertSound != null)
         {

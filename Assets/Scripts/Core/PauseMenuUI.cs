@@ -372,6 +372,8 @@ public class PauseMenuUI : MonoBehaviour
         fadeOverlay.color = Color.black;
 
         Time.timeScale = 1f; // Restaurem temps
+        IsOpen = false;      // IMPORTANT: Resetejem la flag estàtica per evitar bloquejar els diàlegs en tornar a jugar
+        instance = null;
         SceneManager.LoadScene("MainMenu");
     }
 

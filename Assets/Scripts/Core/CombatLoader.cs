@@ -28,6 +28,7 @@ public class CombatLoader : MonoBehaviour
     [SerializeField] private MonoBehaviour[] worldScriptsToDisable; // Components de l'Overworld que cal congelar en combat
 
     public static bool IsInCombat { get; set; } // Flag d'estat global de si estem enmig d'un combat
+    public static bool IsCombatLoading { get; set; } // Flag d'estat global de si s'està carregant un combat (amb alerta prèvia)
 
     [Header("Efecte de Transició")]
     [SerializeField] private SplitSnapshot splitOverlayPrefab; // Prefab de pantalla partida per al trencament de vidre
@@ -137,6 +138,7 @@ public class CombatLoader : MonoBehaviour
         }
 
         IsInCombat = true;
+        IsCombatLoading = true;
         StartCoroutine(StartCombatRoutine(encounter));
     }
 
@@ -147,6 +149,7 @@ public class CombatLoader : MonoBehaviour
     {
         if (profile == null) return;
         
+        IsCombatLoading = true;
         CombatEncounter encounter = new CombatEncounter();
         encounter.enemyProfile = profile;
         encounter.enemyAttackDuration = profile.attackDuration;
@@ -272,6 +275,7 @@ public class CombatLoader : MonoBehaviour
     private IEnumerator EndCombatRoutine()
     {
         IsInCombat = false;
+        IsCombatLoading = false;
         
         // Parem a poc a poc la cançó de batalla
         if (combatAudioSource != null && combatAudioSource.isPlaying)
@@ -393,6 +397,7 @@ public class CombatLoader : MonoBehaviour
         
         // Reprenem de forma segura qualsevol diàleg del mapa que hagués quedat interromput
         var dUI = FindFirstObjectByType<DialogueUI>();
+        Debug.Log($"[CombatLoader] Found DialogueUI for resumption: {dUI != null}");
         if (dUI != null) dUI.ResumeAfterCombat();
     }
 
