@@ -19,7 +19,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class PauseMenuUI : MonoBehaviour
 {
-    public static bool IsOpen { get; private set; } // Flag global que indica si la pausa està activa
+    public static bool IsOpen { get; set; } // Flag global que indica si la pausa està activa
 
     [Header("Paleta Estètica")]
     [SerializeField] private Color overlayColor = new Color(0f, 0f, 0f, 0.75f); // Color fosc translúcid de fons

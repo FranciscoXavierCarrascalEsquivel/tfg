@@ -23,7 +23,7 @@ using UnityEngine.UI;
 /// </summary>
 public class InventoryMenuUI : MonoBehaviour
 {
-    public static bool IsOpen { get; private set; } // Flag global d'estat per congelar controls de mapa
+    public static bool IsOpen { get; set; } // Flag global d'estat per congelar controls de mapa
 
     private bool inCombat; // Cert si estem obrint l'inventari enmig d'un combat (només es permetrà usar certs ítems)
     private Action<ItemProfile> onItemSelected; // Callback en utilitzar un objecte curatiu

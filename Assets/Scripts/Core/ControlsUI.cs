@@ -21,6 +21,16 @@ public class ControlsUI : MonoBehaviour
     // Variables de control d'estat estàtic que sobreviuen entre escenes
     private static bool hasFinishedFirstDialogue = false; // Indica si el jugador ja ha parlat el primer cop
     private static bool wasDialogueOpenOnce = false;       // Auxiliar per a detectar la primera interacció
+
+    /// <summary>
+    /// Reseteja l'estat del tutorial de controls per a una nova partida o sessió de joc.
+    /// </summary>
+    public static void ResetTutorialState()
+    {
+        hasFinishedFirstDialogue = false;
+        wasDialogueOpenOnce = false;
+    }
+
     private float currentAlpha = 0f;
     private float targetAlpha = 0f;
 

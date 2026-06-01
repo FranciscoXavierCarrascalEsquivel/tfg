@@ -61,6 +61,16 @@ public class MainMenuFlow : MonoBehaviour
             Destroy(PlayerInventory.Instance.gameObject);
         }
 
+        // 2. Reset de flags estàtics de control per evitar estats bloquejats en re-entrar al joc
+        CombatLoader.IsInCombat = false;
+        CombatLoader.IsCombatLoading = false;
+        ShopMenuUI.IsOpen = false;
+        InventoryMenuUI.IsOpen = false;
+        PauseMenuUI.IsOpen = false;
+        PlayerInteractor.IsShaking = false;
+        DialogueUI.ForceDisableSkipGlobals = false;
+        ControlsUI.ResetTutorialState();
+
         // Establim l'estat silenciós i ocult de tots els components per defecte
         if (blackOverlay != null)
         {

@@ -24,7 +24,7 @@ using UnityEngine.UI;
 /// </summary>
 public class ShopMenuUI : MonoBehaviour
 {
-    public static bool IsOpen { get; private set; } // Flag global de bloqueig de moviments
+    public static bool IsOpen { get; set; } // Flag global de bloqueig de moviments
 
     private Action onClose;
 
