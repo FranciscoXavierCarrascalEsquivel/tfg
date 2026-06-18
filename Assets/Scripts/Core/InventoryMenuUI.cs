@@ -85,7 +85,7 @@ public class InventoryMenuUI : MonoBehaviour
         var canvas = CanvasHelper.GetMainCanvas();
         if (canvas == null)
         {
-            canvas = Object.FindFirstObjectByType<Canvas>();
+            canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
         }
         if (canvas == null)
         {
